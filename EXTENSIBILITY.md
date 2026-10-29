@@ -32,3 +32,6 @@ New centers demonstrate reusable patterns for threaded subprocess jobs, user-lev
 
 ## v3.3 patch and recovery patterns
 PartialStagingCenter uses Git-produced patch headers and applies selected hunks through temporary files with `git apply --cached`. ReflogRecoveryCenter treats branch creation as the default recovery action and keeps reflog expiration dry-run only. Future recovery tools should preserve these non-destructive defaults.
+
+## v3.4 history tooling
+InteractiveRebaseEditor writes an explicit todo plan through a temporary GIT_SEQUENCE_EDITOR and creates a safety branch first. UnifiedRefBrowser uses `for-each-ref`. RepositoryHistoryBrowser uses `ls-tree` and `show` so browsing does not mutate the working tree.

@@ -27,3 +27,14 @@ Open Partial staging, select a changed text file, then select and preview a hunk
 
 ## Reflog recovery
 Open Reflog recovery after an accidental reset, rebase, branch deletion or checkout. Inspect the candidate commit, then create a recovery branch. This is safer than immediately resetting the current branch. Detached checkout is available for inspection, but branch creation is recommended for permanent recovery.
+
+# Version 3.4 Addendum
+
+## Interactive rebase
+Start with a clean working tree. Enter the parent/base before the commits to edit, load the plan, reorder commits and assign actions. The app creates a backup branch before execution. If rebase pauses, resolve conflicts and use Continue, Skip or Abort.
+
+## Unified refs
+Use All refs to search local and remote branches, tags, stash and notes. Deletion remains intentionally limited to normal local branch deletion and local tags.
+
+## Historical repository browser
+Choose a recent commit or enter a ref. Expand directories to inspect the tree, select a text file to view it, or export any historical blob without checking it out.

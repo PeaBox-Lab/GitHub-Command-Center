@@ -42,10 +42,10 @@ class LocalGitWindow(tk.Toplevel):
         # Compact sidebar replaces the long overflowing button strip
         side=tk.Frame(body,bg="#182235",width=212);side.pack(side="left",fill="y");side.pack_propagate(False)
         groups=[
-            ("WORK",[("Dashboard",lambda:RepositoryDashboardCenter(self,self.repo)),("Changes",self.refresh),("History",lambda:CommitGraphWindow(self,self.repo)),("Partial staging",lambda:PartialStagingCenter(self,self.repo)),("Search",lambda:SearchCenter(self,self.repo))]),
+            ("WORK",[("Dashboard",lambda:RepositoryDashboardCenter(self,self.repo)),("Changes",self.refresh),("History",lambda:CommitGraphWindow(self,self.repo)),("History browser",lambda:RepositoryHistoryBrowser(self,self.repo)),("Partial staging",lambda:PartialStagingCenter(self,self.repo)),("Search",lambda:SearchCenter(self,self.repo))]),
             ("COLLABORATE",[("Pull requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Releases",lambda:ReleaseCenter(self,self.repo))]),
             ("QUALITY",[("Conflicts",lambda:ConflictResolver(self,self.repo)),("Security",lambda:SecurityCenter(self,self.repo)),("Health",lambda:RepositoryHealthCenter(self,self.repo)),("Compare",lambda:RepositoryCompareCenter(self,self.repo))]),
-            ("TOOLS",[("Branches & advanced",lambda:AdvancedGitWindow(self,self.repo)),("Reflog recovery",lambda:ReflogRecoveryCenter(self,self.repo)),("Recovery",lambda:BackupRestoreCenter(self,self.repo)),("Worktrees",lambda:WorktreeCenter(self,self.repo)),("All commands",lambda:CommandPalette(self,self.repo))])]
+            ("TOOLS",[("Branches & advanced",lambda:AdvancedGitWindow(self,self.repo)),("Interactive rebase",lambda:InteractiveRebaseEditor(self,self.repo)),("All refs",lambda:UnifiedRefBrowser(self,self.repo)),("Reflog recovery",lambda:ReflogRecoveryCenter(self,self.repo)),("Recovery",lambda:BackupRestoreCenter(self,self.repo)),("Worktrees",lambda:WorktreeCenter(self,self.repo)),("All commands",lambda:CommandPalette(self,self.repo))])]
         for heading,items in groups:
             tk.Label(side,text=heading,bg="#182235",fg="#72819a",font=("Segoe UI Semibold",8),anchor="w").pack(fill="x",padx=16,pady=(16,5))
             for text,cmd in items:
@@ -1514,7 +1514,7 @@ class CommandPalette(tk.Toplevel):
             ("Regression Finder",lambda:BisectCenter(self,repo),"bisect regression"),("Commit Inspector",lambda:CommitInspector(self,repo),"blame file history commit"),
             ("Submodule Center",lambda:SubmoduleCenter(self,repo),"submodule recursive"),("Repository Tasks",lambda:TaskCenter(self,repo),"checklist tasks"),
             ("Archive & Handover",lambda:ArchiveCenter(self,repo),"zip bundle support pack"),("Git Hooks Manager",lambda:HooksCenter(self,repo),"hooks pre-commit commit-msg"),
-            ("Git LFS Center",lambda:LFSCenter(self,repo),"large files lfs track"),("Automation Recipes",lambda:AutomationCenter(self,repo),"automation recipes checks"),("Identity & Signing",lambda:IdentitySigningCenter(self,repo),"identity email gpg sign verify"),("Commit Message Studio",lambda:CommitMessageStudio(self,repo),"conventional commits message"),("Changelog Studio",lambda:ChangelogStudio(self,repo),"changelog release notes commits"),("Remote Migration & Mirror",lambda:RemoteMigrationCenter(self,repo),"remote backup mirror migration"),("Credential & Remote Hygiene",lambda:CredentialAuditCenter(self,repo),"credentials helper url ssh https auth"),("Release Policy Center",lambda:ReleasePolicyCenter(self,repo),"release policy gates semver version"),("Repository Metrics",lambda:RepositoryMetricsCenter(self,repo),"metrics contributors languages commits activity"),("Plugin Manager",lambda:PluginManager(self,repo),"plugins extensions commands"),("Batch Operations",lambda:BatchOperationsCenter(self,repo),"batch multiple repositories portfolio"),("Operations Dashboard",lambda:RepositoryDashboardCenter(self,repo),"dashboard operational status next action"),("Repository Data Export",lambda:DataExportCenter(self,repo),"export json csv commits metadata"),("Background Jobs",lambda:BackgroundJobsCenter(self,repo),"jobs queue background cancel logs"),("Preferences",lambda:PreferencesCenter(self,repo),"preferences theme appearance defaults"),("Portfolio History",lambda:PortfolioHistoryCenter(self,repo),"sqlite portfolio history snapshots trends"),("Self-Test & Readiness",lambda:SelfTestCenter(self,repo),"self test readiness smoke diagnostics"),("Partial Staging",lambda:PartialStagingCenter(self,repo),"partial stage hunk line add patch"),("Reflog Recovery",lambda:ReflogRecoveryCenter(self,repo),"reflog recover lost commit reset checkout branch")]
+            ("Git LFS Center",lambda:LFSCenter(self,repo),"large files lfs track"),("Automation Recipes",lambda:AutomationCenter(self,repo),"automation recipes checks"),("Identity & Signing",lambda:IdentitySigningCenter(self,repo),"identity email gpg sign verify"),("Commit Message Studio",lambda:CommitMessageStudio(self,repo),"conventional commits message"),("Changelog Studio",lambda:ChangelogStudio(self,repo),"changelog release notes commits"),("Remote Migration & Mirror",lambda:RemoteMigrationCenter(self,repo),"remote backup mirror migration"),("Credential & Remote Hygiene",lambda:CredentialAuditCenter(self,repo),"credentials helper url ssh https auth"),("Release Policy Center",lambda:ReleasePolicyCenter(self,repo),"release policy gates semver version"),("Repository Metrics",lambda:RepositoryMetricsCenter(self,repo),"metrics contributors languages commits activity"),("Plugin Manager",lambda:PluginManager(self,repo),"plugins extensions commands"),("Batch Operations",lambda:BatchOperationsCenter(self,repo),"batch multiple repositories portfolio"),("Operations Dashboard",lambda:RepositoryDashboardCenter(self,repo),"dashboard operational status next action"),("Repository Data Export",lambda:DataExportCenter(self,repo),"export json csv commits metadata"),("Background Jobs",lambda:BackgroundJobsCenter(self,repo),"jobs queue background cancel logs"),("Preferences",lambda:PreferencesCenter(self,repo),"preferences theme appearance defaults"),("Portfolio History",lambda:PortfolioHistoryCenter(self,repo),"sqlite portfolio history snapshots trends"),("Self-Test & Readiness",lambda:SelfTestCenter(self,repo),"self test readiness smoke diagnostics"),("Partial Staging",lambda:PartialStagingCenter(self,repo),"partial stage hunk line add patch"),("Reflog Recovery",lambda:ReflogRecoveryCenter(self,repo),"reflog recover lost commit reset checkout branch"),("Interactive Rebase Editor",lambda:InteractiveRebaseEditor(self,repo),"interactive rebase squash fixup reword edit drop reorder"),("Unified Ref Browser",lambda:UnifiedRefBrowser(self,repo),"refs branches remotes tags stash notes"),("Repository History Browser",lambda:RepositoryHistoryBrowser(self,repo),"history browse tree file commit export")]
         self.render()
     def render(self):
         q=self.q.get().lower().strip();self.filtered=[c for c in self.commands if not q or q in (c[0]+" "+c[2]).lower()];self.list.delete(0,"end")
@@ -2325,3 +2325,225 @@ class ReflogRecoveryCenter(tk.Toplevel):
         try:v=git(self.repo,"reflog","expire","--dry-run","--all")
         except Exception as e:v=str(e)
         self.text.delete("1.0","end");self.text.insert("1.0","DRY-RUN ONLY. No entries were removed.\n\n"+v)
+
+class InteractiveRebaseEditor(tk.Toplevel):
+    """Visual interactive-rebase plan editor with automatic safety branch."""
+    ACTIONS=("pick","reword","edit","squash","fixup","drop")
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Interactive Rebase Editor");self.geometry("1220x800");self.minsize(1000,680);self.rows=[];self._build();self.load_commits()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x");self.base=tk.StringVar(value="HEAD~10")
+        ttk.Label(top,text="Rebase onto / edit commits after").pack(side="left");ttk.Entry(top,textvariable=self.base,width=24).pack(side="left",padx=5)
+        for text,cmd in [("Load plan",self.load_commits),("Move up",lambda:self.move(-1)),("Move down",lambda:self.move(1)),("Set action",self.set_action),("Start rebase",self.execute),("Continue",lambda:self.rebase_cmd("--continue")),("Skip",lambda:self.rebase_cmd("--skip")),("Abort",lambda:self.rebase_cmd("--abort"))]:ttk.Button(top,text=text,command=cmd).pack(side="left",padx=2)
+        pane=ttk.Panedwindow(self,orient="vertical");pane.pack(fill="both",expand=True,padx=8,pady=5);a=ttk.Frame(pane);b=ttk.Frame(pane);pane.add(a,weight=3);pane.add(b,weight=2)
+        self.tree=ttk.Treeview(a,columns=("action","hash","subject","author","date"),show="headings",selectmode="browse")
+        for c,t,w in [("action","Action",90),("hash","Commit",90),("subject","Subject",520),("author","Author",180),("date","Date",110)]:self.tree.heading(c,text=t);self.tree.column(c,width=w,anchor="w")
+        self.tree.pack(fill="both",expand=True)
+        self.preview=tk.Text(b,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.preview.pack(fill="both",expand=True);self.tree.bind("<<TreeviewSelect>>",lambda e:self.show_commit())
+        ttk.Label(self,text="A timestamped gccc-backup/pre-rebase-* branch is created before execution. The working tree must be clean. Merge commits are not rewritten by this first-parent linear editor.",padding=8).pack(fill="x")
+    def clean(self):return git(self.repo,"status","--porcelain")=="Completed successfully."
+    def load_commits(self):
+        base=self.base.get().strip()
+        if not base:return
+        try:
+            raw=git(self.repo,"log","--reverse","--first-parent","--date=short","--pretty=format:%H%x1f%h%x1f%ad%x1f%an%x1f%s",f"{base}..HEAD");self.rows=[];self.tree.delete(*self.tree.get_children())
+            for line in raw.splitlines():
+                p=line.split("\x1f",4)
+                if len(p)==5:self.rows.append({"action":"pick","full":p[0],"short":p[1],"date":p[2],"author":p[3],"subject":p[4]})
+            self.render();self.update_plan_preview()
+        except Exception as e:messagebox.showerror("Interactive rebase",str(e),parent=self)
+    def render(self):
+        self.tree.delete(*self.tree.get_children())
+        for i,r in enumerate(self.rows):self.tree.insert("","end",iid=str(i),values=(r["action"],r["short"],r["subject"],r["author"],r["date"]))
+    def selected_index(self):
+        s=self.tree.selection();return int(s[0]) if s else None
+    def move(self,delta):
+        i=self.selected_index()
+        if i is None or not 0<=i+delta<len(self.rows):return
+        self.rows[i],self.rows[i+delta]=self.rows[i+delta],self.rows[i];self.render();self.tree.selection_set(str(i+delta));self.update_plan_preview()
+    def set_action(self):
+        i=self.selected_index()
+        if i is None:return
+        win=tk.Toplevel(self);win.title("Choose rebase action");win.geometry("300x290")
+        for action in self.ACTIONS:ttk.Button(win,text=action,command=lambda a=action:(self._apply_action(i,a),win.destroy())).pack(fill="x",padx=16,pady=4)
+    def _apply_action(self,i,action):
+        if i==0 and action in ("squash","fixup"):return messagebox.showwarning("Rebase plan","The first commit cannot squash/fixup into a previous commit.",parent=self)
+        self.rows[i]["action"]=action;self.render();self.tree.selection_set(str(i));self.update_plan_preview()
+    def plan(self):return "\n".join(f'{r["action"]} {r["full"]} {r["subject"]}' for r in self.rows)+"\n"
+    def update_plan_preview(self):self.preview.delete("1.0","end");self.preview.insert("1.0","REBASE TODO\n"+"="*72+"\n"+self.plan())
+    def show_commit(self):
+        i=self.selected_index()
+        if i is None:return
+        try:v=git(self.repo,"show","--stat","--oneline",self.rows[i]["full"])
+        except Exception as e:v=str(e)
+        self.preview.delete("1.0","end");self.preview.insert("1.0",v+"\n\nPLAN\n"+"="*72+"\n"+self.plan())
+    def execute(self):
+        import datetime,tempfile,os,sys
+        if not self.rows:return
+        if not self.clean():return messagebox.showwarning("Interactive rebase","Commit or stash changes before rebasing.",parent=self)
+        if not messagebox.askyesno("Start interactive rebase",f"Rewrite {len(self.rows)} commit(s) after {self.base.get()}? A backup branch will be created first.",parent=self):return
+        backup=f"gccc-backup/pre-rebase-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}"
+        try:
+            git(self.repo,"branch",backup)
+            todo_fd,todo=tempfile.mkstemp(prefix="gccc-rebase-",suffix=".todo");os.close(todo_fd);Path(todo).write_text(self.plan(),encoding="utf-8")
+            editor_fd,editor=tempfile.mkstemp(prefix="gccc-editor-",suffix=".py");os.close(editor_fd)
+            Path(editor).write_text("import shutil,sys\nshutil.copyfile(sys.argv[1],sys.argv[2])\n",encoding="utf-8")
+            env=os.environ.copy();env["GIT_SEQUENCE_EDITOR"]=f'\"{sys.executable}\" \"{editor}\" \"{todo}\"'
+            r=subprocess.run(["git","rebase","-i",self.base.get().strip()],cwd=self.repo,text=True,capture_output=True,timeout=1800,env=env,encoding="utf-8",errors="replace")
+            out=(r.stdout+"\n"+r.stderr).strip()
+            if r.returncode:messagebox.showwarning("Rebase paused or failed",f"Backup: {backup}\n\n{out}\n\nResolve conflicts, then use Continue, Skip, or Abort.",parent=self)
+            else:messagebox.showinfo("Rebase complete",f"Rebase completed. Safety branch: {backup}\n\n{out}",parent=self)
+        except Exception as e:messagebox.showerror("Interactive rebase",str(e),parent=self)
+        finally:
+            for p in (locals().get("todo"),locals().get("editor")):
+                if p:
+                    try:os.unlink(p)
+                    except OSError:pass
+    def rebase_cmd(self,arg):
+        try:messagebox.showinfo("Rebase",git(self.repo,"rebase",arg),parent=self);self.load_commits()
+        except Exception as e:messagebox.showerror("Rebase",str(e),parent=self)
+
+class UnifiedRefBrowser(tk.Toplevel):
+    """Unified browser for branches, remotes, tags, stash and other refs."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Unified Ref Browser");self.geometry("1250x780");self.rows=[];self._build();self.refresh()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x");self.query=tk.StringVar();ttk.Entry(top,textvariable=self.query).pack(side="left",fill="x",expand=True);self.query.trace_add("write",lambda *_:self.render())
+        for t,c in [("Refresh",self.refresh),("Checkout / switch",self.checkout),("Create branch here",self.branch),("Delete local branch/tag",self.delete),("Copy ref",self.copy_ref)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        pane=ttk.Panedwindow(self,orient="vertical");pane.pack(fill="both",expand=True,padx=8,pady=5);a=ttk.Frame(pane);b=ttk.Frame(pane);pane.add(a,weight=3);pane.add(b,weight=2)
+        self.tree=ttk.Treeview(a,columns=("type","name","hash","date","subject"),show="headings")
+        for c,t,w in [("type","Type",110),("name","Reference",360),("hash","Commit",100),("date","Date",120),("subject","Subject",480)]:self.tree.heading(c,text=t);self.tree.column(c,width=w,anchor="w")
+        self.tree.pack(fill="both",expand=True);self.tree.bind("<<TreeviewSelect>>",lambda e:self.details())
+        self.text=tk.Text(b,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True)
+    def kind(self,name):
+        if name.startswith("refs/heads/"):return "Local branch"
+        if name.startswith("refs/remotes/"):return "Remote branch"
+        if name.startswith("refs/tags/"):return "Tag"
+        if name.startswith("refs/stash"):return "Stash"
+        if name.startswith("refs/notes/"):return "Note"
+        return "Other"
+    def refresh(self):
+        try:
+            fmt="%(refname)%09%(objectname)%09%(objectname:short)%09%(committerdate:short)%09%(subject)";raw=git(self.repo,"for-each-ref",f"--format={fmt}","--sort=refname");self.rows=[]
+            for line in raw.splitlines():
+                p=line.split("\t",4)
+                if len(p)==5:self.rows.append({"type":self.kind(p[0]),"name":p[0],"full":p[1],"short":p[2],"date":p[3],"subject":p[4]})
+            self.render()
+        except Exception as e:messagebox.showerror("Refs",str(e),parent=self)
+    def render(self):
+        q=self.query.get().lower();self.filtered=[r for r in self.rows if not q or q in (r["type"]+" "+r["name"]+" "+r["subject"]).lower()];self.tree.delete(*self.tree.get_children())
+        for i,r in enumerate(self.filtered):self.tree.insert("","end",iid=str(i),values=(r["type"],r["name"],r["short"],r["date"],r["subject"]))
+    def selected(self):
+        s=self.tree.selection();return self.filtered[int(s[0])] if s else None
+    def details(self):
+        r=self.selected()
+        if not r:return
+        try:v=git(self.repo,"show","--stat","--decorate","--oneline",r["full"])
+        except Exception as e:v=str(e)
+        self.text.delete("1.0","end");self.text.insert("1.0",v)
+    def checkout(self):
+        r=self.selected()
+        if not r:return
+        try:
+            if r["type"]=="Local branch":out=git(self.repo,"switch",r["name"].replace("refs/heads/","",1))
+            else:
+                if not messagebox.askyesno("Checkout",f"Checkout {r['name']} in detached HEAD mode?",parent=self):return
+                out=git(self.repo,"switch","--detach",r["full"])
+            messagebox.showinfo("Checkout",out,parent=self)
+        except Exception as e:messagebox.showerror("Checkout",str(e),parent=self)
+    def branch(self):
+        import re
+        r=self.selected()
+        if not r:return
+        n=simpledialog.askstring("Create branch","New branch name:",parent=self)
+        if n and re.match(r"^[A-Za-z0-9._/-]+$",n):
+            try:messagebox.showinfo("Branch",git(self.repo,"branch",n,r["full"]),parent=self);self.refresh()
+            except Exception as e:messagebox.showerror("Branch",str(e),parent=self)
+    def delete(self):
+        r=self.selected()
+        if not r:return
+        try:
+            if r["type"]=="Local branch":
+                n=r["name"].replace("refs/heads/","",1)
+                if messagebox.askyesno("Delete branch",f"Delete merged local branch {n}?",parent=self):messagebox.showinfo("Delete",git(self.repo,"branch","-d",n),parent=self)
+            elif r["type"]=="Tag":
+                n=r["name"].replace("refs/tags/","",1)
+                if messagebox.askyesno("Delete tag",f"Delete local tag {n}?",parent=self):messagebox.showinfo("Delete",git(self.repo,"tag","-d",n),parent=self)
+            else:return messagebox.showinfo("Delete","Deletion is limited to local branches and local tags.",parent=self)
+            self.refresh()
+        except Exception as e:messagebox.showerror("Delete",str(e),parent=self)
+    def copy_ref(self):
+        r=self.selected()
+        if r:self.clipboard_clear();self.clipboard_append(r["name"]);messagebox.showinfo("Reference","Copied ref name.",parent=self)
+
+class RepositoryHistoryBrowser(tk.Toplevel):
+    """Browse repository trees and file contents at any commit without checkout."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Repository History Browser");self.geometry("1350x820");self.minsize(1050,700);self.rows=[];self.current_ref="HEAD";self._build();self.load_commits()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x");self.ref=tk.StringVar(value="HEAD");ttk.Entry(top,textvariable=self.ref,width=30).pack(side="left");ttk.Button(top,text="Load ref",command=self.load_tree).pack(side="left",padx=3);ttk.Button(top,text="Export selected file",command=self.export_file).pack(side="left");ttk.Button(top,text="Open commit inspector",command=lambda:CommitInspector(self,self.repo)).pack(side="left",padx=3)
+        pane=ttk.Panedwindow(self,orient="horizontal");pane.pack(fill="both",expand=True,padx=8,pady=5);left=ttk.Frame(pane);middle=ttk.Frame(pane);right=ttk.Frame(pane);pane.add(left,weight=2);pane.add(middle,weight=3);pane.add(right,weight=5)
+        ttk.Label(left,text="Recent commits",font=("Segoe UI Semibold",10)).pack(anchor="w");self.commits=tk.Listbox(left,font=("Consolas",9));self.commits.pack(fill="both",expand=True);self.commits.bind("<<ListboxSelect>>",lambda e:self.select_commit())
+        ttk.Label(middle,text="Repository tree",font=("Segoe UI Semibold",10)).pack(anchor="w");self.tree=ttk.Treeview(middle,columns=("type","size"),show="tree headings");self.tree.heading("#0",text="Path");self.tree.heading("type",text="Type");self.tree.heading("size",text="Size");self.tree.column("#0",width=360);self.tree.column("type",width=80);self.tree.column("size",width=90);self.tree.pack(fill="both",expand=True);self.tree.bind("<<TreeviewOpen>>",lambda e:self.expand());self.tree.bind("<<TreeviewSelect>>",lambda e:self.open_selected())
+        ttk.Label(right,text="Historical file content",font=("Segoe UI Semibold",10)).pack(anchor="w");self.content=tk.Text(right,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.content.pack(fill="both",expand=True)
+    def load_commits(self):
+        raw=git(self.repo,"log","-150","--date=short","--pretty=format:%H%x1f%h%x1f%ad%x1f%s");self.rows=[];self.commits.delete(0,"end")
+        for line in raw.splitlines():
+            p=line.split("\x1f",3)
+            if len(p)==4:self.rows.append(p);self.commits.insert("end",f"{p[1]}  {p[2]}  {p[3]}")
+        self.load_tree()
+    def select_commit(self):
+        s=self.commits.curselection()
+        if s:self.ref.set(self.rows[s[0]][0]);self.load_tree()
+    def entries(self,path=""):
+        spec=f"{self.current_ref}:{path}" if path else self.current_ref
+        raw=git(self.repo,"ls-tree","-l",spec);out=[]
+        for line in raw.splitlines():
+            if "\t" not in line:continue
+            meta,name=line.split("\t",1);p=meta.split();out.append({"mode":p[0],"type":p[1],"hash":p[2],"size":p[3] if len(p)>3 else "-","name":name})
+        return out
+    def load_tree(self):
+        self.current_ref=self.ref.get().strip() or "HEAD";self.tree.delete(*self.tree.get_children());self.content.delete("1.0","end")
+        try:
+            for e in self.entries():
+                iid=self.tree.insert("","end",text=e["name"],values=(e["type"],e["size"]),tags=(e["hash"],e["type"],e["name"]))
+                if e["type"]=="tree":self.tree.insert(iid,"end",text="Loading...")
+        except Exception as e:messagebox.showerror("History browser",str(e),parent=self)
+    def node_path(self,iid):
+        parts=[]
+        while iid:
+            parts.append(self.tree.item(iid,"text"));iid=self.tree.parent(iid)
+        return "/".join(reversed(parts))
+    def expand(self):
+        iid=self.tree.focus()
+        if not iid:return
+        children=self.tree.get_children(iid)
+        if len(children)==1 and self.tree.item(children[0],"text")=="Loading...":
+            self.tree.delete(children[0]);path=self.node_path(iid)
+            try:
+                for e in self.entries(path):
+                    child=self.tree.insert(iid,"end",text=e["name"],values=(e["type"],e["size"]),tags=(e["hash"],e["type"],path+"/"+e["name"]))
+                    if e["type"]=="tree":self.tree.insert(child,"end",text="Loading...")
+            except Exception as e:messagebox.showerror("History browser",str(e),parent=self)
+    def selected_path(self):
+        s=self.tree.selection();return self.node_path(s[0]) if s else None
+    def open_selected(self):
+        s=self.tree.selection()
+        if not s:return
+        iid=s[0];vals=self.tree.item(iid,"values")
+        if not vals or vals[0]!="blob":return
+        path=self.node_path(iid)
+        try:v=git(self.repo,"show",f"{self.current_ref}:{path}");self.content.delete("1.0","end");self.content.insert("1.0",v)
+        except Exception as e:self.content.delete("1.0","end");self.content.insert("1.0","Binary or unreadable content.\n\n"+str(e))
+    def export_file(self):
+        path=self.selected_path()
+        if not path:return
+        s=self.tree.selection();vals=self.tree.item(s[0],"values")
+        if not vals or vals[0]!="blob":return messagebox.showinfo("Export","Select a file, not a directory.",parent=self)
+        target=filedialog.asksaveasfilename(parent=self,initialfile=Path(path).name)
+        if target:
+            try:
+                r=subprocess.run(["git","show",f"{self.current_ref}:{path}"],cwd=self.repo,capture_output=True,timeout=120)
+                if r.returncode:raise GitError(r.stderr.decode("utf-8",errors="replace"))
+                Path(target).write_bytes(r.stdout);messagebox.showinfo("Export",f"Saved {target}",parent=self)
+            except Exception as e:messagebox.showerror("Export",str(e),parent=self)

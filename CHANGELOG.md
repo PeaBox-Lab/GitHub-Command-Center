@@ -1,23 +1,22 @@
 # Changelog
 
-## v3.3.0
-- Added Partial Staging Center with hunk parsing, preview, stage-hunk and unstage-hunk workflows
-- Added whole-file stage/unstage fallback for binary, untracked or complex files
-- Added Reflog Recovery Center with cross-ref reflog browsing and commit inspection
-- Added safe recovery-branch creation at selected reflog commits
-- Added detached-checkout warning and reflog-expiry dry-run preview
-- Integrated both capabilities into the redesigned sidebar and Command Palette
-- Retained all v0.1-v3.2 functionality
+## v3.4.0
+- Added Interactive Rebase Editor with reorder, pick, reword, edit, squash, fixup and drop
+- Added backup branch and clean-tree safety gate before interactive rebase
+- Added continue, skip and abort controls
+- Added Unified Ref Browser covering branches, remotes, tags, stash, notes and other refs
+- Added safe branch creation, switching, detached checkout and limited deletion from refs
+- Added Repository History Browser for historical trees, file viewing and binary-safe export
+- Integrated all three centers into sidebar navigation and Command Palette
+- Retained all v0.1-v3.3 functionality
 
+## v3.3.0
+- Added Partial Staging and Reflog Recovery
 ## v3.2.0
-- Redesigned Local Git Workspace and navigation
+- Redesigned Local Git Workspace
 ## v3.1.0
 - Added Background Jobs, Preferences, Portfolio History and Self-Test
 ## v3.0.0
-- Added Plugin Manager, Batch Operations, Operations Dashboard and exports
-## v2.0-v2.2
-- Added extensibility, Hooks, LFS, automation, signing, changelog, migration, credential hygiene, release policy and metrics
-## v1.0-v1.6
-- Added portfolio management, review, sync, cleanup, patches, bisect, inspection, submodules, tasks and handover
-## v0.1-v0.9
-- Established GitHub dashboard, local Git, visual history/conflicts, Releases, PRs, Actions, Security, Health, Worktrees, Compare and Recovery
+- Added Plugin Manager, Batch Operations, Dashboard and exports
+## v0.1-v2.2
+- Established the full Git, GitHub, release, security, quality and extensibility platform
