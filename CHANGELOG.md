@@ -47,3 +47,9 @@
 - Added remote-prune workflow from branch cleanup.
 - Added Project Snapshot generator for handover and continuity.
 - Added Markdown export/copy of status, recent history, tags, remotes, documentation inventory and private notes.
+
+## v1.4.0
+- Added Patch Center for diff export, format-patch, validation, git apply and git am workflows.
+- Added Regression Finder using guided Git bisect.
+- Added clean-working-tree safety gate before starting bisect.
+- Retained all prior GitHub, Git, security, release, health, recovery, review and handover functionality.

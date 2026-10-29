@@ -39,3 +39,9 @@ Use Cleanup after merges. The app only enables normal deletion for branches Git 
 
 ## Project Snapshot (v1.3)
 Use Snapshot before a long pause, release handover or major refactor. Export the generated Markdown to retain branch/status, recent commits, tags, remotes, key documentation and your local repository notes.
+
+## Patch Center (v1.4)
+Use Patches when sharing selected changes without pushing a branch. Validate received patches with Inspect Patch before Apply Patch. Use Create patch series and Apply mailbox for commit-preserving `format-patch` / `git am` workflows.
+
+## Regression Finder (v1.4)
+Open Bisect with a clean working tree. Enter a ref where the behavior was known good and a ref where it is bad. Test each revision Git checks out and choose Mark good, Mark bad, or Skip until Git identifies the first bad commit. Reset when finished.

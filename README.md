@@ -30,3 +30,7 @@ Extract and run `run_windows.bat`. Requires Python 3.10+ and Git. GitHub CLI is 
 ## v1.3 additions
 - **Branch Cleanup Center:** inventories local branches, merged state, last-commit date, upstream and worktree usage. It only permits normal `git branch -d` deletion for branches already merged into the current branch, while protecting the current branch and branches checked out in worktrees.
 - **Project Snapshot:** generates an exportable Markdown handover containing branch/status, recent commits, tags, remotes, detected project documentation and private repository notes.
+
+## v1.4 additions
+- **Patch Center:** export working-tree or staged changes as `.patch`, generate a `git format-patch` commit series, inspect patch contents, run `git apply --check`, apply a validated patch, or apply email-style patch series using `git am`.
+- **Regression Finder:** guided `git bisect` UI with known good/bad refs, Good/Bad/Skip decisions and reset. It requires a clean working tree before starting.

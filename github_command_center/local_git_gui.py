@@ -23,7 +23,7 @@ class LocalGitWindow(tk.Toplevel):
         left=ttk.Frame(pane);right=ttk.Frame(pane);pane.add(left,weight=3);pane.add(right,weight=2)
         self.files=ttk.Treeview(left,columns=("state","file"),show="headings",selectmode="extended");self.files.heading("state",text="State");self.files.heading("file",text="File");self.files.column("state",width=70);self.files.column("file",width=470);self.files.pack(fill="both",expand=True)
         foot=ttk.Frame(left);foot.pack(fill="x",pady=5)
-        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Release Center",lambda:ReleaseCenter(self,self.repo)),("Pull Requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Security",lambda:SecurityCenter(self,self.repo)),("Health",lambda:RepositoryHealthCenter(self,self.repo)),("Worktrees",lambda:WorktreeCenter(self,self.repo)),("Compare",lambda:RepositoryCompareCenter(self,self.repo)),("Recovery",lambda:BackupRestoreCenter(self,self.repo)),("Repo Manager",lambda:RepositoryManager(self,self.repo)),("Diagnostics",lambda:SettingsDiagnosticsCenter(self,self.repo)),("Smart Sync",lambda:SyncCenter(self,self.repo)),("Search",lambda:SearchCenter(self,self.repo)),("Review",lambda:ChangeReviewCenter(self,self.repo)),("Notes",lambda:RepositoryNotesCenter(self,self.repo)),("Cleanup",lambda:BranchCleanupCenter(self,self.repo)),("Snapshot",lambda:ProjectSnapshotCenter(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
+        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Release Center",lambda:ReleaseCenter(self,self.repo)),("Pull Requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Security",lambda:SecurityCenter(self,self.repo)),("Health",lambda:RepositoryHealthCenter(self,self.repo)),("Worktrees",lambda:WorktreeCenter(self,self.repo)),("Compare",lambda:RepositoryCompareCenter(self,self.repo)),("Recovery",lambda:BackupRestoreCenter(self,self.repo)),("Repo Manager",lambda:RepositoryManager(self,self.repo)),("Diagnostics",lambda:SettingsDiagnosticsCenter(self,self.repo)),("Smart Sync",lambda:SyncCenter(self,self.repo)),("Search",lambda:SearchCenter(self,self.repo)),("Review",lambda:ChangeReviewCenter(self,self.repo)),("Notes",lambda:RepositoryNotesCenter(self,self.repo)),("Cleanup",lambda:BranchCleanupCenter(self,self.repo)),("Snapshot",lambda:ProjectSnapshotCenter(self,self.repo)),("Patches",lambda:PatchCenter(self,self.repo)),("Bisect",lambda:BisectCenter(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
         self.tabs=ttk.Notebook(right);self.tabs.pack(fill="both",expand=True)
         self.texts={}
         for n in ["History","Branches","Stash","Tags","Remotes","Conflicts"]:
@@ -1219,3 +1219,80 @@ class ProjectSnapshotCenter(tk.Toplevel):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".md",initialfile=f"{Path(self.repo).name}-snapshot.md")
         if p:Path(p).write_text(self.snapshot,encoding="utf-8");messagebox.showinfo("Snapshot",f"Saved {p}",parent=self)
     def copy(self):self.clipboard_clear();self.clipboard_append(self.snapshot);messagebox.showinfo("Snapshot","Copied to clipboard.",parent=self)
+
+class PatchCenter(tk.Toplevel):
+    """Create, inspect, validate and apply Git patch files without leaving the GUI."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Patch Center");self.geometry("1100x740");self.minsize(900,620);self._build()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x")
+        for t,c in [("Export working diff",self.export_working),("Export staged diff",self.export_staged),("Create patch series",self.format_patch),("Inspect patch",self.inspect_patch),("Apply patch",self.apply_patch),("Apply mailbox",self.apply_mailbox)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        self.text=tk.Text(self,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
+        self.text.insert("1.0","Patch Center\n\nExport normal or staged changes as .patch files, create a format-patch series from commits, inspect/check a patch before applying it, or apply email-style patches with git am.\n")
+    def save_diff(self,staged):
+        p=filedialog.asksaveasfilename(parent=self,defaultextension=".patch",initialfile="staged.patch" if staged else "working-tree.patch",filetypes=[("Patch","*.patch"),("All files","*")])
+        if not p:return
+        try:
+            args=["diff"]+(["--cached"] if staged else []);out=git(self.repo,*args)
+            if out=="Completed successfully.":return messagebox.showinfo("Patch","There are no changes to export.",parent=self)
+            Path(p).write_text(out+"\n",encoding="utf-8");messagebox.showinfo("Patch",f"Saved {p}",parent=self)
+        except Exception as e:messagebox.showerror("Patch",str(e),parent=self)
+    def export_working(self):self.save_diff(False)
+    def export_staged(self):self.save_diff(True)
+    def format_patch(self):
+        base=simpledialog.askstring("Patch series","Base ref, e.g. main or v1.3.0:",initialvalue="main",parent=self)
+        if not base:return
+        folder=filedialog.askdirectory(parent=self,title="Choose output folder")
+        if folder:
+            try:messagebox.showinfo("Patch series",git(self.repo,"format-patch","-o",folder,f"{base}..HEAD"),parent=self)
+            except Exception as e:messagebox.showerror("Patch series",str(e),parent=self)
+    def inspect_patch(self):
+        p=filedialog.askopenfilename(parent=self,filetypes=[("Patch","*.patch"),("All files","*")])
+        if not p:return
+        try:
+            content=Path(p).read_text(encoding="utf-8",errors="replace");check=""
+            try:check=git(self.repo,"apply","--check",p)
+            except Exception as e:check=str(e)
+            self.text.delete("1.0","end");self.text.insert("1.0",f"APPLY CHECK\n{'='*72}\n{check}\n\nPATCH CONTENT\n{'='*72}\n{content}")
+        except Exception as e:messagebox.showerror("Patch",str(e),parent=self)
+    def apply_patch(self):
+        p=filedialog.askopenfilename(parent=self,filetypes=[("Patch","*.patch"),("All files","*")])
+        if not p:return
+        try:
+            git(self.repo,"apply","--check",p)
+            if messagebox.askyesno("Apply patch",f"Patch check passed. Apply?\n{p}",parent=self):messagebox.showinfo("Patch",git(self.repo,"apply",p),parent=self)
+        except Exception as e:messagebox.showerror("Patch",str(e),parent=self)
+    def apply_mailbox(self):
+        files=filedialog.askopenfilenames(parent=self,filetypes=[("Patch","*.patch"),("All files","*")])
+        if files and messagebox.askyesno("Apply mailbox",f"Apply {len(files)} patch(es) as commits using git am?",parent=self):
+            try:messagebox.showinfo("Mailbox",git(self.repo,"am",*files),parent=self)
+            except Exception as e:messagebox.showerror("Mailbox",str(e)+"\n\nResolve conflicts then run git am --continue, or abort with git am --abort.",parent=self)
+
+class BisectCenter(tk.Toplevel):
+    """Guided Git bisect for finding the commit that introduced a regression."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Regression Finder - Git Bisect");self.geometry("1000x680");self._build();self.refresh()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x")
+        self.good=tk.StringVar();self.bad=tk.StringVar(value="HEAD")
+        ttk.Label(top,text="Known good ref").pack(side="left");ttk.Entry(top,textvariable=self.good,width=22).pack(side="left",padx=3);ttk.Label(top,text="Known bad ref").pack(side="left");ttk.Entry(top,textvariable=self.bad,width=22).pack(side="left",padx=3)
+        for t,c in [("Start",self.start),("Mark good",lambda:self.mark("good")),("Mark bad",lambda:self.mark("bad")),("Skip",lambda:self.mark("skip")),("Reset",self.reset)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        self.text=tk.Text(self,wrap="word",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
+    def status(self):
+        try:return git(self.repo,"status","--short","--branch")+"\n\nCurrent commit:\n"+git(self.repo,"show","-s","--date=short","--pretty=format:%H%n%ad%n%an%n%s","HEAD")
+        except Exception as e:return str(e)
+    def refresh(self):self.text.delete("1.0","end");self.text.insert("1.0","GIT BISECT\n"+"="*72+"\n\n"+self.status()+"\n\nWorkflow: start with a known good and bad ref, test the checked-out revision, then mark it Good, Bad, or Skip. Git narrows the regression to one commit.")
+    def clean(self):
+        s=git(self.repo,"status","--porcelain");return s=="Completed successfully."
+    def start(self):
+        if not self.clean():return messagebox.showwarning("Bisect","Commit or stash changes before starting bisect.",parent=self)
+        g=self.good.get().strip();b=self.bad.get().strip()
+        if not g or not b:return messagebox.showwarning("Bisect","Enter known good and bad refs.",parent=self)
+        try:git(self.repo,"bisect","start",b,g);self.refresh()
+        except Exception as e:messagebox.showerror("Bisect",str(e),parent=self)
+    def mark(self,state):
+        try:out=git(self.repo,"bisect",state);self.refresh();messagebox.showinfo("Bisect",out,parent=self)
+        except Exception as e:messagebox.showerror("Bisect",str(e),parent=self)
+    def reset(self):
+        try:messagebox.showinfo("Bisect",git(self.repo,"bisect","reset"),parent=self);self.refresh()
+        except Exception as e:messagebox.showerror("Bisect",str(e),parent=self)
