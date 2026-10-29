@@ -1,3 +1,3 @@
-# GitHub Command Center 3.4.0 Release Notes
+# GitHub Command Center 3.5.0 Release Notes
 
-Version 3.4 adds advanced history editing, unified reference management and historical repository browsing. Interactive rebase includes backup and clean-tree safeguards, while ref and history browsing avoid unnecessary checkouts and destructive commands.
+Version 3.5 adds essential support for large repositories, safe maintenance, commit annotations and professional external diff/merge tools. The release preserves the non-destructive defaults established in prior versions.

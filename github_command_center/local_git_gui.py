@@ -1514,7 +1514,7 @@ class CommandPalette(tk.Toplevel):
             ("Regression Finder",lambda:BisectCenter(self,repo),"bisect regression"),("Commit Inspector",lambda:CommitInspector(self,repo),"blame file history commit"),
             ("Submodule Center",lambda:SubmoduleCenter(self,repo),"submodule recursive"),("Repository Tasks",lambda:TaskCenter(self,repo),"checklist tasks"),
             ("Archive & Handover",lambda:ArchiveCenter(self,repo),"zip bundle support pack"),("Git Hooks Manager",lambda:HooksCenter(self,repo),"hooks pre-commit commit-msg"),
-            ("Git LFS Center",lambda:LFSCenter(self,repo),"large files lfs track"),("Automation Recipes",lambda:AutomationCenter(self,repo),"automation recipes checks"),("Identity & Signing",lambda:IdentitySigningCenter(self,repo),"identity email gpg sign verify"),("Commit Message Studio",lambda:CommitMessageStudio(self,repo),"conventional commits message"),("Changelog Studio",lambda:ChangelogStudio(self,repo),"changelog release notes commits"),("Remote Migration & Mirror",lambda:RemoteMigrationCenter(self,repo),"remote backup mirror migration"),("Credential & Remote Hygiene",lambda:CredentialAuditCenter(self,repo),"credentials helper url ssh https auth"),("Release Policy Center",lambda:ReleasePolicyCenter(self,repo),"release policy gates semver version"),("Repository Metrics",lambda:RepositoryMetricsCenter(self,repo),"metrics contributors languages commits activity"),("Plugin Manager",lambda:PluginManager(self,repo),"plugins extensions commands"),("Batch Operations",lambda:BatchOperationsCenter(self,repo),"batch multiple repositories portfolio"),("Operations Dashboard",lambda:RepositoryDashboardCenter(self,repo),"dashboard operational status next action"),("Repository Data Export",lambda:DataExportCenter(self,repo),"export json csv commits metadata"),("Background Jobs",lambda:BackgroundJobsCenter(self,repo),"jobs queue background cancel logs"),("Preferences",lambda:PreferencesCenter(self,repo),"preferences theme appearance defaults"),("Portfolio History",lambda:PortfolioHistoryCenter(self,repo),"sqlite portfolio history snapshots trends"),("Self-Test & Readiness",lambda:SelfTestCenter(self,repo),"self test readiness smoke diagnostics"),("Partial Staging",lambda:PartialStagingCenter(self,repo),"partial stage hunk line add patch"),("Reflog Recovery",lambda:ReflogRecoveryCenter(self,repo),"reflog recover lost commit reset checkout branch"),("Interactive Rebase Editor",lambda:InteractiveRebaseEditor(self,repo),"interactive rebase squash fixup reword edit drop reorder"),("Unified Ref Browser",lambda:UnifiedRefBrowser(self,repo),"refs branches remotes tags stash notes"),("Repository History Browser",lambda:RepositoryHistoryBrowser(self,repo),"history browse tree file commit export")]
+            ("Git LFS Center",lambda:LFSCenter(self,repo),"large files lfs track"),("Automation Recipes",lambda:AutomationCenter(self,repo),"automation recipes checks"),("Identity & Signing",lambda:IdentitySigningCenter(self,repo),"identity email gpg sign verify"),("Commit Message Studio",lambda:CommitMessageStudio(self,repo),"conventional commits message"),("Changelog Studio",lambda:ChangelogStudio(self,repo),"changelog release notes commits"),("Remote Migration & Mirror",lambda:RemoteMigrationCenter(self,repo),"remote backup mirror migration"),("Credential & Remote Hygiene",lambda:CredentialAuditCenter(self,repo),"credentials helper url ssh https auth"),("Release Policy Center",lambda:ReleasePolicyCenter(self,repo),"release policy gates semver version"),("Repository Metrics",lambda:RepositoryMetricsCenter(self,repo),"metrics contributors languages commits activity"),("Plugin Manager",lambda:PluginManager(self,repo),"plugins extensions commands"),("Batch Operations",lambda:BatchOperationsCenter(self,repo),"batch multiple repositories portfolio"),("Operations Dashboard",lambda:RepositoryDashboardCenter(self,repo),"dashboard operational status next action"),("Repository Data Export",lambda:DataExportCenter(self,repo),"export json csv commits metadata"),("Background Jobs",lambda:BackgroundJobsCenter(self,repo),"jobs queue background cancel logs"),("Preferences",lambda:PreferencesCenter(self,repo),"preferences theme appearance defaults"),("Portfolio History",lambda:PortfolioHistoryCenter(self,repo),"sqlite portfolio history snapshots trends"),("Self-Test & Readiness",lambda:SelfTestCenter(self,repo),"self test readiness smoke diagnostics"),("Partial Staging",lambda:PartialStagingCenter(self,repo),"partial stage hunk line add patch"),("Reflog Recovery",lambda:ReflogRecoveryCenter(self,repo),"reflog recover lost commit reset checkout branch"),("Interactive Rebase Editor",lambda:InteractiveRebaseEditor(self,repo),"interactive rebase squash fixup reword edit drop reorder"),("Unified Ref Browser",lambda:UnifiedRefBrowser(self,repo),"refs branches remotes tags stash notes"),("Repository History Browser",lambda:RepositoryHistoryBrowser(self,repo),"history browse tree file commit export"),("Sparse Checkout",lambda:SparseCheckoutCenter(self,repo),"sparse checkout cone large repository folders"),("Repository Maintenance",lambda:MaintenanceCenter(self,repo),"maintenance gc fsck objects commit graph"),("Git Notes",lambda:GitNotesCenter(self,repo),"git notes annotation metadata commit"),("Diff & Merge Tools",lambda:DiffMergeToolCenter(self,repo),"difftool mergetool vscode winmerge beyond compare kdiff3")]
         self.render()
     def render(self):
         q=self.q.get().lower().strip();self.filtered=[c for c in self.commands if not q or q in (c[0]+" "+c[2]).lower()];self.list.delete(0,"end")
@@ -2547,3 +2547,153 @@ class RepositoryHistoryBrowser(tk.Toplevel):
                 if r.returncode:raise GitError(r.stderr.decode("utf-8",errors="replace"))
                 Path(target).write_bytes(r.stdout);messagebox.showinfo("Export",f"Saved {target}",parent=self)
             except Exception as e:messagebox.showerror("Export",str(e),parent=self)
+
+class SparseCheckoutCenter(tk.Toplevel):
+    """Configure cone-mode sparse checkout for large repositories."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Sparse Checkout Center");self.geometry("1120x740");self._build();self.refresh()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x")
+        for t,c in [("Refresh",self.refresh),("Enable cone mode",self.enable),("Apply selected folders",self.apply),("Add folder",self.add),("Disable sparse checkout",self.disable)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        pane=ttk.Panedwindow(self,orient="horizontal");pane.pack(fill="both",expand=True,padx=8,pady=5);l=ttk.Frame(pane);r=ttk.Frame(pane);pane.add(l,weight=2);pane.add(r,weight=3)
+        ttk.Label(l,text="Top-level repository folders",font=("Segoe UI Semibold",10)).pack(anchor="w",pady=4)
+        self.folders=tk.Listbox(l,selectmode="extended",font=("Consolas",9));self.folders.pack(fill="both",expand=True)
+        ttk.Label(r,text="Current sparse-checkout configuration",font=("Segoe UI Semibold",10)).pack(anchor="w",pady=4)
+        self.text=tk.Text(r,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True)
+        ttk.Label(self,text="Sparse checkout changes which tracked paths are materialized locally. Commit or stash local changes before changing the sparse specification.",padding=8).pack(fill="x")
+    def clean(self):return git(self.repo,"status","--porcelain")=="Completed successfully."
+    def refresh(self):
+        try:
+            raw=git(self.repo,"ls-tree","-d","--name-only","HEAD");self.all_folders=[x for x in raw.splitlines() if x and x!="Completed successfully."];self.folders.delete(0,"end")
+            for x in self.all_folders:self.folders.insert("end",x)
+            enabled=git(self.repo,"config","--bool","core.sparseCheckout")
+            try:spec=git(self.repo,"sparse-checkout","list")
+            except Exception:spec="No sparse paths configured."
+            self.text.delete("1.0","end");self.text.insert("1.0",f"Enabled: {enabled}\n\n{spec}")
+            selected=set(spec.splitlines())
+            for i,x in enumerate(self.all_folders):
+                if x in selected:self.folders.selection_set(i)
+        except Exception as e:messagebox.showerror("Sparse checkout",str(e),parent=self)
+    def enable(self):
+        if not self.clean():return messagebox.showwarning("Sparse checkout","Commit or stash changes first.",parent=self)
+        try:messagebox.showinfo("Sparse checkout",git(self.repo,"sparse-checkout","init","--cone"),parent=self);self.refresh()
+        except Exception as e:messagebox.showerror("Sparse checkout",str(e),parent=self)
+    def chosen(self):return [self.all_folders[i] for i in self.folders.curselection()]
+    def apply(self):
+        paths=self.chosen()
+        if not paths:return messagebox.showwarning("Sparse checkout","Select at least one folder.",parent=self)
+        if not self.clean():return messagebox.showwarning("Sparse checkout","Commit or stash changes first.",parent=self)
+        if messagebox.askyesno("Apply sparse checkout","Materialize only the selected folders plus root-level files?",parent=self):
+            try:messagebox.showinfo("Sparse checkout",git(self.repo,"sparse-checkout","set",*paths),parent=self);self.refresh()
+            except Exception as e:messagebox.showerror("Sparse checkout",str(e),parent=self)
+    def add(self):
+        p=simpledialog.askstring("Sparse checkout","Folder path to add:",parent=self)
+        if p:
+            try:messagebox.showinfo("Sparse checkout",git(self.repo,"sparse-checkout","add",p),parent=self);self.refresh()
+            except Exception as e:messagebox.showerror("Sparse checkout",str(e),parent=self)
+    def disable(self):
+        if not self.clean():return messagebox.showwarning("Sparse checkout","Commit or stash changes first.",parent=self)
+        if messagebox.askyesno("Disable sparse checkout","Restore the full working tree?",parent=self):
+            try:messagebox.showinfo("Sparse checkout",git(self.repo,"sparse-checkout","disable"),parent=self);self.refresh()
+            except Exception as e:messagebox.showerror("Sparse checkout",str(e),parent=self)
+
+class MaintenanceCenter(tk.Toplevel):
+    """Inspect storage and run guarded Git maintenance operations."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Repository Maintenance Center");self.geometry("1100x730");self._build();self.refresh()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x")
+        for t,c in [("Refresh analysis",self.refresh),("Run auto maintenance",self.auto),("Run git gc",self.gc),("Verify objects",self.fsck),("Commit graph write",self.commit_graph),("Register scheduled maintenance",self.register)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        self.text=tk.Text(self,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
+        ttk.Label(self,text="Aggressive garbage collection and immediate reflog expiration are intentionally not exposed. Close other Git tools before manual maintenance.",padding=8).pack(fill="x")
+    def safe(self,*a):
+        try:return git(self.repo,*a)
+        except Exception as e:return "Unavailable: "+str(e)
+    def refresh(self):
+        count=self.safe("count-objects","-vH");packs=self.safe("verify-pack","-v",str(Path(self.repo)/".git"/"objects"/"pack"/"*.idx")) if False else "Pack details available through count-objects."
+        maint=self.safe("config","--get","maintenance.auto");report="REPOSITORY STORAGE & MAINTENANCE\n"+"="*72+"\n\nOBJECT DATABASE\n"+count+"\n\nMAINTENANCE CONFIG\nmaintenance.auto: "+maint+"\n\nRECENT INTEGRITY\nRun Verify objects for a full fsck."
+        self.text.delete("1.0","end");self.text.insert("1.0",report)
+    def run(self,args,title,confirm=None):
+        if confirm and not messagebox.askyesno(title,confirm,parent=self):return
+        try:out=git(self.repo,*args);messagebox.showinfo(title,out,parent=self);self.refresh()
+        except Exception as e:messagebox.showerror(title,str(e),parent=self)
+    def auto(self):self.run(["maintenance","run","--auto"],"Auto maintenance")
+    def gc(self):self.run(["gc"],"Git GC","Run normal git gc now? This may take time on a large repository.")
+    def fsck(self):self.run(["fsck","--full","--no-progress"],"Object verification")
+    def commit_graph(self):self.run(["commit-graph","write","--reachable","--changed-paths"],"Commit graph")
+    def register(self):self.run(["maintenance","register"],"Scheduled maintenance","Register this repository for Git's scheduled maintenance? Availability depends on your Git/OS scheduler integration.")
+
+class GitNotesCenter(tk.Toplevel):
+    """Attach non-rewriting annotations to commits using git notes."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Git Notes Center");self.geometry("1120x740");self.rows=[];self._build();self.load_commits()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x");self.ref=tk.StringVar(value="refs/notes/commits");ttk.Entry(top,textvariable=self.ref,width=28).pack(side="left")
+        for t,c in [("Load commits",self.load_commits),("Load note",self.load_note),("Save note",self.save_note),("Delete note",self.delete_note),("Push notes ref",self.push_notes)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        pane=ttk.Panedwindow(self,orient="horizontal");pane.pack(fill="both",expand=True,padx=8,pady=5);l=ttk.Frame(pane);r=ttk.Frame(pane);pane.add(l,weight=2);pane.add(r,weight=3)
+        self.list=tk.Listbox(l,font=("Consolas",9));self.list.pack(fill="both",expand=True);self.list.bind("<<ListboxSelect>>",lambda e:self.load_note())
+        self.note=tk.Text(r,wrap="word",undo=True,font=("Segoe UI",10));self.note.pack(fill="both",expand=True)
+        ttk.Label(self,text="Git notes do not rewrite commits. Notes are stored in a separate ref and are not pushed unless you explicitly push that notes ref.",padding=8).pack(fill="x")
+    def notes_name(self):return self.ref.get().replace("refs/notes/","") if self.ref.get().startswith("refs/notes/") else self.ref.get()
+    def load_commits(self):
+        raw=git(self.repo,"log","-200","--date=short","--pretty=format:%H%x1f%h%x1f%ad%x1f%s");self.rows=[];self.list.delete(0,"end")
+        for line in raw.splitlines():
+            p=line.split("\x1f",3)
+            if len(p)==4:self.rows.append(p);self.list.insert("end",f"{p[1]}  {p[2]}  {p[3]}")
+    def selected(self):
+        s=self.list.curselection();return self.rows[s[0]][0] if s else None
+    def load_note(self):
+        c=self.selected();self.note.delete("1.0","end")
+        if not c:return
+        try:v=git(self.repo,"notes",f"--ref={self.notes_name()}","show",c);self.note.insert("1.0","" if v=="Completed successfully." else v)
+        except Exception:self.note.insert("1.0","")
+    def save_note(self):
+        c=self.selected()
+        if not c:return
+        text=self.note.get("1.0","end-1c").strip()
+        if not text:return messagebox.showwarning("Git notes","Enter note text.",parent=self)
+        try:messagebox.showinfo("Git notes",git(self.repo,"notes",f"--ref={self.notes_name()}","add","-f","-m",text,c),parent=self)
+        except Exception as e:messagebox.showerror("Git notes",str(e),parent=self)
+    def delete_note(self):
+        c=self.selected()
+        if c and messagebox.askyesno("Delete note","Delete the note from the selected commit?",parent=self):
+            try:messagebox.showinfo("Git notes",git(self.repo,"notes",f"--ref={self.notes_name()}","remove",c),parent=self);self.load_note()
+            except Exception as e:messagebox.showerror("Git notes",str(e),parent=self)
+    def push_notes(self):
+        ref=self.ref.get().strip()
+        if messagebox.askyesno("Push notes",f"Push {ref} to origin?",parent=self):
+            try:messagebox.showinfo("Push notes",git(self.repo,"push","origin",ref),parent=self)
+            except Exception as e:messagebox.showerror("Push notes",str(e),parent=self)
+
+class DiffMergeToolCenter(tk.Toplevel):
+    """Configure and launch common external diff/merge tools."""
+    TOOLS={"VS Code":("code --wait --diff", "code --wait"),"WinMerge":("WinMergeU", "WinMergeU"),"Beyond Compare":("bcompare", "bcompare"),"KDiff3":("kdiff3", "kdiff3")}
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Diff & Merge Tool Center");self.geometry("950x620");self._build();self.refresh()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x");self.tool=tk.StringVar(value="VS Code");ttk.Combobox(top,textvariable=self.tool,values=list(self.TOOLS),state="readonly",width=20).pack(side="left")
+        for t,c in [("Configure repository",self.configure),("Launch difftool",self.difftool),("Launch mergetool",self.mergetool),("Refresh",self.refresh)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        self.path=tk.StringVar();ttk.Entry(top,textvariable=self.path).pack(side="left",fill="x",expand=True,padx=4);ttk.Button(top,text="Diff selected path",command=self.diff_path).pack(side="left")
+        self.text=tk.Text(self,wrap="word",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
+    def refresh(self):
+        def cfg(k):
+            try:return git(self.repo,"config","--get",k)
+            except:return "Not configured"
+        v=f"diff.tool: {cfg('diff.tool')}\nmerge.tool: {cfg('merge.tool')}\n\nChoose a known tool or configure custom commands manually in Git if installed under a non-standard executable name."
+        self.text.delete("1.0","end");self.text.insert("1.0",v)
+    def configure(self):
+        name=self.tool.get();key=name.lower().replace(" ","");diff_cmd,merge_cmd=self.TOOLS[name]
+        try:
+            git(self.repo,"config","diff.tool",key);git(self.repo,"config",f"difftool.{key}.cmd",diff_cmd+' "$LOCAL" "$REMOTE"');git(self.repo,"config","merge.tool",key);git(self.repo,"config",f"mergetool.{key}.cmd",merge_cmd+' "$BASE" "$LOCAL" "$REMOTE" "$MERGED"');git(self.repo,"config","mergetool.keepBackup","false");messagebox.showinfo("Tools",f"Configured {name} for this repository.",parent=self);self.refresh()
+        except Exception as e:messagebox.showerror("Tools",str(e),parent=self)
+    def difftool(self):
+        try:messagebox.showinfo("Difftool",git(self.repo,"difftool","--no-prompt"),parent=self)
+        except Exception as e:messagebox.showerror("Difftool",str(e),parent=self)
+    def diff_path(self):
+        p=self.path.get().strip()
+        if p:
+            try:messagebox.showinfo("Difftool",git(self.repo,"difftool","--no-prompt","--",p),parent=self)
+            except Exception as e:messagebox.showerror("Difftool",str(e),parent=self)
+    def mergetool(self):
+        try:messagebox.showinfo("Mergetool",git(self.repo,"mergetool","--no-prompt"),parent=self)
+        except Exception as e:messagebox.showerror("Mergetool",str(e),parent=self)

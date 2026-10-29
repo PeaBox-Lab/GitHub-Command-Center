@@ -1,32 +1,34 @@
-# GitHub Command Center v3.4.0
+# GitHub Command Center v3.5.0
 
-Version 3.4 adds three major history and reference workflows while retaining all v0.1-v3.3 capabilities.
+Version 3.5 bundles four essential Git capabilities for large repositories, maintenance, non-rewriting metadata and external comparison tools.
 
-## Interactive Rebase Editor
-- Load a first-parent commit plan after a chosen base ref
-- Reorder commits with Move up/down
-- Actions: pick, reword, edit, squash, fixup and drop
-- Full commit/plan preview
-- Automatic timestamped `gccc-backup/pre-rebase-*` safety branch
-- Clean-working-tree gate
-- Continue, skip and abort controls
-- Conflict-aware paused-state messaging
+## Sparse Checkout Center
+- Cone-mode initialization
+- Select top-level folders to materialize
+- Add another sparse path
+- Restore the full working tree
+- Clean-working-tree safety gate
 
-## Unified Ref Browser
-- One searchable view of local branches, remote branches, tags, stash, notes and other refs
-- Commit hash, date and subject
-- Inspect referenced commit
-- Switch local branches or detached-checkout other refs
-- Create a branch from any selected ref
-- Safe deletion limited to normal local branch deletion and local tags
-- Copy full ref name
+## Repository Maintenance Center
+- Object database size/count analysis
+- `git maintenance run --auto`
+- Normal `git gc`
+- Full `git fsck`
+- Commit-graph generation with changed paths
+- Optional Git scheduled-maintenance registration
+- No aggressive GC or immediate reflog expiration
 
-## Repository History Browser
-- Browse the complete file tree at HEAD, a branch, tag or commit
-- Select from 150 recent commits
-- Lazy-expand historical directories
-- View text-file contents without checkout
-- Export a historical file byte-for-byte
-- Open Commit Inspector for deeper patch/blame work
+## Git Notes Center
+- Browse 200 recent commits
+- Read, add, replace and remove notes
+- Custom notes refs
+- Explicit push of a notes ref to origin
+- Commit hashes remain unchanged
 
-The features are available in the sidebar and Command Palette. Decimal versioning remains within major version 3.
+## Diff & Merge Tool Center
+- Repository-level setup for VS Code, WinMerge, Beyond Compare or KDiff3
+- Launch difftool for all changes or one path
+- Launch mergetool for unresolved conflicts
+- Displays current diff/merge tool configuration
+
+All earlier features remain available through Command Palette. Decimal versioning remains within major version 3.

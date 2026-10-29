@@ -38,3 +38,17 @@ Use All refs to search local and remote branches, tags, stash and notes. Deletio
 
 ## Historical repository browser
 Choose a recent commit or enter a ref. Expand directories to inspect the tree, select a text file to view it, or export any historical blob without checking it out.
+
+# Version 3.5 Addendum
+
+## Sparse checkout
+Use on large repositories when you need only selected folders. Commit or stash local changes before changing the sparse specification.
+
+## Maintenance
+Start with Refresh analysis and Auto maintenance. Normal GC is available with confirmation. Aggressive GC and reflog destruction are intentionally excluded.
+
+## Git notes
+Notes attach metadata without changing commit hashes. Notes live in a separate ref and require an explicit notes-ref push to share.
+
+## External diff and merge tools
+Install the selected tool first, then configure it for the repository. Use Difftool for comparison and Mergetool during conflicts.
