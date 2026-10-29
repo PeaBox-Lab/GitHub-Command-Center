@@ -1514,7 +1514,7 @@ class CommandPalette(tk.Toplevel):
             ("Regression Finder",lambda:BisectCenter(self,repo),"bisect regression"),("Commit Inspector",lambda:CommitInspector(self,repo),"blame file history commit"),
             ("Submodule Center",lambda:SubmoduleCenter(self,repo),"submodule recursive"),("Repository Tasks",lambda:TaskCenter(self,repo),"checklist tasks"),
             ("Archive & Handover",lambda:ArchiveCenter(self,repo),"zip bundle support pack"),("Git Hooks Manager",lambda:HooksCenter(self,repo),"hooks pre-commit commit-msg"),
-            ("Git LFS Center",lambda:LFSCenter(self,repo),"large files lfs track"),("Automation Recipes",lambda:AutomationCenter(self,repo),"automation recipes checks"),("Identity & Signing",lambda:IdentitySigningCenter(self,repo),"identity email gpg sign verify"),("Commit Message Studio",lambda:CommitMessageStudio(self,repo),"conventional commits message"),("Changelog Studio",lambda:ChangelogStudio(self,repo),"changelog release notes commits"),("Remote Migration & Mirror",lambda:RemoteMigrationCenter(self,repo),"remote backup mirror migration"),("Credential & Remote Hygiene",lambda:CredentialAuditCenter(self,repo),"credentials helper url ssh https auth"),("Release Policy Center",lambda:ReleasePolicyCenter(self,repo),"release policy gates semver version"),("Repository Metrics",lambda:RepositoryMetricsCenter(self,repo),"metrics contributors languages commits activity"),("Plugin Manager",lambda:PluginManager(self,repo),"plugins extensions commands"),("Batch Operations",lambda:BatchOperationsCenter(self,repo),"batch multiple repositories portfolio"),("Operations Dashboard",lambda:RepositoryDashboardCenter(self,repo),"dashboard operational status next action"),("Repository Data Export",lambda:DataExportCenter(self,repo),"export json csv commits metadata"),("Background Jobs",lambda:BackgroundJobsCenter(self,repo),"jobs queue background cancel logs"),("Preferences",lambda:PreferencesCenter(self,repo),"preferences theme appearance defaults"),("Portfolio History",lambda:PortfolioHistoryCenter(self,repo),"sqlite portfolio history snapshots trends"),("Self-Test & Readiness",lambda:SelfTestCenter(self,repo),"self test readiness smoke diagnostics"),("Partial Staging",lambda:PartialStagingCenter(self,repo),"partial stage hunk line add patch"),("Reflog Recovery",lambda:ReflogRecoveryCenter(self,repo),"reflog recover lost commit reset checkout branch"),("Interactive Rebase Editor",lambda:InteractiveRebaseEditor(self,repo),"interactive rebase squash fixup reword edit drop reorder"),("Unified Ref Browser",lambda:UnifiedRefBrowser(self,repo),"refs branches remotes tags stash notes"),("Repository History Browser",lambda:RepositoryHistoryBrowser(self,repo),"history browse tree file commit export"),("Sparse Checkout",lambda:SparseCheckoutCenter(self,repo),"sparse checkout cone large repository folders"),("Repository Maintenance",lambda:MaintenanceCenter(self,repo),"maintenance gc fsck objects commit graph"),("Git Notes",lambda:GitNotesCenter(self,repo),"git notes annotation metadata commit"),("Diff & Merge Tools",lambda:DiffMergeToolCenter(self,repo),"difftool mergetool vscode winmerge beyond compare kdiff3"),("Recorded Conflict Resolution",lambda:RerereCenter(self,repo),"rerere recorded resolution recurring conflict"),("Remote Branch Center",lambda:RemoteBranchCenter(self,repo),"remote branch track publish rename delete"),("Ignore & Attributes Studio",lambda:IgnoreAttributesStudio(self,repo),"gitignore gitattributes check-ignore attributes"),("Advanced Clone Wizard",lambda:CloneWizard(self),"clone shallow depth partial single branch blob filter"),("Worktree Safety",lambda:WorktreeSafetyCenter(self,repo),"worktree safety lock unlock prune"),("Repository Doctor",lambda:RepositoryDoctor(self,repo),"doctor diagnose repair status config integrity"),("Tag & Release Audit",lambda:TagReleaseAuditCenter(self,repo),"tags release audit signature remote annotated lightweight"),("Stash Manager Pro",lambda:StashManagerPro(self,repo),"stash apply pop branch drop untracked"),("Safe Clean Center",lambda:CleanPreviewCenter(self,repo),"clean untracked ignored preview delete"),("Repository Size Explorer",lambda:RepositorySizeCenter(self,repo),"size large files objects lfs storage"),("Force-with-Lease Safety",lambda:ForcePushSafetyCenter(self,repo),"force with lease rewritten history push safety"),("Advanced History Search",lambda:CommitSearchPro(self,repo),"pickaxe regex history search content"),("Git Bundle Inspector",lambda:BundleInspector(self,repo),"bundle verify heads clone restore backup"),("Branch Protection Advisor",lambda:BranchProtectionAdvisor(self,repo),"branch protection rules review checks github"),("Repository Favorites",lambda:RepositoryFavoritesCenter(self,repo),"favorites groups repositories portfolio"),("Preflight Quality Gates",lambda:PreflightCenter(self,repo),"preflight quality gates push pr release checks")]
+            ("Git LFS Center",lambda:LFSCenter(self,repo),"large files lfs track"),("Automation Recipes",lambda:AutomationCenter(self,repo),"automation recipes checks"),("Identity & Signing",lambda:IdentitySigningCenter(self,repo),"identity email gpg sign verify"),("Commit Message Studio",lambda:CommitMessageStudio(self,repo),"conventional commits message"),("Changelog Studio",lambda:ChangelogStudio(self,repo),"changelog release notes commits"),("Remote Migration & Mirror",lambda:RemoteMigrationCenter(self,repo),"remote backup mirror migration"),("Credential & Remote Hygiene",lambda:CredentialAuditCenter(self,repo),"credentials helper url ssh https auth"),("Release Policy Center",lambda:ReleasePolicyCenter(self,repo),"release policy gates semver version"),("Repository Metrics",lambda:RepositoryMetricsCenter(self,repo),"metrics contributors languages commits activity"),("Plugin Manager",lambda:PluginManager(self,repo),"plugins extensions commands"),("Batch Operations",lambda:BatchOperationsCenter(self,repo),"batch multiple repositories portfolio"),("Operations Dashboard",lambda:RepositoryDashboardCenter(self,repo),"dashboard operational status next action"),("Repository Data Export",lambda:DataExportCenter(self,repo),"export json csv commits metadata"),("Background Jobs",lambda:BackgroundJobsCenter(self,repo),"jobs queue background cancel logs"),("Preferences",lambda:PreferencesCenter(self,repo),"preferences theme appearance defaults"),("Portfolio History",lambda:PortfolioHistoryCenter(self,repo),"sqlite portfolio history snapshots trends"),("Self-Test & Readiness",lambda:SelfTestCenter(self,repo),"self test readiness smoke diagnostics"),("Partial Staging",lambda:PartialStagingCenter(self,repo),"partial stage hunk line add patch"),("Reflog Recovery",lambda:ReflogRecoveryCenter(self,repo),"reflog recover lost commit reset checkout branch"),("Interactive Rebase Editor",lambda:InteractiveRebaseEditor(self,repo),"interactive rebase squash fixup reword edit drop reorder"),("Unified Ref Browser",lambda:UnifiedRefBrowser(self,repo),"refs branches remotes tags stash notes"),("Repository History Browser",lambda:RepositoryHistoryBrowser(self,repo),"history browse tree file commit export"),("Sparse Checkout",lambda:SparseCheckoutCenter(self,repo),"sparse checkout cone large repository folders"),("Repository Maintenance",lambda:MaintenanceCenter(self,repo),"maintenance gc fsck objects commit graph"),("Git Notes",lambda:GitNotesCenter(self,repo),"git notes annotation metadata commit"),("Diff & Merge Tools",lambda:DiffMergeToolCenter(self,repo),"difftool mergetool vscode winmerge beyond compare kdiff3"),("Recorded Conflict Resolution",lambda:RerereCenter(self,repo),"rerere recorded resolution recurring conflict"),("Remote Branch Center",lambda:RemoteBranchCenter(self,repo),"remote branch track publish rename delete"),("Ignore & Attributes Studio",lambda:IgnoreAttributesStudio(self,repo),"gitignore gitattributes check-ignore attributes"),("Advanced Clone Wizard",lambda:CloneWizard(self),"clone shallow depth partial single branch blob filter"),("Worktree Safety",lambda:WorktreeSafetyCenter(self,repo),"worktree safety lock unlock prune"),("Repository Doctor",lambda:RepositoryDoctor(self,repo),"doctor diagnose repair status config integrity"),("Tag & Release Audit",lambda:TagReleaseAuditCenter(self,repo),"tags release audit signature remote annotated lightweight"),("Stash Manager Pro",lambda:StashManagerPro(self,repo),"stash apply pop branch drop untracked"),("Safe Clean Center",lambda:CleanPreviewCenter(self,repo),"clean untracked ignored preview delete"),("Repository Size Explorer",lambda:RepositorySizeCenter(self,repo),"size large files objects lfs storage"),("Force-with-Lease Safety",lambda:ForcePushSafetyCenter(self,repo),"force with lease rewritten history push safety"),("Advanced History Search",lambda:CommitSearchPro(self,repo),"pickaxe regex history search content"),("Git Bundle Inspector",lambda:BundleInspector(self,repo),"bundle verify heads clone restore backup"),("Branch Protection Advisor",lambda:BranchProtectionAdvisor(self,repo),"branch protection rules review checks github"),("Repository Favorites",lambda:RepositoryFavoritesCenter(self,repo),"favorites groups repositories portfolio"),("Preflight Quality Gates",lambda:PreflightCenter(self,repo),"preflight quality gates push pr release checks"),("Commit Template Center",lambda:CommitTemplateCenter(self,repo),"commit template message conventional"),("Patch Queue Center",lambda:PatchQueueCenter(self,repo),"patch queue git am mailbox continue abort"),("Hook Audit Center",lambda:HookAuditCenter(self,repo),"hooks audit executable provenance precommit")]
         self.render()
     def render(self):
         q=self.q.get().lower().strip();self.filtered=[c for c in self.commands if not q or q in (c[0]+" "+c[2]).lower()];self.list.delete(0,"end")
@@ -3269,3 +3269,86 @@ class PreflightCenter(tk.Toplevel):
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="preflight-report.txt")
         if p:Path(p).write_text(self.report,encoding="utf-8")
+
+class CommitTemplateCenter(tk.Toplevel):
+    """Manage repository commit templates and inspect the effective template."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Commit Template Center");self.geometry("980x680");self.path=Path(repo)/".git"/"gccc-commit-template.txt";self._build();self.load()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x")
+        for t,c in [("Load",self.load),("Use conventional template",self.defaults),("Save + configure",self.save),("Disable template",self.disable)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        self.text=tk.Text(self,wrap="word",undo=True,font=("Consolas",10));self.text.pack(fill="both",expand=True,padx=8,pady=5)
+        ttk.Label(self,text="The template is local to this clone under .git. It is used by Git commit editors but does not force a message format.",padding=8).pack(fill="x")
+    def load(self):
+        self.text.delete("1.0","end")
+        if self.path.exists():self.text.insert("1.0",self.path.read_text(encoding="utf-8",errors="replace"))
+        else:self.defaults()
+    def defaults(self):
+        value="<type>(<scope>): <short summary>\n\nWhy:\n\nWhat changed:\n- \n\nValidation:\n- \n\nRefs: \n"
+        self.text.delete("1.0","end");self.text.insert("1.0",value)
+    def save(self):
+        try:
+            self.path.write_text(self.text.get("1.0","end-1c")+"\n",encoding="utf-8");git(self.repo,"config","commit.template",str(self.path));messagebox.showinfo("Commit template",f"Saved and configured {self.path}",parent=self)
+        except Exception as e:messagebox.showerror("Commit template",str(e),parent=self)
+    def disable(self):
+        try:git(self.repo,"config","--unset","commit.template");messagebox.showinfo("Commit template","Repository commit template configuration removed.",parent=self)
+        except Exception as e:messagebox.showerror("Commit template",str(e),parent=self)
+
+class PatchQueueCenter(tk.Toplevel):
+    """Apply and manage an email-style patch queue using git am."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Patch Queue Center");self.geometry("1080x710");self.files=[];self._build();self.refresh()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x")
+        for t,c in [("Add patch files",self.add),("Clear list",self.clear),("Apply queue",self.apply),("Continue",lambda:self.control("--continue")),("Skip",lambda:self.control("--skip")),("Abort",lambda:self.control("--abort")),("Refresh",self.refresh)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        pane=ttk.Panedwindow(self,orient="vertical");pane.pack(fill="both",expand=True,padx=8,pady=5);a=ttk.Frame(pane);b=ttk.Frame(pane);pane.add(a,weight=2);pane.add(b,weight=3)
+        self.list=tk.Listbox(a,font=("Consolas",9));self.list.pack(fill="both",expand=True)
+        self.out=tk.Text(b,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.out.pack(fill="both",expand=True)
+        ttk.Label(self,text="git am preserves commit metadata from format-patch mailboxes. Resolve conflicts, stage the resolution, then Continue. Abort restores the pre-am state.",padding=8).pack(fill="x")
+    def add(self):
+        f=filedialog.askopenfilenames(parent=self,filetypes=[("Patch/mailbox","*.patch *.mbox"),("All files","*")])
+        for p in f:
+            if p not in self.files:self.files.append(p)
+        self.render()
+    def render(self):self.list.delete(0,"end");[self.list.insert("end",p) for p in self.files]
+    def clear(self):self.files=[];self.render()
+    def refresh(self):
+        state=Path(self.repo)/".git"/"rebase-apply";v="Patch application in progress." if state.exists() else "No git am session in progress."
+        self.out.delete("1.0","end");self.out.insert("1.0",v)
+    def apply(self):
+        if not self.files:return
+        if git(self.repo,"status","--porcelain")!="Completed successfully.":return messagebox.showwarning("Patch queue","Commit or stash local changes before applying a patch queue.",parent=self)
+        if not messagebox.askyesno("Apply patch queue",f"Apply {len(self.files)} patch(es) as commits?",parent=self):return
+        try:out=git(self.repo,"am","--3way",*self.files);messagebox.showinfo("Patch queue",out,parent=self);self.clear();self.refresh()
+        except Exception as e:self.out.delete("1.0","end");self.out.insert("1.0",str(e));messagebox.showwarning("Patch queue","Patch application paused or failed. Resolve conflicts, then Continue/Skip/Abort.",parent=self)
+    def control(self,arg):
+        try:messagebox.showinfo("Patch queue",git(self.repo,"am",arg),parent=self);self.refresh()
+        except Exception as e:messagebox.showerror("Patch queue",str(e),parent=self)
+
+class HookAuditCenter(tk.Toplevel):
+    """Inventory local hooks, executable state and basic provenance."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.dir=Path(repo)/".git"/"hooks";self.title("Hook Audit Center");self.geometry("1080x700");self.rows=[];self._build();self.refresh()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x");ttk.Button(top,text="Refresh",command=self.refresh).pack(side="left");ttk.Button(top,text="Open selected",command=self.open_hook).pack(side="left",padx=3);ttk.Button(top,text="Open Hooks Manager",command=lambda:HooksCenter(self,self.repo)).pack(side="left")
+        self.tree=ttk.Treeview(self,columns=("hook","enabled","size","modified"),show="headings")
+        for c,t,w in [("hook","Hook",300),("enabled","Executable",110),("size","Size",100),("modified","Modified",210)]:self.tree.heading(c,text=t);self.tree.column(c,width=w,anchor="w")
+        self.tree.pack(fill="both",expand=True,padx=8,pady=5);self.tree.bind("<<TreeviewSelect>>",lambda e:self.preview())
+        self.text=tk.Text(self,height=14,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=(0,8))
+    def refresh(self):
+        import datetime,os
+        self.rows=[];self.tree.delete(*self.tree.get_children())
+        for p in sorted(self.dir.iterdir()) if self.dir.exists() else []:
+            if p.is_file() and not p.name.endswith(".sample"):
+                st=p.stat();r=(p.name,"Yes" if os.access(p,os.X_OK) else "No",st.st_size,datetime.datetime.fromtimestamp(st.st_mtime).isoformat(timespec="seconds"),p);self.rows.append(r);self.tree.insert("","end",iid=str(len(self.rows)-1),values=r[:4])
+    def selected(self):
+        s=self.tree.selection();return self.rows[int(s[0])] if s else None
+    def preview(self):
+        r=self.selected();self.text.delete("1.0","end")
+        if r:self.text.insert("1.0",r[4].read_text(encoding="utf-8",errors="replace"))
+    def open_hook(self):
+        r=self.selected()
+        if not r:return
+        import os
+        try:os.startfile(r[4]) if hasattr(os,"startfile") else subprocess.Popen(["xdg-open",str(r[4])])
+        except Exception as e:messagebox.showerror("Hook",str(e),parent=self)

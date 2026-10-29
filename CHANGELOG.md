@@ -1,11 +1,13 @@
 # Changelog
 
-## v3.10.0
-- Added Branch Protection Advisor for GitHub branch-governance visibility
-- Added persistent Repository Favorites & Groups
-- Added Preflight Quality Gates for clean-tree, whitespace, Python compilation and Git integrity
-- Retained all v0.1-v3.9 capabilities
+## v3.11.0
+- Added Commit Template Center
+- Added Patch Queue Center using guarded `git am --3way`
+- Added Hook Audit Center with executable-state and source preview
+- Retained all v0.1-v3.10 functionality
 
+## v3.10.0
+- Added Branch Protection Advisor, Repository Favorites and Preflight Quality Gates
 ## v3.9.0
 - Added Force-with-Lease Safety, Advanced History Search and Bundle Inspector
 ## v3.8.0
@@ -13,12 +15,12 @@
 ## v3.7.0
 - Added Worktree Safety, Repository Doctor and Tag Audit
 ## v3.6.0
-- Added rerere, remote branch management, ignore/attributes and clone wizard
+- Added rerere, remote branches, ignore/attributes and advanced clone
 ## v3.5.0
-- Added Sparse Checkout, Maintenance, Git Notes and external diff/merge tools
+- Added sparse checkout, maintenance, notes and external diff/merge tools
 ## v3.4.0
-- Added Interactive Rebase, Unified Refs and Historical Browser
+- Added interactive rebase, unified refs and historical browser
 ## v3.3.0
-- Added Partial Staging and Reflog Recovery
+- Added partial staging and reflog recovery
 ## v3.2.0
 - Major Local Git UI redesign

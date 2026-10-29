@@ -89,3 +89,7 @@ Use Force-with-Lease only after intentional history rewriting such as rebase or 
 # Version 3.10 Addendum
 
 Use Branch Protection Advisor to identify governance gaps before changing repository rules in GitHub. Favorites & Groups lets you organize PeaLang, PeaBox and other local repositories into persistent product groups. Run Preflight before pushing, opening a PR or creating a release.
+
+# Version 3.11 Addendum
+
+Use Commit Template Center when you want a consistent local commit structure without enforcing it on collaborators. Patch Queue is for `git format-patch` / `git am` workflows and requires a clean tree. Hook Audit lets you inspect exactly which clone-local hooks can execute before commit/push operations.
