@@ -1,3 +1,3 @@
-# GitHub Command Center 3.9.0 Release Notes
+# GitHub Command Center 3.10.0 Release Notes
 
-Version 3.9 adds a deliberately guarded force-with-lease workflow, professional history-search tools and offline Git-bundle inspection. Plain force push remains unavailable by design.
+Version 3.10 adds branch-governance auditing, persistent repository favorites/groups and a consolidated preflight quality-gate runner. It preserves the full v3 feature train and continues decimal progression rather than introducing a new major version.

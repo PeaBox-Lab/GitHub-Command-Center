@@ -85,3 +85,7 @@ Use Stash Manager Pro to inspect a stash before applying it. Safe Clean always p
 # Version 3.9 Addendum
 
 Use Force-with-Lease only after intentional history rewriting such as rebase or amend. Fetch first, inspect the observed upstream hash, and never use it as a routine push replacement. Advanced History Search supports Git pickaxe and regex workflows from the GUI. Verify a Git bundle before using it for recovery.
+
+# Version 3.10 Addendum
+
+Use Branch Protection Advisor to identify governance gaps before changing repository rules in GitHub. Favorites & Groups lets you organize PeaLang, PeaBox and other local repositories into persistent product groups. Run Preflight before pushing, opening a PR or creating a release.

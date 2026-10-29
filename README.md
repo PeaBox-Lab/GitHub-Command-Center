@@ -1,26 +1,24 @@
-# GitHub Command Center v3.9.0
+# GitHub Command Center v3.10.0
 
-Version 3.9 continues the major-3 decimal release train with safer rewritten-history publishing, deeper history search and stronger offline bundle validation.
+Version 3.10 continues decimal versioning within major version 3. This release strengthens team governance, repository navigation and preflight quality checks.
 
-## Force-with-Lease Safety Center
-- Current branch/upstream and ahead/behind review
-- Explicit fetch of origin before publishing rewritten history
-- Shows local and observed upstream commit IDs
-- Only `--force-with-lease`, never plain `--force`
-- Exact typed branch-name confirmation plus final confirmation
-- Detached HEAD blocked
+## Branch Protection Advisor
+- Reads GitHub branch-protection configuration through authenticated GitHub CLI
+- Reviews PR-review requirements, stale-review dismissal, status checks, admin enforcement, force-push and deletion settings
+- Provides practical recommendations without automatically mutating server policies
+- Opens the repository branch-settings page when deeper administration is needed
 
-## Advanced History Search
-- Commit-message search across all refs
-- Pickaxe `-S` search for additions/removals of specific text
-- Diff-regex `-G` search
-- Optional tracked-path filter
-- Rename-aware file history
+## Repository Favorites & Groups
+- User-level persistent favorites in `~/.gccc-favorites.json`
+- Group repositories by product or purpose
+- Add current repository or another local repository folder
+- Double-click to open directly in Local Git
 
-## Git Bundle Inspector
-- Select an existing `.bundle`
-- Verify bundle integrity/prerequisites
-- List contained refs/heads
-- Clone a verified bundle into a new local repository folder
+## Preflight Quality Gates
+- Clean-working-tree check
+- Git whitespace validation
+- Python source compilation
+- Git object integrity check
+- Configurable gates, overall PASS/FAIL and exportable report
 
-All v0.1-v3.8 tools remain included and available through Command Palette.
+All tools from v0.1 through v3.9 remain included.
