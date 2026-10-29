@@ -1,3 +1,4 @@
+
 @echo off
 cd /d "%~dp0"
 where python >nul 2>nul || (echo Python 3.10 or later is required.& pause & exit /b 1)

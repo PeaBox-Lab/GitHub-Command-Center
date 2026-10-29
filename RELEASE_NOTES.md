@@ -1,3 +1,3 @@
-# GitHub Command Center 3.15.0 Release Notes
+# GitHub Command Center 3.16.0 Release Notes
 
-Version 3.15 improves synchronization decisions and recovery. It makes pull strategy explicit, protects rebases, preserves detached work through branch creation, and adds machine-readable repository-state exports.
+Version 3.16 adds governance auditing, portable commit-range exports, and a branch-centric operations dashboard while preserving the complete v3.15 feature set from the supplied project export.
