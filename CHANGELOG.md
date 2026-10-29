@@ -1,16 +1,16 @@
 # Changelog
 
+## v0.6.0
+- Added Pull Request Center: list, inspect, create, checkout and merge PRs
+- Added merge strategy choice: merge, squash or rebase
+- Added GitHub Actions Center for workflow run monitoring
+- Added workflow log viewing, re-run, cancellation and manual dispatch
+
 ## v0.5.0
-- Added Release Center with release-readiness checks
-- Added commit-based Markdown release-note generation
-- Added annotated tag creation and push
-- Added GitHub release publishing through authenticated GitHub CLI
-- Added draft, pre-release, target branch, and multi-asset support
-- Added full Git bundle backup and clean HEAD ZIP export
-- Added recovery instructions for offline repository reconstruction
+- Added Release Center, release-readiness checks, release publishing, assets, Git bundle backup and ZIP export
 
 ## v0.4.0
-- Added cherry-pick, safe rebase, revert, guarded resets, backup branches, and `.gitignore` editor
+- Added cherry-pick, safe rebase, revert, guarded resets, backup branches and `.gitignore` editor
 
 ## v0.3.0
 - Added visual commit topology graph and three-pane conflict resolver

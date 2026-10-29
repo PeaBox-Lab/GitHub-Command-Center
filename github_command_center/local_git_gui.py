@@ -23,7 +23,7 @@ class LocalGitWindow(tk.Toplevel):
         left=ttk.Frame(pane);right=ttk.Frame(pane);pane.add(left,weight=3);pane.add(right,weight=2)
         self.files=ttk.Treeview(left,columns=("state","file"),show="headings",selectmode="extended");self.files.heading("state",text="State");self.files.heading("file",text="File");self.files.column("state",width=70);self.files.column("file",width=470);self.files.pack(fill="both",expand=True)
         foot=ttk.Frame(left);foot.pack(fill="x",pady=5)
-        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Release Center",lambda:ReleaseCenter(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
+        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Release Center",lambda:ReleaseCenter(self,self.repo)),("Pull Requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
         self.tabs=ttk.Notebook(right);self.tabs.pack(fill="both",expand=True)
         self.texts={}
         for n in ["History","Branches","Stash","Tags","Remotes","Conflicts"]:
@@ -475,3 +475,113 @@ class ReleaseCenter(tk.Toplevel):
         if path:
             try:out=git(self.repo,"archive","--format=zip",f"--output={path}","HEAD");messagebox.showinfo("Archive",f"{out}\n\nSaved: {path}",parent=self)
             except Exception as exc:messagebox.showerror("Archive",str(exc),parent=self)
+
+class PullRequestCenter(tk.Toplevel):
+    """GitHub CLI based pull-request workflow integrated into the desktop app."""
+    def __init__(self, parent, repo):
+        super().__init__(parent); self.repo=repo
+        self.title("Pull Request Center"); self.geometry("1180x760"); self.minsize(950,650)
+        self.rows=[]; self._build(); self.refresh()
+    def gh(self,*args):
+        try:r=subprocess.run(["gh",*args],cwd=self.repo,text=True,capture_output=True,timeout=900,encoding="utf-8",errors="replace")
+        except FileNotFoundError:raise GitError("GitHub CLI (gh) is required. Install it and run 'gh auth login'.")
+        out=(r.stdout+"\n"+r.stderr).strip()
+        if r.returncode:raise GitError(out or "GitHub CLI command failed")
+        return out
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x")
+        ttk.Label(top,text=self.repo,font=("Segoe UI Semibold",11)).pack(side="left",fill="x",expand=True)
+        for t,c in [("Refresh",self.refresh),("Create PR",self.create_pr),("Checkout",self.checkout),("Merge",self.merge),("Open",self.open_pr)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        pane=ttk.Panedwindow(self,orient="horizontal");pane.pack(fill="both",expand=True,padx=8,pady=5)
+        left=ttk.Frame(pane);right=ttk.Frame(pane);pane.add(left,weight=3);pane.add(right,weight=2)
+        self.tree=ttk.Treeview(left,columns=("num","title","author","branch","state"),show="headings")
+        for c,t,w in [("num","#",55),("title","Title",330),("author","Author",120),("branch","Branch",170),("state","State",80)]:self.tree.heading(c,text=t);self.tree.column(c,width=w,anchor="w")
+        self.tree.pack(fill="both",expand=True);self.tree.bind("<<TreeviewSelect>>",lambda e:self.details())
+        self.detail=tk.Text(right,wrap="word",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.detail.pack(fill="both",expand=True)
+    def selected(self):
+        s=self.tree.selection();return self.rows[int(s[0])] if s else None
+    def refresh(self):
+        try:
+            import json
+            raw=self.gh("pr","list","--limit","100","--state","all","--json","number,title,author,headRefName,state,url,isDraft")
+            self.rows=json.loads(raw or "[]");self.tree.delete(*self.tree.get_children())
+            for i,r in enumerate(self.rows):self.tree.insert("","end",iid=str(i),values=(r["number"],r["title"],(r.get("author") or {}).get("login",""),r.get("headRefName",""),("DRAFT" if r.get("isDraft") else r.get("state",""))))
+        except Exception as e:messagebox.showerror("Pull Requests",str(e),parent=self)
+    def details(self):
+        r=self.selected()
+        if not r:return
+        try:out=self.gh("pr","view",str(r["number"]),"--comments");self.detail.delete("1.0","end");self.detail.insert("1.0",out)
+        except Exception as e:messagebox.showerror("PR details",str(e),parent=self)
+    def create_pr(self):
+        branch=git(self.repo,"branch","--show-current");title=simpledialog.askstring("Create PR","Title:",parent=self)
+        if not title:return
+        body=simpledialog.askstring("Create PR","Description:",parent=self) or ""
+        base=simpledialog.askstring("Create PR","Base branch:",initialvalue="main",parent=self) or "main"
+        if messagebox.askyesno("Create PR",f"Create PR from {branch} into {base}?",parent=self):
+            try:out=self.gh("pr","create","--title",title,"--body",body,"--base",base,"--head",branch);messagebox.showinfo("Pull Request",out,parent=self);self.refresh()
+            except Exception as e:messagebox.showerror("Create PR",str(e),parent=self)
+    def checkout(self):
+        r=self.selected()
+        if r:
+            try:messagebox.showinfo("Checkout",self.gh("pr","checkout",str(r["number"])),parent=self)
+            except Exception as e:messagebox.showerror("Checkout",str(e),parent=self)
+    def merge(self):
+        r=self.selected()
+        if not r:return
+        method=simpledialog.askstring("Merge PR","Method: merge, squash, or rebase",initialvalue="squash",parent=self)
+        if method not in ("merge","squash","rebase"):return
+        if messagebox.askyesno("Merge PR",f"Merge PR #{r['number']} using {method}?",parent=self):
+            try:out=self.gh("pr","merge",str(r["number"]),f"--{method}","--delete-branch");messagebox.showinfo("Merge",out,parent=self);self.refresh()
+            except Exception as e:messagebox.showerror("Merge",str(e),parent=self)
+    def open_pr(self):
+        r=self.selected()
+        if r:
+            import webbrowser;webbrowser.open(r["url"])
+
+class ActionsCenter(tk.Toplevel):
+    """GitHub Actions dashboard and workflow controls."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("GitHub Actions Center");self.geometry("1150x740");self.minsize(900,620);self.rows=[];self._build();self.refresh()
+    def gh(self,*args):
+        try:r=subprocess.run(["gh",*args],cwd=self.repo,text=True,capture_output=True,timeout=900,encoding="utf-8",errors="replace")
+        except FileNotFoundError:raise GitError("GitHub CLI (gh) is required. Install it and run 'gh auth login'.")
+        out=(r.stdout+"\n"+r.stderr).strip()
+        if r.returncode:raise GitError(out or "GitHub CLI command failed")
+        return out
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x")
+        for t,c in [("Refresh",self.refresh),("View log",self.log),("Re-run",self.rerun),("Cancel",self.cancel),("Run workflow",self.workflow)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        self.tree=ttk.Treeview(self,columns=("id","workflow","branch","event","status","result","created"),show="headings")
+        for c,t,w in [("id","Run",90),("workflow","Workflow",260),("branch","Branch",150),("event","Event",90),("status","Status",100),("result","Result",100),("created","Created",160)]:self.tree.heading(c,text=t);self.tree.column(c,width=w,anchor="w")
+        self.tree.pack(fill="both",expand=True,padx=8,pady=5)
+    def selected(self):
+        s=self.tree.selection();return self.rows[int(s[0])] if s else None
+    def refresh(self):
+        try:
+            import json
+            raw=self.gh("run","list","--limit","100","--json","databaseId,workflowName,headBranch,event,status,conclusion,createdAt,url")
+            self.rows=json.loads(raw or "[]");self.tree.delete(*self.tree.get_children())
+            for i,r in enumerate(self.rows):self.tree.insert("","end",iid=str(i),values=(r["databaseId"],r.get("workflowName",""),r.get("headBranch",""),r.get("event",""),r.get("status",""),r.get("conclusion") or "-",r.get("createdAt","")))
+        except Exception as e:messagebox.showerror("Actions",str(e),parent=self)
+    def log(self):
+        r=self.selected()
+        if not r:return
+        try:self.output("Workflow log",self.gh("run","view",str(r["databaseId"]),"--log"))
+        except Exception as e:messagebox.showerror("Actions",str(e),parent=self)
+    def rerun(self):
+        r=self.selected()
+        if r and messagebox.askyesno("Re-run",f"Re-run workflow {r['databaseId']}?",parent=self):
+            try:messagebox.showinfo("Actions",self.gh("run","rerun",str(r["databaseId"])),parent=self);self.refresh()
+            except Exception as e:messagebox.showerror("Actions",str(e),parent=self)
+    def cancel(self):
+        r=self.selected()
+        if r and messagebox.askyesno("Cancel",f"Cancel workflow {r['databaseId']}?",parent=self):
+            try:messagebox.showinfo("Actions",self.gh("run","cancel",str(r["databaseId"])),parent=self);self.refresh()
+            except Exception as e:messagebox.showerror("Actions",str(e),parent=self)
+    def workflow(self):
+        try:
+            raw=self.gh("workflow","list");name=simpledialog.askstring("Run workflow","Workflow name or ID:\n\n"+raw,parent=self)
+            if name:messagebox.showinfo("Workflow",self.gh("workflow","run",name),parent=self)
+        except Exception as e:messagebox.showerror("Workflow",str(e),parent=self)
+    def output(self,title,value):
+        w=tk.Toplevel(self);w.title(title);w.geometry("1000x650");t=tk.Text(w,wrap="none",font=("Consolas",9));t.pack(fill="both",expand=True);t.insert("1.0",value)

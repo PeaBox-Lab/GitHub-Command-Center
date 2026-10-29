@@ -1,29 +1,30 @@
-# GitHub Command Center v0.5.0
+# GitHub Command Center v0.6.0
 
-Python desktop replacement for everyday GitHub web and TortoiseGit workflows.
+A Python desktop command center replacing routine GitHub web and TortoiseGit workflows.
 
-## New Release Center
-- Release-readiness report for clean tree, branch, origin, upstream, ahead/behind state, README, CHANGELOG, LICENSE, and GitHub CLI
-- Generate Markdown release notes from commits since the latest tag
-- Create and push annotated version tags
-- Publish GitHub releases using authenticated GitHub CLI
-- Draft and pre-release options
-- Upload multiple release assets
-- Create a full repository Git bundle containing branches and tags
-- Export a clean ZIP of current HEAD without `.git`
-- Built-in recovery commands for Git bundles
+## New in v0.6.0: Pull Request Center
+- View up to 100 open, closed, merged, and draft pull requests
+- Inspect PR details and comments
+- Create a pull request from the current branch
+- Checkout a PR locally
+- Merge using merge commit, squash, or rebase
+- Delete the PR branch after merge
+- Open a selected PR in GitHub only when needed
 
-## Existing capabilities
-- GitHub statistics, repositories, activity, insights, issue and repository creation
-- Local clone/init, status, stage/unstage, commit, fetch, FF-only pull, push, diff and history
-- Visual branch/merge commit graph
-- Three-pane conflict resolver
-- Branch, merge, stash, tag, remote and cleanup tools
-- Cherry-pick, safe rebase, revert, reset safety backups, and `.gitignore` editor
+## New in v0.6.0: GitHub Actions Center
+- View the latest 100 workflow runs
+- Workflow, branch, event, status, conclusion, and creation time
+- View workflow logs
+- Re-run a selected workflow run
+- Cancel a running workflow
+- Manually dispatch a workflow
 
-## Windows requirements
-- Python 3.10+
-- Git on PATH
-- GitHub CLI `gh` and `gh auth login` only for publishing GitHub releases
+## Previous capabilities retained
+- GitHub dashboard and repository/issue management
+- Complete local Git workspace with staging, commit, sync, branches, tags, stash and remotes
+- Visual commit graph and merge conflict resolver
+- Cherry-pick, safe rebase, revert, reset safeguards and `.gitignore` editor
+- Release Center with readiness checks, release notes, tags, assets, GitHub releases, Git bundles and ZIP exports
 
-Extract and double-click `run_windows.bat`.
+## Requirements
+Python 3.10+, Git. GitHub CLI `gh` authenticated with `gh auth login` is required for Releases, Pull Requests and Actions.
