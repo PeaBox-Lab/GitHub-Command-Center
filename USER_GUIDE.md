@@ -51,3 +51,9 @@ Use Inspector to review historical patches or enter a tracked relative file path
 
 ## Submodules (v1.5)
 Use Submodules to initialize/update cloned projects that contain submodules. Remote update can move the recorded submodule commit, so review the parent repository's working tree and diff before committing the pointer change.
+
+## Repository Tasks (v1.6)
+Use Tasks for private release, refactor or maintenance checklists. Items are stored under `.git/gccc-tasks.txt` and stay local to the clone.
+
+## Archive & Handover (v1.6)
+Use Archive for a clean source ZIP, a full-history Git bundle, a readable project snapshot, or a support pack for troubleshooting. Use the Git bundle when preserving recoverable history is important.

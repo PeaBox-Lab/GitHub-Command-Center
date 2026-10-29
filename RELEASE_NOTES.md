@@ -1,5 +1,5 @@
-# GitHub Command Center 1.5.0 Release Notes
+# GitHub Command Center 1.6.0 Release Notes
 
-Version 1.5 deepens repository investigation and multi-repository composition. Commit Inspector exposes per-commit patches, rename-aware file history and blame information, while Submodule Center makes recursive initialization, updates and URL synchronization discoverable from the GUI.
+Version 1.6 improves development continuity and handover. Repository Task Center provides a private local checklist, while Archive & Handover Center consolidates clean source export, full-history Git bundles, project snapshots and troubleshooting support packs.
 
-The cumulative v0.1 through v1.4 functionality remains included.
+All functionality from v0.1 through v1.5 remains included.

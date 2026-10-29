@@ -38,3 +38,7 @@ Extract and run `run_windows.bat`. Requires Python 3.10+ and Git. GitHub CLI is 
 ## v1.5 additions
 - **Commit Inspector & File History:** inspect up to 150 commits, view complete commit patches/statistics, follow the history of a specific file across renames, and run line-level `git blame` from the GUI.
 - **Submodule Center:** inventory recursive submodule states, add a submodule, initialize/update recursively, synchronize configured URLs, and explicitly update submodules from their configured remote branches.
+
+## v1.6 additions
+- **Repository Task Center:** local-only per-repository checklist stored under `.git/gccc-tasks.txt`, with add, complete/reopen, multi-delete and save workflows.
+- **Archive & Handover Center:** one place for clean HEAD ZIP export, full-history Git bundle creation, Project Snapshot handover, and a diagnostic support pack containing status, remotes, recent commits, configuration and `git fsck` results.

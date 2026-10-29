@@ -59,3 +59,9 @@
 - Added per-file history with `git log --follow` and line attribution with `git blame`.
 - Added Submodule Center with add, init/update, remote update and URL synchronization workflows.
 - Preserved all v0.1-v1.4 capabilities.
+
+## v1.6.0
+- Added private Repository Task Center for local project/release checklists.
+- Added Archive & Handover Center consolidating clean ZIP, Git bundle, snapshot and diagnostic exports.
+- Added support-pack generation without GitHub token export.
+- Preserved all v0.1-v1.5 capabilities.

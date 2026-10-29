@@ -23,7 +23,7 @@ class LocalGitWindow(tk.Toplevel):
         left=ttk.Frame(pane);right=ttk.Frame(pane);pane.add(left,weight=3);pane.add(right,weight=2)
         self.files=ttk.Treeview(left,columns=("state","file"),show="headings",selectmode="extended");self.files.heading("state",text="State");self.files.heading("file",text="File");self.files.column("state",width=70);self.files.column("file",width=470);self.files.pack(fill="both",expand=True)
         foot=ttk.Frame(left);foot.pack(fill="x",pady=5)
-        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Release Center",lambda:ReleaseCenter(self,self.repo)),("Pull Requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Security",lambda:SecurityCenter(self,self.repo)),("Health",lambda:RepositoryHealthCenter(self,self.repo)),("Worktrees",lambda:WorktreeCenter(self,self.repo)),("Compare",lambda:RepositoryCompareCenter(self,self.repo)),("Recovery",lambda:BackupRestoreCenter(self,self.repo)),("Repo Manager",lambda:RepositoryManager(self,self.repo)),("Diagnostics",lambda:SettingsDiagnosticsCenter(self,self.repo)),("Smart Sync",lambda:SyncCenter(self,self.repo)),("Search",lambda:SearchCenter(self,self.repo)),("Review",lambda:ChangeReviewCenter(self,self.repo)),("Notes",lambda:RepositoryNotesCenter(self,self.repo)),("Cleanup",lambda:BranchCleanupCenter(self,self.repo)),("Snapshot",lambda:ProjectSnapshotCenter(self,self.repo)),("Patches",lambda:PatchCenter(self,self.repo)),("Bisect",lambda:BisectCenter(self,self.repo)),("Inspector",lambda:CommitInspector(self,self.repo)),("Submodules",lambda:SubmoduleCenter(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
+        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Release Center",lambda:ReleaseCenter(self,self.repo)),("Pull Requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Security",lambda:SecurityCenter(self,self.repo)),("Health",lambda:RepositoryHealthCenter(self,self.repo)),("Worktrees",lambda:WorktreeCenter(self,self.repo)),("Compare",lambda:RepositoryCompareCenter(self,self.repo)),("Recovery",lambda:BackupRestoreCenter(self,self.repo)),("Repo Manager",lambda:RepositoryManager(self,self.repo)),("Diagnostics",lambda:SettingsDiagnosticsCenter(self,self.repo)),("Smart Sync",lambda:SyncCenter(self,self.repo)),("Search",lambda:SearchCenter(self,self.repo)),("Review",lambda:ChangeReviewCenter(self,self.repo)),("Notes",lambda:RepositoryNotesCenter(self,self.repo)),("Cleanup",lambda:BranchCleanupCenter(self,self.repo)),("Snapshot",lambda:ProjectSnapshotCenter(self,self.repo)),("Patches",lambda:PatchCenter(self,self.repo)),("Bisect",lambda:BisectCenter(self,self.repo)),("Inspector",lambda:CommitInspector(self,self.repo)),("Submodules",lambda:SubmoduleCenter(self,self.repo)),("Tasks",lambda:TaskCenter(self,self.repo)),("Archive",lambda:ArchiveCenter(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
         self.tabs=ttk.Notebook(right);self.tabs.pack(fill="both",expand=True)
         self.texts={}
         for n in ["History","Branches","Stash","Tags","Remotes","Conflicts"]:
@@ -1364,3 +1364,62 @@ class SubmoduleCenter(tk.Toplevel):
     def sync(self):
         try:messagebox.showinfo("Submodules",git(self.repo,"submodule","sync","--recursive"),parent=self);self.refresh()
         except Exception as e:messagebox.showerror("Submodules",str(e),parent=self)
+
+class TaskCenter(tk.Toplevel):
+    """Repository-local checklist for release, refactor and maintenance work."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.path=Path(repo)/".git"/"gccc-tasks.txt";self.title("Repository Task Center");self.geometry("950x650");self._build();self.load()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x");self.entry=tk.StringVar();ttk.Entry(top,textvariable=self.entry).pack(side="left",fill="x",expand=True)
+        ttk.Button(top,text="Add task",command=self.add).pack(side="left",padx=3);ttk.Button(top,text="Toggle done",command=self.toggle).pack(side="left");ttk.Button(top,text="Delete",command=self.delete).pack(side="left",padx=3);ttk.Button(top,text="Save",command=self.save).pack(side="left")
+        self.list=tk.Listbox(self,font=("Segoe UI",10),selectmode="extended");self.list.pack(fill="both",expand=True,padx=8,pady=5)
+        ttk.Label(self,text="Tasks are private to this local clone and stored under .git/gccc-tasks.txt.",padding=8).pack(fill="x")
+    def load(self):
+        self.tasks=[]
+        if self.path.exists():self.tasks=[x for x in self.path.read_text(encoding="utf-8",errors="replace").splitlines() if x.strip()]
+        self.render()
+    def render(self):
+        self.list.delete(0,"end")
+        for t in self.tasks:self.list.insert("end",t)
+    def add(self):
+        v=self.entry.get().strip()
+        if v:self.tasks.append("[ ] "+v);self.entry.set("");self.render();self.save(False)
+    def toggle(self):
+        for i in self.list.curselection():self.tasks[i]=(self.tasks[i].replace("[ ] ","[x] ",1) if self.tasks[i].startswith("[ ] ") else self.tasks[i].replace("[x] ","[ ] ",1))
+        self.render();self.save(False)
+    def delete(self):
+        for i in reversed(self.list.curselection()):del self.tasks[i]
+        self.render();self.save(False)
+    def save(self,notice=True):
+        self.path.write_text("\n".join(self.tasks)+("\n" if self.tasks else ""),encoding="utf-8")
+        if notice:messagebox.showinfo("Tasks","Saved repository tasks.",parent=self)
+
+class ArchiveCenter(tk.Toplevel):
+    """Safe local archive/export hub for reproducible handover packages."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Archive & Handover Center");self.geometry("1000x680");self._build()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x")
+        for t,c in [("Export HEAD ZIP",self.head_zip),("Create Git bundle",self.bundle),("Export snapshot",self.snapshot),("Export support pack",self.support_pack)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        self.text=tk.Text(self,wrap="word",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
+        self.text.insert("1.0","Archive & Handover Center\n\nHEAD ZIP creates clean source without .git. Git bundle preserves repository history and refs. Snapshot exports a readable project handover. Support pack combines diagnostics, git status and environment information without including your GitHub token.")
+    def head_zip(self):
+        p=filedialog.asksaveasfilename(parent=self,defaultextension=".zip",initialfile=Path(self.repo).name+"-HEAD.zip")
+        if p:
+            try:messagebox.showinfo("Archive",git(self.repo,"archive","--format=zip",f"--output={p}","HEAD"),parent=self)
+            except Exception as e:messagebox.showerror("Archive",str(e),parent=self)
+    def bundle(self):
+        p=filedialog.asksaveasfilename(parent=self,defaultextension=".bundle",initialfile=Path(self.repo).name+"-full.bundle")
+        if p:
+            try:messagebox.showinfo("Bundle",git(self.repo,"bundle","create",p,"--all"),parent=self)
+            except Exception as e:messagebox.showerror("Bundle",str(e),parent=self)
+    def snapshot(self):ProjectSnapshotCenter(self,self.repo)
+    def support_pack(self):
+        import platform,sys
+        p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile=Path(self.repo).name+"-support.txt")
+        if not p:return
+        def safe(*args):
+            try:return git(self.repo,*args)
+            except Exception as e:return str(e)
+        report=f"GitHub Command Center Support Pack\n{'='*72}\nRepository: {self.repo}\nPython: {sys.version}\nOS: {platform.platform()}\n\nSTATUS\n{safe('status','--short','--branch')}\n\nREMOTES\n{safe('remote','-v')}\n\nRECENT COMMITS\n{safe('log','-20','--oneline','--decorate')}\n\nCONFIG\n{safe('config','--list','--show-origin')}\n\nFSCK\n{safe('fsck','--no-progress')}\n"
+        Path(p).write_text(report,encoding="utf-8");messagebox.showinfo("Support pack",f"Saved {p}",parent=self)
