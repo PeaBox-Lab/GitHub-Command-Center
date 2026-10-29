@@ -23,7 +23,7 @@ class LocalGitWindow(tk.Toplevel):
         left=ttk.Frame(pane);right=ttk.Frame(pane);pane.add(left,weight=3);pane.add(right,weight=2)
         self.files=ttk.Treeview(left,columns=("state","file"),show="headings",selectmode="extended");self.files.heading("state",text="State");self.files.heading("file",text="File");self.files.column("state",width=70);self.files.column("file",width=470);self.files.pack(fill="both",expand=True)
         foot=ttk.Frame(left);foot.pack(fill="x",pady=5)
-        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Release Center",lambda:ReleaseCenter(self,self.repo)),("Pull Requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Security",lambda:SecurityCenter(self,self.repo)),("Health",lambda:RepositoryHealthCenter(self,self.repo)),("Worktrees",lambda:WorktreeCenter(self,self.repo)),("Compare",lambda:RepositoryCompareCenter(self,self.repo)),("Recovery",lambda:BackupRestoreCenter(self,self.repo)),("Repo Manager",lambda:RepositoryManager(self,self.repo)),("Diagnostics",lambda:SettingsDiagnosticsCenter(self,self.repo)),("Smart Sync",lambda:SyncCenter(self,self.repo)),("Search",lambda:SearchCenter(self,self.repo)),("Review",lambda:ChangeReviewCenter(self,self.repo)),("Notes",lambda:RepositoryNotesCenter(self,self.repo)),("Cleanup",lambda:BranchCleanupCenter(self,self.repo)),("Snapshot",lambda:ProjectSnapshotCenter(self,self.repo)),("Patches",lambda:PatchCenter(self,self.repo)),("Bisect",lambda:BisectCenter(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
+        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Release Center",lambda:ReleaseCenter(self,self.repo)),("Pull Requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Security",lambda:SecurityCenter(self,self.repo)),("Health",lambda:RepositoryHealthCenter(self,self.repo)),("Worktrees",lambda:WorktreeCenter(self,self.repo)),("Compare",lambda:RepositoryCompareCenter(self,self.repo)),("Recovery",lambda:BackupRestoreCenter(self,self.repo)),("Repo Manager",lambda:RepositoryManager(self,self.repo)),("Diagnostics",lambda:SettingsDiagnosticsCenter(self,self.repo)),("Smart Sync",lambda:SyncCenter(self,self.repo)),("Search",lambda:SearchCenter(self,self.repo)),("Review",lambda:ChangeReviewCenter(self,self.repo)),("Notes",lambda:RepositoryNotesCenter(self,self.repo)),("Cleanup",lambda:BranchCleanupCenter(self,self.repo)),("Snapshot",lambda:ProjectSnapshotCenter(self,self.repo)),("Patches",lambda:PatchCenter(self,self.repo)),("Bisect",lambda:BisectCenter(self,self.repo)),("Inspector",lambda:CommitInspector(self,self.repo)),("Submodules",lambda:SubmoduleCenter(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
         self.tabs=ttk.Notebook(right);self.tabs.pack(fill="both",expand=True)
         self.texts={}
         for n in ["History","Branches","Stash","Tags","Remotes","Conflicts"]:
@@ -1296,3 +1296,71 @@ class BisectCenter(tk.Toplevel):
     def reset(self):
         try:messagebox.showinfo("Bisect",git(self.repo,"bisect","reset"),parent=self);self.refresh()
         except Exception as e:messagebox.showerror("Bisect",str(e),parent=self)
+
+class CommitInspector(tk.Toplevel):
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Commit Inspector & File History");self.geometry("1200x760");self._build();self.load_commits()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x");self.path=tk.StringVar();ttk.Entry(top,textvariable=self.path).pack(side="left",fill="x",expand=True)
+        ttk.Button(top,text="File history",command=self.file_history).pack(side="left",padx=3);ttk.Button(top,text="Blame file",command=self.blame).pack(side="left");ttk.Button(top,text="All commits",command=self.load_commits).pack(side="left",padx=3)
+        pane=ttk.Panedwindow(self,orient="horizontal");pane.pack(fill="both",expand=True,padx=8,pady=5);l=ttk.Frame(pane);r=ttk.Frame(pane);pane.add(l,weight=2);pane.add(r,weight=3)
+        self.list=tk.Listbox(l,font=("Consolas",9));self.list.pack(fill="both",expand=True);self.list.bind("<<ListboxSelect>>",lambda e:self.show_commit())
+        self.text=tk.Text(r,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True)
+    def load_commits(self,args=None):
+        try:
+            raw=git(self.repo,"log",*(args or []),"-150","--date=short","--pretty=format:%H%x09%h%x09%ad%x09%an%x09%s");self.rows=[];self.list.delete(0,"end")
+            for line in raw.splitlines():
+                p=line.split("\t",4)
+                if len(p)==5:self.rows.append(p);self.list.insert("end",f"{p[1]}  {p[2]}  {p[4]}")
+        except Exception as e:messagebox.showerror("History",str(e),parent=self)
+    def file_history(self):
+        p=self.path.get().strip()
+        if p:self.load_commits(["--follow","--",p])
+    def show_commit(self):
+        s=self.list.curselection()
+        if not s:return
+        try:self.show(git(self.repo,"show","--stat","--patch","--find-renames",self.rows[s[0]][0]))
+        except Exception as e:self.show(str(e))
+    def blame(self):
+        p=self.path.get().strip()
+        if not p:return
+        try:self.show(git(self.repo,"blame","--date=short","--",p))
+        except Exception as e:self.show(str(e))
+    def show(self,v):self.text.delete("1.0","end");self.text.insert("1.0",v)
+
+class SubmoduleCenter(tk.Toplevel):
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Submodule Center");self.geometry("1050x680");self.rows=[];self._build();self.refresh()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x")
+        for t,c in [("Refresh",self.refresh),("Add",self.add),("Init/update all",self.update_all),("Update remote",self.update_remote),("Sync URLs",self.sync)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        self.tree=ttk.Treeview(self,columns=("state","sha","path","branch"),show="headings")
+        for c,t,w in [("state","State",70),("sha","Commit",120),("path","Path",370),("branch","Description",380)]:self.tree.heading(c,text=t);self.tree.column(c,width=w,anchor="w")
+        self.tree.pack(fill="both",expand=True,padx=8,pady=5)
+        ttk.Label(self,text="Submodule updates are explicit. Review parent-repository changes after updating because the recorded submodule commit may change.",padding=8).pack(fill="x")
+    def refresh(self):
+        self.tree.delete(*self.tree.get_children());self.rows=[]
+        try:raw=git(self.repo,"submodule","status","--recursive")
+        except Exception as e:raw=str(e)
+        if raw=="Completed successfully.":return
+        for line in raw.splitlines():
+            if len(line)<42:continue
+            state=line[0];rest=line[1:].strip().split(None,2);sha=rest[0];path=rest[1] if len(rest)>1 else "";desc=rest[2] if len(rest)>2 else "";self.rows.append(path);self.tree.insert("","end",values=(state,sha[:10],path,desc))
+    def add(self):
+        url=simpledialog.askstring("Add submodule","Repository URL:",parent=self)
+        if not url:return
+        path=simpledialog.askstring("Add submodule","Local path:",parent=self)
+        if path:
+            try:messagebox.showinfo("Submodule",git(self.repo,"submodule","add",url,path),parent=self);self.refresh()
+            except Exception as e:messagebox.showerror("Submodule",str(e),parent=self)
+    def update_all(self):
+        if messagebox.askyesno("Submodules","Initialize and update all submodules recursively?",parent=self):
+            try:messagebox.showinfo("Submodules",git(self.repo,"submodule","update","--init","--recursive"),parent=self);self.refresh()
+            except Exception as e:messagebox.showerror("Submodules",str(e),parent=self)
+    def update_remote(self):
+        if messagebox.askyesno("Submodules","Update submodules from their configured remote branches? Review resulting parent-repository pointer changes afterward.",parent=self):
+            try:messagebox.showinfo("Submodules",git(self.repo,"submodule","update","--remote","--recursive"),parent=self);self.refresh()
+            except Exception as e:messagebox.showerror("Submodules",str(e),parent=self)
+    def sync(self):
+        try:messagebox.showinfo("Submodules",git(self.repo,"submodule","sync","--recursive"),parent=self);self.refresh()
+        except Exception as e:messagebox.showerror("Submodules",str(e),parent=self)

@@ -53,3 +53,9 @@
 - Added Regression Finder using guided Git bisect.
 - Added clean-working-tree safety gate before starting bisect.
 - Retained all prior GitHub, Git, security, release, health, recovery, review and handover functionality.
+
+## v1.5.0
+- Added Commit Inspector with commit patch/stat views.
+- Added per-file history with `git log --follow` and line attribution with `git blame`.
+- Added Submodule Center with add, init/update, remote update and URL synchronization workflows.
+- Preserved all v0.1-v1.4 capabilities.

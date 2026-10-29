@@ -45,3 +45,9 @@ Use Patches when sharing selected changes without pushing a branch. Validate rec
 
 ## Regression Finder (v1.4)
 Open Bisect with a clean working tree. Enter a ref where the behavior was known good and a ref where it is bad. Test each revision Git checks out and choose Mark good, Mark bad, or Skip until Git identifies the first bad commit. Reset when finished.
+
+## Commit Inspector (v1.5)
+Use Inspector to review historical patches or enter a tracked relative file path and choose File history. Blame file shows line-level commit attribution and dates for that path.
+
+## Submodules (v1.5)
+Use Submodules to initialize/update cloned projects that contain submodules. Remote update can move the recorded submodule commit, so review the parent repository's working tree and diff before committing the pointer change.

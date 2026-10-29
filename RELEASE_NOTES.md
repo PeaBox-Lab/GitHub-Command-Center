@@ -1,3 +1,5 @@
-# GitHub Command Center 1.4.0 Release Notes
+# GitHub Command Center 1.5.0 Release Notes
 
-Version 1.4 adds two power-user workflows that are difficult to discover in traditional Git context menus: portable patch exchange and guided regression hunting with Git bisect. Both are presented with validation and safety gates while retaining the complete feature set introduced from v0.1 through v1.3.
+Version 1.5 deepens repository investigation and multi-repository composition. Commit Inspector exposes per-commit patches, rename-aware file history and blame information, while Submodule Center makes recursive initialization, updates and URL synchronization discoverable from the GUI.
+
+The cumulative v0.1 through v1.4 functionality remains included.
