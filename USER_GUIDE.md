@@ -81,3 +81,7 @@ Use before releases to distinguish annotated/lightweight tags, confirm what exis
 # Version 3.8 Addendum
 
 Use Stash Manager Pro to inspect a stash before applying it. Safe Clean always previews first; enabling ignored-file cleaning requires typed confirmation. Repository Size Explorer helps identify large current files before deciding whether Git LFS is appropriate.
+
+# Version 3.9 Addendum
+
+Use Force-with-Lease only after intentional history rewriting such as rebase or amend. Fetch first, inspect the observed upstream hash, and never use it as a routine push replacement. Advanced History Search supports Git pickaxe and regex workflows from the GUI. Verify a Git bundle before using it for recovery.

@@ -1,3 +1,3 @@
-# GitHub Command Center 3.8.0 Release Notes
+# GitHub Command Center 3.9.0 Release Notes
 
-Version 3.8 bundles improved stash management, highly guarded repository cleaning and storage analysis. The emphasis remains on making powerful Git maintenance workflows understandable without introducing silent destructive actions.
+Version 3.9 adds a deliberately guarded force-with-lease workflow, professional history-search tools and offline Git-bundle inspection. Plain force push remains unavailable by design.
