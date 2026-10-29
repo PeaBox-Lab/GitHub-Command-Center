@@ -9,6 +9,7 @@ import webbrowser
 from .config import load_config, save_config
 from .github_api import GitHubClient
 from .git_ops import clone_repo, git_available, pull_repo, status_repo
+from .local_git_gui import LocalGitWindow
 
 BG = "#f5f7fb"
 NAV = "#0d1526"
@@ -57,7 +58,7 @@ class GitHubCommandCenter(tk.Tk):
         tk.Label(self.nav, text="◉  GitHub Command", bg=NAV, fg="white", font=("Segoe UI Semibold", 15)).pack(anchor="w", padx=18, pady=(24, 4))
         tk.Label(self.nav, text="Python desktop console", bg=NAV, fg="#7c8aa5", font=("Segoe UI", 9)).pack(anchor="w", padx=20, pady=(0, 24))
         self.nav_buttons = {}
-        for name in ["Dashboard", "Repositories", "Activity", "Insights", "Settings"]:
+        for name in ["Dashboard", "Repositories", "Local Git", "Activity", "Insights", "Settings"]:
             b = tk.Button(self.nav, text=name, command=lambda n=name: self.switch(n), anchor="w", relief="flat", bd=0,
                           bg=NAV, fg="#cbd5e1", activebackground="#1e293b", activeforeground="white",
                           font=("Segoe UI", 10), padx=18, pady=12, cursor="hand2")
@@ -169,7 +170,7 @@ class GitHubCommandCenter(tk.Tk):
         if not self.client and name != "Settings": return self.show_connect()
         self.current_view = name; self.title_label.config(text=name)
         for n,b in self.nav_buttons.items(): b.config(bg=PURPLE if n == name else NAV, fg="white" if n == name else "#cbd5e1")
-        getattr(self, f"view_{name.lower()}")()
+        self.view_local_git() if name == "Local Git" else getattr(self, f"view_{name.lower()}")()
 
     def view_dashboard(self):
         self.clear()
@@ -229,6 +230,9 @@ class GitHubCommandCenter(tk.Tk):
         if not tree.selection(): return
         rid=int(tree.selection()[0]); repo=next((r for r in self.repos if r["id"]==rid),None)
         if repo: webbrowser.open(repo["html_url"])
+
+    def view_local_git(self):
+        LocalGitWindow(self, self.config_data.get("last_repo", ""))
 
     def view_activity(self):
         self.clear(); box=self.card(self.content,"Recent public activity"); box.pack(fill="both",expand=True)
