@@ -42,10 +42,10 @@ class LocalGitWindow(tk.Toplevel):
         # Compact sidebar replaces the long overflowing button strip
         side=tk.Frame(body,bg="#182235",width=212);side.pack(side="left",fill="y");side.pack_propagate(False)
         groups=[
-            ("WORK",[("Dashboard",lambda:RepositoryDashboardCenter(self,self.repo)),("Changes",self.refresh),("History",lambda:CommitGraphWindow(self,self.repo)),("Search",lambda:SearchCenter(self,self.repo))]),
+            ("WORK",[("Dashboard",lambda:RepositoryDashboardCenter(self,self.repo)),("Changes",self.refresh),("History",lambda:CommitGraphWindow(self,self.repo)),("Partial staging",lambda:PartialStagingCenter(self,self.repo)),("Search",lambda:SearchCenter(self,self.repo))]),
             ("COLLABORATE",[("Pull requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Releases",lambda:ReleaseCenter(self,self.repo))]),
             ("QUALITY",[("Conflicts",lambda:ConflictResolver(self,self.repo)),("Security",lambda:SecurityCenter(self,self.repo)),("Health",lambda:RepositoryHealthCenter(self,self.repo)),("Compare",lambda:RepositoryCompareCenter(self,self.repo))]),
-            ("TOOLS",[("Branches & advanced",lambda:AdvancedGitWindow(self,self.repo)),("Recovery",lambda:BackupRestoreCenter(self,self.repo)),("Worktrees",lambda:WorktreeCenter(self,self.repo)),("All commands",lambda:CommandPalette(self,self.repo))])]
+            ("TOOLS",[("Branches & advanced",lambda:AdvancedGitWindow(self,self.repo)),("Reflog recovery",lambda:ReflogRecoveryCenter(self,self.repo)),("Recovery",lambda:BackupRestoreCenter(self,self.repo)),("Worktrees",lambda:WorktreeCenter(self,self.repo)),("All commands",lambda:CommandPalette(self,self.repo))])]
         for heading,items in groups:
             tk.Label(side,text=heading,bg="#182235",fg="#72819a",font=("Segoe UI Semibold",8),anchor="w").pack(fill="x",padx=16,pady=(16,5))
             for text,cmd in items:
@@ -1514,7 +1514,7 @@ class CommandPalette(tk.Toplevel):
             ("Regression Finder",lambda:BisectCenter(self,repo),"bisect regression"),("Commit Inspector",lambda:CommitInspector(self,repo),"blame file history commit"),
             ("Submodule Center",lambda:SubmoduleCenter(self,repo),"submodule recursive"),("Repository Tasks",lambda:TaskCenter(self,repo),"checklist tasks"),
             ("Archive & Handover",lambda:ArchiveCenter(self,repo),"zip bundle support pack"),("Git Hooks Manager",lambda:HooksCenter(self,repo),"hooks pre-commit commit-msg"),
-            ("Git LFS Center",lambda:LFSCenter(self,repo),"large files lfs track"),("Automation Recipes",lambda:AutomationCenter(self,repo),"automation recipes checks"),("Identity & Signing",lambda:IdentitySigningCenter(self,repo),"identity email gpg sign verify"),("Commit Message Studio",lambda:CommitMessageStudio(self,repo),"conventional commits message"),("Changelog Studio",lambda:ChangelogStudio(self,repo),"changelog release notes commits"),("Remote Migration & Mirror",lambda:RemoteMigrationCenter(self,repo),"remote backup mirror migration"),("Credential & Remote Hygiene",lambda:CredentialAuditCenter(self,repo),"credentials helper url ssh https auth"),("Release Policy Center",lambda:ReleasePolicyCenter(self,repo),"release policy gates semver version"),("Repository Metrics",lambda:RepositoryMetricsCenter(self,repo),"metrics contributors languages commits activity"),("Plugin Manager",lambda:PluginManager(self,repo),"plugins extensions commands"),("Batch Operations",lambda:BatchOperationsCenter(self,repo),"batch multiple repositories portfolio"),("Operations Dashboard",lambda:RepositoryDashboardCenter(self,repo),"dashboard operational status next action"),("Repository Data Export",lambda:DataExportCenter(self,repo),"export json csv commits metadata"),("Background Jobs",lambda:BackgroundJobsCenter(self,repo),"jobs queue background cancel logs"),("Preferences",lambda:PreferencesCenter(self,repo),"preferences theme appearance defaults"),("Portfolio History",lambda:PortfolioHistoryCenter(self,repo),"sqlite portfolio history snapshots trends"),("Self-Test & Readiness",lambda:SelfTestCenter(self,repo),"self test readiness smoke diagnostics")]
+            ("Git LFS Center",lambda:LFSCenter(self,repo),"large files lfs track"),("Automation Recipes",lambda:AutomationCenter(self,repo),"automation recipes checks"),("Identity & Signing",lambda:IdentitySigningCenter(self,repo),"identity email gpg sign verify"),("Commit Message Studio",lambda:CommitMessageStudio(self,repo),"conventional commits message"),("Changelog Studio",lambda:ChangelogStudio(self,repo),"changelog release notes commits"),("Remote Migration & Mirror",lambda:RemoteMigrationCenter(self,repo),"remote backup mirror migration"),("Credential & Remote Hygiene",lambda:CredentialAuditCenter(self,repo),"credentials helper url ssh https auth"),("Release Policy Center",lambda:ReleasePolicyCenter(self,repo),"release policy gates semver version"),("Repository Metrics",lambda:RepositoryMetricsCenter(self,repo),"metrics contributors languages commits activity"),("Plugin Manager",lambda:PluginManager(self,repo),"plugins extensions commands"),("Batch Operations",lambda:BatchOperationsCenter(self,repo),"batch multiple repositories portfolio"),("Operations Dashboard",lambda:RepositoryDashboardCenter(self,repo),"dashboard operational status next action"),("Repository Data Export",lambda:DataExportCenter(self,repo),"export json csv commits metadata"),("Background Jobs",lambda:BackgroundJobsCenter(self,repo),"jobs queue background cancel logs"),("Preferences",lambda:PreferencesCenter(self,repo),"preferences theme appearance defaults"),("Portfolio History",lambda:PortfolioHistoryCenter(self,repo),"sqlite portfolio history snapshots trends"),("Self-Test & Readiness",lambda:SelfTestCenter(self,repo),"self test readiness smoke diagnostics"),("Partial Staging",lambda:PartialStagingCenter(self,repo),"partial stage hunk line add patch"),("Reflog Recovery",lambda:ReflogRecoveryCenter(self,repo),"reflog recover lost commit reset checkout branch")]
         self.render()
     def render(self):
         q=self.q.get().lower().strip();self.filtered=[c for c in self.commands if not q or q in (c[0]+" "+c[2]).lower()];self.list.delete(0,"end")
@@ -2161,3 +2161,167 @@ class SelfTestCenter(tk.Toplevel):
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="gccc-self-test.txt")
         if p:Path(p).write_text(self.report,encoding="utf-8")
+
+class PartialStagingCenter(tk.Toplevel):
+    """Hunk-level staging UI backed by git diff and git apply --cached."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Partial Staging Center");self.geometry("1300x820");self.minsize(1050,700);self.files=[];self.hunks=[];self.current_file="";self._build();self.refresh()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x")
+        for t,c in [("Refresh",self.refresh),("Stage selected hunk",self.stage_hunk),("Unstage selected hunk",self.unstage_hunk),("Stage whole file",self.stage_file),("Unstage whole file",self.unstage_file)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        pane=ttk.Panedwindow(self,orient="horizontal");pane.pack(fill="both",expand=True,padx=8,pady=5)
+        left=ttk.Frame(pane);middle=ttk.Frame(pane);right=ttk.Frame(pane);pane.add(left,weight=2);pane.add(middle,weight=2);pane.add(right,weight=4)
+        ttk.Label(left,text="Changed files",font=("Segoe UI Semibold",10)).pack(anchor="w",pady=4);self.file_list=tk.Listbox(left,font=("Consolas",9));self.file_list.pack(fill="both",expand=True);self.file_list.bind("<<ListboxSelect>>",lambda e:self.load_file())
+        ttk.Label(middle,text="Hunks",font=("Segoe UI Semibold",10)).pack(anchor="w",pady=4);self.hunk_list=tk.Listbox(middle,font=("Consolas",9));self.hunk_list.pack(fill="both",expand=True);self.hunk_list.bind("<<ListboxSelect>>",lambda e:self.show_hunk())
+        ttk.Label(right,text="Selected hunk preview",font=("Segoe UI Semibold",10)).pack(anchor="w",pady=4);self.preview=tk.Text(right,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.preview.pack(fill="both",expand=True)
+        self.status=tk.StringVar(value="Ready");ttk.Label(self,textvariable=self.status,padding=8).pack(fill="x")
+    def changed_files(self):
+        out=git(self.repo,"status","--porcelain=v1");rows=[]
+        for line in out.splitlines():
+            if len(line)>3:
+                path=line[3:]
+                if " -> " in path:path=path.split(" -> ",1)[1]
+                rows.append((line[:2],path))
+        return rows
+    def refresh(self):
+        try:
+            self.files=self.changed_files();self.file_list.delete(0,"end");self.hunk_list.delete(0,"end");self.preview.delete("1.0","end")
+            for state,path in self.files:self.file_list.insert("end",f"{state}  {path}")
+            self.status.set(f"{len(self.files)} changed file(s). Select a text file to inspect hunks.")
+        except Exception as e:messagebox.showerror("Partial staging",str(e),parent=self)
+    def parse_patch(self,patch):
+        lines=patch.splitlines(keepends=True);header=[];hunks=[];current=[]
+        for line in lines:
+            if line.startswith("@@"):
+                if current:hunks.append(header+current)
+                current=[line]
+            elif current:current.append(line)
+            else:header.append(line)
+        if current:hunks.append(header+current)
+        return ["".join(x) for x in hunks]
+    def selected_file(self):
+        s=self.file_list.curselection();return self.files[s[0]][1] if s else None
+    def load_file(self):
+        path=self.selected_file()
+        if not path:return
+        self.current_file=path
+        try:
+            patch=git(self.repo,"diff","--no-ext-diff","--binary","--",path)
+            if patch=="Completed successfully.":patch=""
+            self.hunks=self.parse_patch(patch);self.hunk_list.delete(0,"end")
+            for i,h in enumerate(self.hunks):
+                marker=next((x.strip() for x in h.splitlines() if x.startswith("@@")),f"Hunk {i+1}");self.hunk_list.insert("end",f"{i+1}. {marker}")
+            if not self.hunks:self.status.set("No unstaged text hunks. The file may be fully staged, untracked, binary, or unchanged.")
+            else:self.status.set(f"{len(self.hunks)} unstaged hunk(s) in {path}")
+        except Exception as e:messagebox.showerror("Partial staging",str(e),parent=self)
+    def show_hunk(self):
+        s=self.hunk_list.curselection();self.preview.delete("1.0","end")
+        if s:self.preview.insert("1.0",self.hunks[s[0]])
+    def apply_patch(self,patch,cached=True,reverse=False):
+        import tempfile,os
+        fd,name=tempfile.mkstemp(prefix="gccc-hunk-",suffix=".patch");os.close(fd)
+        try:
+            Path(name).write_text(patch,encoding="utf-8");args=["apply","--whitespace=nowarn"]
+            if cached:args.append("--cached")
+            if reverse:args.append("--reverse")
+            args.append(name);return git(self.repo,*args)
+        finally:
+            try:os.unlink(name)
+            except OSError:pass
+    def stage_hunk(self):
+        s=self.hunk_list.curselection()
+        if not s:return
+        try:self.apply_patch(self.hunks[s[0]],True,False);self.status.set("Selected hunk staged.");self.refresh();self.select_file_again()
+        except Exception as e:messagebox.showerror("Stage hunk",str(e),parent=self)
+    def staged_hunks(self,path):
+        p=git(self.repo,"diff","--cached","--no-ext-diff","--binary","--",path);return self.parse_patch("" if p=="Completed successfully." else p)
+    def unstage_hunk(self):
+        path=self.selected_file()
+        if not path:return
+        hunks=self.staged_hunks(path)
+        if not hunks:return messagebox.showinfo("Unstage hunk","No staged text hunks found for this file.",parent=self)
+        PickHunkDialog(self,self.repo,path,hunks,self.after_unstage)
+    def after_unstage(self):self.refresh();self.status.set("Selected staged hunk returned to the working tree.")
+    def select_file_again(self):
+        for i,(_,p) in enumerate(self.files):
+            if p==self.current_file:self.file_list.selection_set(i);self.file_list.see(i);self.load_file();break
+    def stage_file(self):
+        p=self.selected_file()
+        if p:
+            try:git(self.repo,"add","--",p);self.refresh()
+            except Exception as e:messagebox.showerror("Stage file",str(e),parent=self)
+    def unstage_file(self):
+        p=self.selected_file()
+        if p:
+            try:git(self.repo,"restore","--staged","--",p);self.refresh()
+            except Exception as e:messagebox.showerror("Unstage file",str(e),parent=self)
+
+class PickHunkDialog(tk.Toplevel):
+    def __init__(self,parent,repo,path,hunks,done):
+        super().__init__(parent);self.repo=repo;self.path=path;self.hunks=hunks;self.done=done;self.title("Select staged hunk to unstage");self.geometry("1050x700")
+        self.list=tk.Listbox(self,font=("Consolas",9));self.list.pack(side="left",fill="y",padx=6,pady=6)
+        for i,h in enumerate(hunks):self.list.insert("end",next((x.strip() for x in h.splitlines() if x.startswith("@@")),f"Hunk {i+1}"))
+        self.list.bind("<<ListboxSelect>>",lambda e:self.show());r=ttk.Frame(self);r.pack(side="left",fill="both",expand=True);self.text=tk.Text(r,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=6,pady=6);ttk.Button(r,text="Unstage selected hunk",command=self.apply).pack(anchor="e",padx=6,pady=6)
+    def show(self):
+        s=self.list.curselection();self.text.delete("1.0","end")
+        if s:self.text.insert("1.0",self.hunks[s[0]])
+    def apply(self):
+        import tempfile,os
+        s=self.list.curselection()
+        if not s:return
+        fd,name=tempfile.mkstemp(prefix="gccc-unstage-",suffix=".patch");os.close(fd)
+        try:
+            Path(name).write_text(self.hunks[s[0]],encoding="utf-8");git(self.repo,"apply","--cached","--reverse","--whitespace=nowarn",name);self.done();self.destroy()
+        except Exception as e:messagebox.showerror("Unstage hunk",str(e),parent=self)
+        finally:
+            try:os.unlink(name)
+            except OSError:pass
+
+class ReflogRecoveryCenter(tk.Toplevel):
+    """Browse reflog events and recover commits through safe branch creation."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Reflog Recovery Center");self.geometry("1250x780");self.minsize(1000,650);self.rows=[];self._build();self.refresh()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x")
+        for t,c in [("Refresh",self.refresh),("Create recovery branch",self.recover_branch),("Inspect commit",self.inspect),("Checkout detached",self.checkout),("Expire preview",self.expire_preview)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        pane=ttk.Panedwindow(self,orient="vertical");pane.pack(fill="both",expand=True,padx=8,pady=5);a=ttk.Frame(pane);b=ttk.Frame(pane);pane.add(a,weight=3);pane.add(b,weight=2)
+        self.tree=ttk.Treeview(a,columns=("selector","hash","date","action","message"),show="headings")
+        for c,t,w in [("selector","Reflog entry",130),("hash","Commit",100),("date","Date",160),("action","Action",180),("message","Message",520)]:self.tree.heading(c,text=t);self.tree.column(c,width=w,anchor="w")
+        self.tree.pack(fill="both",expand=True);self.tree.bind("<<TreeviewSelect>>",lambda e:self.details())
+        self.text=tk.Text(b,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True)
+        ttk.Label(self,text="Safest recovery: create a new branch at the selected reflog commit. This center does not run hard reset or delete reflog entries.",padding=8).pack(fill="x")
+    def refresh(self):
+        try:
+            raw=git(self.repo,"reflog","show","--all","--date=iso-strict","--format=%gd%x1f%H%x1f%h%x1f%cd%x1f%gs","-500");self.rows=[];self.tree.delete(*self.tree.get_children())
+            for line in raw.splitlines():
+                p=line.split("\x1f",4)
+                if len(p)==5:
+                    selector,full,short,date,msg=p;action=msg.split(":",1)[0] if ":" in msg else msg;self.rows.append(dict(selector=selector,full=full,short=short,date=date,action=action,message=msg));self.tree.insert("","end",iid=str(len(self.rows)-1),values=(selector,short,date,action,msg))
+        except Exception as e:messagebox.showerror("Reflog",str(e),parent=self)
+    def selected(self):
+        s=self.tree.selection();return self.rows[int(s[0])] if s else None
+    def details(self):
+        r=self.selected()
+        if not r:return
+        try:v=git(self.repo,"show","--stat","--decorate","--date=iso-strict","--pretty=fuller",r["full"])
+        except Exception as e:v=str(e)
+        self.text.delete("1.0","end");self.text.insert("1.0",v)
+    def recover_branch(self):
+        import datetime,re
+        r=self.selected()
+        if not r:return
+        default=f"recovery/{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}-{r['short']}";name=simpledialog.askstring("Recovery branch","New recovery branch name:",initialvalue=default,parent=self)
+        if not name:return
+        if not re.match(r"^[A-Za-z0-9._/-]+$",name):return messagebox.showwarning("Recovery","Invalid branch name characters.",parent=self)
+        try:messagebox.showinfo("Recovery",git(self.repo,"branch",name,r["full"]),parent=self);self.refresh()
+        except Exception as e:messagebox.showerror("Recovery",str(e),parent=self)
+    def inspect(self):self.details()
+    def checkout(self):
+        r=self.selected()
+        if r and messagebox.askyesno("Detached checkout",f"Checkout {r['short']} in detached HEAD mode? Prefer creating a recovery branch for permanent recovery.",parent=self):
+            try:messagebox.showinfo("Checkout",git(self.repo,"switch","--detach",r["full"]),parent=self)
+            except Exception as e:messagebox.showerror("Checkout",str(e),parent=self)
+    def expire_preview(self):
+        try:v=git(self.repo,"reflog","expire","--dry-run","--all")
+        except Exception as e:v=str(e)
+        self.text.delete("1.0","end");self.text.insert("1.0","DRY-RUN ONLY. No entries were removed.\n\n"+v)

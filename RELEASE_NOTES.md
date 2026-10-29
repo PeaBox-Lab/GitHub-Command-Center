@@ -1,5 +1,3 @@
-# GitHub Command Center 3.2.0 Release Notes
+# GitHub Command Center 3.3.0 Release Notes
 
-Version 3.2 is a dedicated usability release. The Local Git Workspace has been rebuilt around a clear daily workflow, categorized navigation and an always-available Command Palette. Repository state is now visible through branch, change and synchronization badges, while advanced tools no longer overcrowd the interface.
-
-All earlier functionality remains included. Versioning stays within major version 3 for incremental releases.
+Version 3.3 closes two critical Git usability gaps. Partial Staging allows individual diff hunks to be staged or unstaged without a terminal, while Reflog Recovery provides a cautious path to inspect and recover commits after resets, rebases, checkouts or branch mistakes. Recovery defaults to creating a new branch and avoids destructive reset behavior.

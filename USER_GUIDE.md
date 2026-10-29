@@ -19,3 +19,11 @@ All earlier centers remain searchable through Commands.
 Use the top action bar for daily Git tasks. Use the left navigation for common work, collaboration and quality centers. Press Ctrl+K for the complete searchable feature list. The badges above the working tree show the current branch, number of changed entries and upstream divergence.
 
 Keyboard shortcuts: Ctrl+K opens Commands, F5 refreshes, and Ctrl+Enter opens commit entry.
+
+# Version 3.3 Addendum
+
+## Partial staging
+Open Partial staging, select a changed text file, then select and preview a hunk. Stage selected hunk adds only that patch to the index. To reverse one staged hunk, choose Unstage selected hunk and select it in the staged-hunk dialog. Use whole-file actions for new binary files or patches that Git cannot apply independently.
+
+## Reflog recovery
+Open Reflog recovery after an accidental reset, rebase, branch deletion or checkout. Inspect the candidate commit, then create a recovery branch. This is safer than immediately resetting the current branch. Detached checkout is available for inspection, but branch creation is recommended for permanent recovery.

@@ -29,3 +29,6 @@ Commands are executed directly as argument arrays with the repository as working
 
 ## v3.1 platform services
 New centers demonstrate reusable patterns for threaded subprocess jobs, user-level JSON preferences, standard-library SQLite persistence and built-in smoke testing. Future modular centers should reuse these patterns when the large GUI module is split into a `centers/` package.
+
+## v3.3 patch and recovery patterns
+PartialStagingCenter uses Git-produced patch headers and applies selected hunks through temporary files with `git apply --cached`. ReflogRecoveryCenter treats branch creation as the default recovery action and keeps reflog expiration dry-run only. Future recovery tools should preserve these non-destructive defaults.

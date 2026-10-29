@@ -1,23 +1,30 @@
-# GitHub Command Center v3.2.0
+# GitHub Command Center v3.3.0
 
-A usability-focused Python desktop command center for Git and GitHub. Version 3.2 keeps decimal versioning within major version 3 and delivers a substantial Local Git interface redesign instead of another feature-only increment.
+Python desktop command center for Git and GitHub. Version 3.3 follows decimal progression and delivers two critical Git workflows: partial hunk staging and safe reflog recovery.
 
-## Major UI redesign
-- Modern dark application header with clear repository context
-- Compact daily-action bar for Refresh, Stage, Commit, Fetch, Pull and Push
-- Grouped left navigation for Work, Collaborate, Quality and Tools
-- Removed the long overflowing feature-button strip
-- Searchable Command Palette remains the complete feature launcher
-- Repository summary badges for branch, changed-file count and ahead/behind sync state
-- Card-style working-tree and tools areas
-- Improved spacing, typography, row height, colors and selected-row visibility
-- Status bar with live activity and keyboard shortcuts
-- Keyboard shortcuts: Ctrl+K Command Palette, F5 Refresh, Ctrl+Enter Commit
-- Double-click a changed file to view its diff
-- Larger default window and better minimum size
+## Partial Staging Center
+- Lists changed files and parses unstaged text patches into individual hunks
+- Preview each selected hunk
+- Stage only one hunk using `git apply --cached`
+- Browse staged hunks and unstage only one hunk using reverse cached patch application
+- Stage or unstage the complete file when appropriate
+- Handles renamed paths in status output
+- Does not silently stage unrelated hunks
 
-## Retained platform capabilities
-Every feature from v0.1 through v3.1 remains available, including background jobs, preferences, SQLite portfolio history, self-tests, plugins, batch operations, dashboards, exports, visual graph/conflicts, Releases, PRs, Actions, Security, Health, Worktrees, Recovery, Hooks, LFS, signing, release policy and metrics.
+Partial hunk operations apply Git-generated patches. Binary files, untracked files without a normal diff, and unusually complex combined patches should be staged as complete files.
 
-## Versioning
-Incremental releases remain within major version 3 using decimal progression. Small enhancements will not trigger a major-version jump.
+## Reflog Recovery Center
+- Browse up to 500 reflog entries across all refs
+- Entry selector, full/short hash, timestamp, action and message
+- Inspect the selected commit before recovery
+- Safest recovery action creates a new branch at the selected commit
+- Optional detached checkout with warning
+- Reflog expiry is dry-run preview only
+- No hard reset and no reflog deletion
+
+## UI integration
+- Partial staging is directly available under Work
+- Reflog Recovery is directly available under Tools
+- Both are registered in the searchable Command Palette
+
+All v0.1-v3.2 functionality remains included.
