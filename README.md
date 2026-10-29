@@ -1,24 +1,27 @@
-# GitHub Command Center v3.15.0
+# GitHub Command Center v3.16.0
 
-Version 3.15 continues the decimal major-version-3 train with safer synchronization decisions, detached-HEAD recovery and auditable repository-state exports.
+Version 3.16 continues decimal progression within major version 3 and builds directly from the complete v3.15 project export.
 
-## Pull Strategy Advisor
-- Fetch/prune and inspect ahead/behind state
-- Explain whether fast-forward, push, merge or rebase is appropriate
-- Fast-forward-only pull
-- Protected rebase with timestamped backup branch
-- Explicit upstream merge
-- Never selects a history-changing strategy silently
+## New in v3.16
 
-## Detached HEAD Recovery
-- Detect detached HEAD
-- Show exact HEAD and commit metadata
-- Create and switch to a recovery branch at the current commit
-- Switch back to the origin default branch with confirmation
+### Repository Rules Audit
+- README, CHANGELOG, LICENSE, SECURITY, CONTRIBUTING, `.gitignore`, and `.gitattributes` checks
+- CODEOWNERS and CI workflow detection
+- Upstream configuration check
+- PASS / REVIEW REQUIRED result with export
 
-## Repository State Export
-- JSON snapshot for automation/audit
-- Markdown handover snapshot
-- Branch, HEAD, upstream, changes, remotes, tags and recent commits
+### Commit Range Exporter
+- Preview any `base..tip` range
+- Export as `git format-patch` series
+- Export selected range as Git bundle
+- Export Markdown commit inventory
 
-All v0.1-v3.14 features remain available through Command Palette.
+### Local Branch Dashboard
+- Local branches and upstreams
+- Ahead/behind counts
+- Last-commit date and subject
+- Switch selected branch
+- Compare selected branch with current using left/right graph
+- Direct access to Safe Branch Delete
+
+All v0.1-v3.15 features remain included through the Command Palette.

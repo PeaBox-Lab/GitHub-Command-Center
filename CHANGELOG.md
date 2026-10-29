@@ -1,5 +1,11 @@
 # Changelog
 
+## v3.16.0
+- Added Repository Rules Audit
+- Added Commit Range Exporter
+- Added Local Branch Dashboard
+- Reconstructed directly from the complete v3.15 project export and retained the existing feature set
+
 ## v3.15.0
 - Added Pull Strategy Advisor for explicit FF-only, rebase or merge decisions
 - Added protected pull-rebase safety branch

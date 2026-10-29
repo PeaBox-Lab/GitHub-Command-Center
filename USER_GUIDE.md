@@ -1,3 +1,4 @@
+
 # GitHub Command Center 3.1 User Guide
 
 ## Background Jobs
@@ -109,3 +110,7 @@ Use Signature Audit before a provenance-sensitive release. Use Release Compariso
 # Version 3.15 Addendum
 
 Use Pull Strategy Advisor after fetching when local and upstream histories differ. Rebase is protected by a backup branch; merge remains explicit. Use Detached HEAD Recovery before leaving an important detached commit. Repository State Export creates portable JSON or Markdown evidence of the current repository state.
+
+# Version 3.16 Addendum
+
+Use Repository Rules Audit before publishing or handing over a repository. Commit Range Exporter is useful for moving a specific development slice as patches, a bundle, or a readable Markdown inventory. Local Branch Dashboard provides branch freshness, upstream divergence, switching, comparison, and a direct route to safe branch deletion.
