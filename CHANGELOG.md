@@ -1,11 +1,13 @@
 # Changelog
 
-## v3.12.0
-- Added non-mutating Merge Preview Center using merge-tree
-- Added protected Reset & Recovery Planner with automatic backup branches
-- Added Git Configuration Center with scope/origin visibility
-- Retained all v0.1-v3.11 functionality
+## v3.13.0
+- Added ordered Cherry-Pick Queue with backup branch and conflict continuation
+- Added Release Asset Integrity generation and verification
+- Added structured Local Release Archive containing source ZIP, Git bundle, checksums, notes and metadata
+- Retained all v0.1-v3.12 functionality
 
+## v3.12.0
+- Added Merge Preview, protected Reset Planner and Git Configuration Center
 ## v3.11.0
 - Added Commit Templates, Patch Queue and Hook Audit
 ## v3.10.0
@@ -19,10 +21,10 @@
 ## v3.6.0
 - Added rerere, remote branches, ignore/attributes and advanced clone
 ## v3.5.0
-- Added sparse checkout, maintenance, notes and external diff/merge tools
+- Added sparse checkout, maintenance, notes and diff/merge tools
 ## v3.4.0
-- Added interactive rebase, unified refs and historical browser
+- Added interactive rebase, refs and historical browser
 ## v3.3.0
 - Added partial staging and reflog recovery
 ## v3.2.0
-- Major Local Git UI redesign
+- Major UI redesign

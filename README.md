@@ -1,25 +1,30 @@
-# GitHub Command Center v3.12.0
+# GitHub Command Center v3.13.0
 
-Version 3.12 continues decimal versioning within major version 3 and adds safer merge planning, protected reset workflows and transparent Git configuration management.
+Version 3.13 continues decimal versioning within major version 3 and strengthens multi-commit integration and release-artifact integrity.
 
-## Merge Preview Center
-- Select a local or remote branch
-- Compute merge base
-- Preview integration with `git merge-tree` without modifying the working tree
-- Clean-tree gate and confirmation for actual merge
-- Abort an in-progress merge
+## Cherry-Pick Queue Center
+- Browse up to 250 commits
+- Build an ordered multi-commit queue
+- Reorder and remove queue items
+- Clean-tree gate
+- Automatic timestamped pre-cherry-pick backup branch
+- Apply the queue in order
+- Continue or abort after conflicts
 
-## Reset & Recovery Planner
-- Preview commits and change summary affected by a reset
-- Soft, mixed and hard modes
-- Mandatory timestamped `gccc-backup/pre-reset-*` recovery branch
-- Extra typed confirmation for hard reset
-- Direct link to Reflog Recovery
+## Release Asset Integrity
+- Select multiple release artifacts
+- Generate SHA-256 checksums
+- Save `SHA256SUMS.txt`
+- Verify an existing checksum manifest against files in its folder
+- PASS, FAIL, MISSING and invalid-line results
 
-## Git Configuration Center
-- Effective config with origin and scope
-- Set or unset local/global values
-- Explicit warning for global edits
-- Copyable configuration report
+## Local Release Archive
+- Clean-tree gate
+- Create a versioned release folder
+- Clean source ZIP from HEAD
+- Full repository Git bundle
+- Copy release notes when present
+- SHA-256 manifest
+- JSON metadata with repository, version, timestamp, branch and HEAD
 
-All v0.1-v3.11 tools remain included through Command Palette.
+All earlier v0.1-v3.12 capabilities remain included through Command Palette.

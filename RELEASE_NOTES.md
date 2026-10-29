@@ -1,3 +1,3 @@
-# GitHub Command Center 3.12.0 Release Notes
+# GitHub Command Center 3.13.0 Release Notes
 
-Version 3.12 adds safer planning around merges and resets, plus transparent local/global Git configuration management. Destructive reset remains protected by a recovery branch and additional confirmation.
+Version 3.13 adds ordered multi-commit cherry-picking and a complete local release-integrity workflow. It creates verifiable release archives without requiring GitHub availability and preserves all previous major-version-3 capabilities.

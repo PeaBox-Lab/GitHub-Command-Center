@@ -97,3 +97,7 @@ Use Commit Template Center when you want a consistent local commit structure wit
 # Version 3.12 Addendum
 
 Use Merge Preview before integrating a branch when you want to inspect the likely merge result without touching the working tree. Reset Planner always creates a recovery branch first; prefer soft or mixed reset unless discarding tracked changes is intentional. Git Configuration Center displays where each active value came from before you modify local or global settings.
+
+# Version 3.13 Addendum
+
+Use Cherry-Pick Queue when several non-contiguous commits must be applied in a deliberate order. The tool creates a recovery branch first. Use Asset Integrity before uploading releases, and Local Release Archive when you need a self-contained offline handover with source, full history, checksums and metadata.
