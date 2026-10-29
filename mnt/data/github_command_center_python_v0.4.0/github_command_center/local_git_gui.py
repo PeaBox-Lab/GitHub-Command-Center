@@ -23,7 +23,7 @@ class LocalGitWindow(tk.Toplevel):
         left=ttk.Frame(pane);right=ttk.Frame(pane);pane.add(left,weight=3);pane.add(right,weight=2)
         self.files=ttk.Treeview(left,columns=("state","file"),show="headings",selectmode="extended");self.files.heading("state",text="State");self.files.heading("file",text="File");self.files.column("state",width=70);self.files.column("file",width=470);self.files.pack(fill="both",expand=True)
         foot=ttk.Frame(left);foot.pack(fill="x",pady=5)
-        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
+        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
         self.tabs=ttk.Notebook(right);self.tabs.pack(fill="both",expand=True)
         self.texts={}
         for n in ["History","Branches","Stash","Tags","Remotes","Conflicts"]:
@@ -194,3 +194,152 @@ class ConflictResolver(tk.Toplevel):
         else:self.file.set(self.files[0]);self.load()
     def abort(self):
         if messagebox.askyesno("Abort merge","Abort the merge?",parent=self):git(self.repo,"merge","--abort");self.destroy()
+
+class AdvancedGitWindow(tk.Toplevel):
+    """Safe guided workflows for operations commonly hidden in Git context menus."""
+    def __init__(self, parent, repo):
+        super().__init__(parent)
+        self.repo = repo
+        self.title("Advanced Git Operations")
+        self.geometry("980x700")
+        self.minsize(850, 600)
+        self._build()
+        self.refresh()
+
+    def _build(self):
+        header = ttk.Frame(self, padding=10)
+        header.pack(fill="x")
+        ttk.Label(header, text=self.repo, font=("Segoe UI Semibold", 11)).pack(side="left", fill="x", expand=True)
+        ttk.Button(header, text="Refresh", command=self.refresh).pack(side="right")
+
+        self.tabs = ttk.Notebook(self)
+        self.tabs.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+        self.cherry = ttk.Frame(self.tabs, padding=10)
+        self.rebase = ttk.Frame(self.tabs, padding=10)
+        self.reset = ttk.Frame(self.tabs, padding=10)
+        self.ignore = ttk.Frame(self.tabs, padding=10)
+        self.tabs.add(self.cherry, text="Cherry-pick")
+        self.tabs.add(self.rebase, text="Rebase")
+        self.tabs.add(self.reset, text="Reset & Revert")
+        self.tabs.add(self.ignore, text=".gitignore")
+
+        ttk.Label(self.cherry, text="Recent commits", font=("Segoe UI Semibold", 11)).pack(anchor="w")
+        self.commit_list = tk.Listbox(self.cherry, font=("Consolas", 9), height=18)
+        self.commit_list.pack(fill="both", expand=True, pady=6)
+        row = ttk.Frame(self.cherry); row.pack(fill="x")
+        ttk.Button(row, text="Cherry-pick selected", command=self.cherry_pick).pack(side="left")
+        ttk.Button(row, text="Abort cherry-pick", command=lambda:self.execute(["cherry-pick", "--abort"], confirm="Abort the current cherry-pick?" )).pack(side="left", padx=4)
+        ttk.Button(row, text="Continue cherry-pick", command=lambda:self.execute(["cherry-pick", "--continue"])).pack(side="left")
+
+        ttk.Label(self.rebase, text="Rebase the current branch onto another branch", font=("Segoe UI Semibold", 11)).pack(anchor="w")
+        self.branch_var = tk.StringVar()
+        self.branch_box = ttk.Combobox(self.rebase, textvariable=self.branch_var, state="readonly")
+        self.branch_box.pack(fill="x", pady=8)
+        ttk.Label(self.rebase, text="A safety branch is created before rebase. Working tree must be clean.", foreground="#9a3412").pack(anchor="w", pady=(0, 10))
+        rb = ttk.Frame(self.rebase); rb.pack(fill="x")
+        ttk.Button(rb, text="Start safe rebase", command=self.start_rebase).pack(side="left")
+        ttk.Button(rb, text="Continue", command=lambda:self.execute(["rebase", "--continue"])).pack(side="left", padx=4)
+        ttk.Button(rb, text="Skip", command=lambda:self.execute(["rebase", "--skip"], confirm="Skip the current commit?" )).pack(side="left")
+        ttk.Button(rb, text="Abort", command=lambda:self.execute(["rebase", "--abort"], confirm="Abort this rebase?" )).pack(side="left", padx=4)
+
+        ttk.Label(self.reset, text="Revert creates a new undo commit and is the recommended shared-history option.", wraplength=800).pack(anchor="w", pady=(0, 8))
+        self.hash_var = tk.StringVar()
+        ttk.Entry(self.reset, textvariable=self.hash_var).pack(fill="x", pady=4)
+        rr = ttk.Frame(self.reset); rr.pack(fill="x", pady=6)
+        ttk.Button(rr, text="Revert commit", command=self.revert_commit).pack(side="left")
+        ttk.Button(rr, text="Reset soft", command=lambda:self.reset_to("--soft")).pack(side="left", padx=4)
+        ttk.Button(rr, text="Reset mixed", command=lambda:self.reset_to("--mixed")).pack(side="left")
+        ttk.Button(rr, text="Reset hard", command=lambda:self.reset_to("--hard")).pack(side="left", padx=4)
+        ttk.Label(self.reset, text="Hard reset permanently discards tracked working-tree and index changes. A backup branch is created first.", foreground="#b91c1c", wraplength=800).pack(anchor="w", pady=8)
+
+        ttk.Label(self.ignore, text="Repository .gitignore editor", font=("Segoe UI Semibold", 11)).pack(anchor="w")
+        self.ignore_text = tk.Text(self.ignore, wrap="none", undo=True, font=("Consolas", 10))
+        self.ignore_text.pack(fill="both", expand=True, pady=6)
+        ig = ttk.Frame(self.ignore); ig.pack(fill="x")
+        ttk.Button(ig, text="Save .gitignore", command=self.save_ignore).pack(side="left")
+        ttk.Button(ig, text="Add common Python rules", command=lambda:self.add_ignore("__pycache__/\n*.py[cod]\n.venv/\ndist/\nbuild/\n*.egg-info/\n.env\n")).pack(side="left", padx=4)
+        ttk.Button(ig, text="Add common Node rules", command=lambda:self.add_ignore("node_modules/\ndist/\n.env\n*.log\ncoverage/\n")).pack(side="left")
+
+    def refresh(self):
+        try:
+            commits = git(self.repo, "log", "--all", "-100", "--pretty=format:%H%x09%h%x09%s")
+            self.commit_rows = []
+            self.commit_list.delete(0, "end")
+            for line in commits.splitlines():
+                parts = line.split("\t", 2)
+                if len(parts) == 3:
+                    self.commit_rows.append(parts)
+                    self.commit_list.insert("end", f"{parts[1]}  {parts[2]}")
+            branch_text = git(self.repo, "branch", "--format=%(refname:short)")
+            branches = [x for x in branch_text.splitlines() if x and x != "Completed successfully."]
+            self.branch_box["values"] = branches
+            if branches and not self.branch_var.get(): self.branch_var.set(branches[0])
+            path = Path(self.repo) / ".gitignore"
+            self.ignore_text.delete("1.0", "end")
+            if path.exists(): self.ignore_text.insert("1.0", path.read_text(encoding="utf-8", errors="replace"))
+        except Exception as exc:
+            messagebox.showerror("Advanced Git", str(exc), parent=self)
+
+    def execute(self, args, confirm=None):
+        if confirm and not messagebox.askyesno("Confirm", confirm, parent=self): return
+        try:
+            out = git(self.repo, *args)
+            messagebox.showinfo("Git", out, parent=self)
+            self.refresh()
+        except Exception as exc:
+            messagebox.showerror("Git", str(exc), parent=self)
+
+    def backup_branch(self, prefix):
+        import datetime
+        name = f"gccc-backup/{prefix}-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}"
+        git(self.repo, "branch", name)
+        return name
+
+    def clean_required(self):
+        state = git(self.repo, "status", "--porcelain")
+        if state != "Completed successfully.":
+            messagebox.showwarning("Clean working tree required", "Commit or stash changes before this operation.", parent=self)
+            return False
+        return True
+
+    def cherry_pick(self):
+        sel = self.commit_list.curselection()
+        if not sel: return
+        full, short, subject = self.commit_rows[sel[0]]
+        if messagebox.askyesno("Cherry-pick", f"Apply {short} {subject} onto the current branch?", parent=self):
+            self.execute(["cherry-pick", full])
+
+    def start_rebase(self):
+        target = self.branch_var.get()
+        if not target or not self.clean_required(): return
+        try:
+            backup = self.backup_branch("pre-rebase")
+            if not messagebox.askyesno("Safe rebase", f"Backup branch created:\n{backup}\n\nRebase current branch onto {target}?", parent=self): return
+            self.execute(["rebase", target])
+        except Exception as exc: messagebox.showerror("Rebase", str(exc), parent=self)
+
+    def revert_commit(self):
+        value = self.hash_var.get().strip()
+        if value and messagebox.askyesno("Revert", f"Create a new commit reverting {value}?", parent=self): self.execute(["revert", "--no-edit", value])
+
+    def reset_to(self, mode):
+        value = self.hash_var.get().strip()
+        if not value: return
+        warning = f"Reset current branch to {value} using {mode}?"
+        if mode == "--hard": warning += "\n\nTracked local changes will be permanently discarded."
+        if not messagebox.askyesno("Reset", warning, parent=self): return
+        try:
+            backup = self.backup_branch("pre-reset")
+            if messagebox.askyesno("Backup created", f"Created {backup}. Continue with reset?", parent=self): self.execute(["reset", mode, value])
+        except Exception as exc: messagebox.showerror("Reset", str(exc), parent=self)
+
+    def add_ignore(self, value):
+        current = self.ignore_text.get("1.0", "end-1c")
+        if current and not current.endswith("\n"): self.ignore_text.insert("end", "\n")
+        self.ignore_text.insert("end", value)
+
+    def save_ignore(self):
+        try:
+            (Path(self.repo) / ".gitignore").write_text(self.ignore_text.get("1.0", "end-1c") + "\n", encoding="utf-8")
+            messagebox.showinfo(".gitignore", "Saved. Stage the file when ready.", parent=self)
+        except Exception as exc: messagebox.showerror(".gitignore", str(exc), parent=self)
