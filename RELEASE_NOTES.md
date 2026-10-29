@@ -1,3 +1,3 @@
-# GitHub Command Center 3.0.0 Release Notes
+# GitHub Command Center 3.1.0 Release Notes
 
-Version 3.0 is an extensive platform release. It adds safe local command plugins, batch operations across repository portfolios, an operational status dashboard and structured repository-data exports. These additions make the application more extensible and more useful for managing multiple long-running products without removing any prior capability.
+Version 3.1 delivers four roadmap foundations in one release: background command execution with cancellation, persistent appearance/preferences, SQLite portfolio snapshots and built-in readiness tests. These changes improve responsiveness, continuity and release confidence while preserving all prior features.

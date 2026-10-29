@@ -26,3 +26,6 @@ Commands are executed directly as argument arrays with the repository as working
 6. Capture command output and exit code.
 7. Preserve prior features and cumulative documentation.
 8. Add new built-in centers to Command Palette with useful keywords.
+
+## v3.1 platform services
+New centers demonstrate reusable patterns for threaded subprocess jobs, user-level JSON preferences, standard-library SQLite persistence and built-in smoke testing. Future modular centers should reuse these patterns when the large GUI module is split into a `centers/` package.

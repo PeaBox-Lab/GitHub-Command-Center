@@ -1,36 +1,35 @@
-# GitHub Command Center v3.0.0
+# GitHub Command Center v3.1.0
 
-An extensible Python desktop platform for Git, GitHub and multi-repository engineering workflows. Version 3.0 is an extensive bundled release that adds a safer plugin model, portfolio batch operations, an operational dashboard and structured data export while retaining every prior center.
+Extensible Python desktop platform for Git, GitHub and repository portfolios. Version 3.1 implements major roadmap foundations: cancellable background jobs, persistent preferences, SQLite portfolio history and built-in self-tests.
 
-## New platform capabilities
-### Plugin Manager
-- Repository-local JSON command plugins under `.git/gccc-plugins`
-- Create, inspect, enable/disable, run and delete plugins
-- Commands execute as argument arrays without shell interpolation
-- Confirmation before execution and captured stdout/stderr/exit code
-- Opens the plugin folder for manual review
+## New bundled platform capabilities
+### Background Jobs Center
+- Queue long-running local commands without freezing the center
+- Direct argument-array execution without a shell
+- Live status, output log and exit code
+- Cancel active local processes
+- Clear completed jobs
 
-### Batch Operations Center
-- Scan a workspace containing multiple Git repositories
-- Multi-select repositories
-- Sequential fetch/prune, status, Git integrity, Python compile or FF-only pull
-- FF-only pull skips repositories with local changes
-- Per-repository results remain visible in the grid
-- No force operations
+### Preferences & Appearance
+- Persist Tk theme, editor font-size default, history-row limit, destructive-confirmation preference and default base branch
+- Stored outside repositories in `~/.gccc-preferences.json`
+- Theme applies immediately
 
-### Repository Operations Dashboard
-- Current branch, upstream, ahead/behind state, working-tree count, last commit and recent tags
-- Documentation-control status for README, CHANGELOG, LICENSE, SECURITY and CONTRIBUTING
-- Contextual next-action recommendation
-- Quick links to Smart Sync, Pre-Commit Review and Release Policy
+### Portfolio History
+- SQLite-backed snapshots under `~/.gccc-portfolio.sqlite3`
+- Capture branch, clean/changed status and upstream ahead/behind state across a workspace
+- Browse the latest 1,000 snapshot rows
+- Export complete snapshot history to CSV
 
-### Repository Data Export
-- JSON export for repository metadata, remotes, tags and up to 500 commits
-- CSV export for commit hash, date, author, email and subject
-- Built-in preview without external analytics
+### Self-Test & Readiness
+- Git availability and repository validation
+- HEAD, status and log parser smoke tests
+- Configuration-path check
+- Python source compilation test
+- Overall PASS/FAIL and exportable report
 
-## Cumulative feature platform
-Includes every v0.1-v2.2 capability: GitHub dashboard, comprehensive local Git workspace, visual graph/conflicts, advanced history operations, Releases, PRs, Actions, Security, Health, Worktrees, Compare/Recovery, portfolio management, diagnostics, Smart Sync, review/notes, cleanup/snapshots, patches/bisect, inspection/submodules, tasks/archive, Command Palette, Hooks, LFS, automation recipes, identity/signing, commit/changelog studios, remote migration, credential hygiene, release policy and metrics.
+## Cumulative platform
+Every feature from v0.1 through v3.0 remains available through the searchable Command Palette, including plugins, batch operations, repository dashboard, exports, local Git, visual graph/conflicts, Releases, PRs, Actions, Security, Health, Worktrees, Recovery, Hooks, LFS, signing, release policy and metrics.
 
 ## Requirements
-Python 3.10+ and Git. GitHub CLI is required for hosted GitHub workflows. Optional GPG, Git LFS, pip-audit and Bandit integrations remain supported.
+Python 3.10+ and Git. GitHub CLI is required for GitHub-hosted workflows. SQLite support is included with standard Python.

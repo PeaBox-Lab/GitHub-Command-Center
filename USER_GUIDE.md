@@ -1,16 +1,15 @@
-# GitHub Command Center 3.0 User Guide
+# GitHub Command Center 3.1 User Guide
 
-## Daily workflow
-Use Operations Dashboard first. Follow its recommendation, then use Review before committing, Smart Sync before pulling/pushing, and Release Policy before Release Center.
+## Background Jobs
+Open Commands > Background Jobs, enter a command, and queue it. Select a job to inspect live output. Cancellation terminates the process but cannot undo work already completed by that process.
 
-## Plugin Manager
-Plugins are local JSON files containing a name, description, command array and enabled flag. Inspect every command before running it. The app does not use shell interpolation, but plugins can still execute local programs with your user permissions.
+## Preferences
+Preferences are stored under your home directory rather than a repository. Theme is applied immediately; other values establish defaults for ongoing modularization.
 
-## Batch Operations
-Scan the parent workspace, select repositories and choose an operation. Pull FF-only skips changed repositories. Review each result in the final column.
+## Portfolio History
+Capture a snapshot from the parent workspace whenever you want a point-in-time view of repository cleanliness and upstream divergence. Export CSV for Excel, Power BI or Python analysis.
 
-## Data Export
-Use JSON for broad repository metadata and CSV for commit-level analysis in Excel, Power BI, Python or another analytics tool.
+## Self-Test
+Run Self-Test after installation, environment changes or upgrades. A PASS confirms core command and parser readiness, not correctness of every external GitHub permission.
 
-## Existing workflows
-All earlier centers remain available through Commands, including conflicts, graph, releases, PRs, Actions, security, worktrees, recovery, hooks, LFS, signing, changelog generation and metrics.
+All earlier centers remain searchable through Commands.
