@@ -23,7 +23,7 @@ class LocalGitWindow(tk.Toplevel):
         left=ttk.Frame(pane);right=ttk.Frame(pane);pane.add(left,weight=3);pane.add(right,weight=2)
         self.files=ttk.Treeview(left,columns=("state","file"),show="headings",selectmode="extended");self.files.heading("state",text="State");self.files.heading("file",text="File");self.files.column("state",width=70);self.files.column("file",width=470);self.files.pack(fill="both",expand=True)
         foot=ttk.Frame(left);foot.pack(fill="x",pady=5)
-        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
+        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Release Center",lambda:ReleaseCenter(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
         self.tabs=ttk.Notebook(right);self.tabs.pack(fill="both",expand=True)
         self.texts={}
         for n in ["History","Branches","Stash","Tags","Remotes","Conflicts"]:
@@ -343,3 +343,135 @@ class AdvancedGitWindow(tk.Toplevel):
             (Path(self.repo) / ".gitignore").write_text(self.ignore_text.get("1.0", "end-1c") + "\n", encoding="utf-8")
             messagebox.showinfo(".gitignore", "Saved. Stage the file when ready.", parent=self)
         except Exception as exc: messagebox.showerror(".gitignore", str(exc), parent=self)
+
+class ReleaseCenter(tk.Toplevel):
+    """Guided tag, GitHub release, asset upload, bundle backup, and release-readiness UI."""
+    def __init__(self, parent, repo):
+        super().__init__(parent)
+        self.repo = repo
+        self.assets = []
+        self.title("Release Center")
+        self.geometry("1050x780")
+        self.minsize(900, 680)
+        self._build()
+        self.refresh()
+
+    def _build(self):
+        head = ttk.Frame(self, padding=10); head.pack(fill="x")
+        ttk.Label(head, text=self.repo, font=("Segoe UI Semibold", 11)).pack(side="left", fill="x", expand=True)
+        ttk.Button(head, text="Refresh readiness", command=self.refresh).pack(side="right")
+        self.tabs = ttk.Notebook(self); self.tabs.pack(fill="both", expand=True, padx=10, pady=(0,10))
+        self.ready = ttk.Frame(self.tabs, padding=12); self.publish = ttk.Frame(self.tabs, padding=12); self.bundle = ttk.Frame(self.tabs, padding=12)
+        self.tabs.add(self.ready, text="Release readiness"); self.tabs.add(self.publish, text="Publish release"); self.tabs.add(self.bundle, text="Backup & export")
+
+        self.readiness = tk.Text(self.ready, wrap="word", font=("Consolas", 10), bg="#0f172a", fg="#e2e8f0")
+        self.readiness.pack(fill="both", expand=True)
+
+        form = ttk.Frame(self.publish); form.pack(fill="x")
+        self.tag_var = tk.StringVar(); self.title_var = tk.StringVar(); self.target_var = tk.StringVar(); self.draft_var = tk.BooleanVar(); self.pre_var = tk.BooleanVar()
+        for row,(label,var) in enumerate((("Version tag",self.tag_var),("Release title",self.title_var),("Target branch",self.target_var))):
+            ttk.Label(form,text=label).grid(row=row,column=0,sticky="w",pady=4); ttk.Entry(form,textvariable=var).grid(row=row,column=1,sticky="ew",padx=8,pady=4)
+        form.columnconfigure(1,weight=1)
+        flags=ttk.Frame(self.publish);flags.pack(fill="x",pady=6)
+        ttk.Checkbutton(flags,text="Draft release",variable=self.draft_var).pack(side="left")
+        ttk.Checkbutton(flags,text="Pre-release",variable=self.pre_var).pack(side="left",padx=12)
+        ttk.Label(self.publish,text="Release notes (Markdown)",font=("Segoe UI Semibold",10)).pack(anchor="w",pady=(8,3))
+        self.notes=tk.Text(self.publish,height=14,wrap="word",font=("Consolas",9));self.notes.pack(fill="both",expand=True)
+        ab=ttk.Frame(self.publish);ab.pack(fill="x",pady=6)
+        ttk.Button(ab,text="Generate notes from commits",command=self.generate_notes).pack(side="left")
+        ttk.Button(ab,text="Add assets",command=self.add_assets).pack(side="left",padx=4)
+        self.asset_label=ttk.Label(ab,text="No assets selected");self.asset_label.pack(side="left",padx=8)
+        ttk.Button(self.publish,text="Create tag, push, and publish GitHub release",command=self.publish_release).pack(anchor="e",pady=8)
+
+        ttk.Label(self.bundle,text="Portable Git bundle backup",font=("Segoe UI Semibold",11)).pack(anchor="w")
+        ttk.Label(self.bundle,text="A .bundle file contains all branches and tags and can recreate the repository without GitHub.",wraplength=800).pack(anchor="w",pady=(2,8))
+        ttk.Button(self.bundle,text="Create full repository bundle",command=self.create_bundle).pack(anchor="w")
+        ttk.Separator(self.bundle).pack(fill="x",pady=18)
+        ttk.Label(self.bundle,text="Repository archive",font=("Segoe UI Semibold",11)).pack(anchor="w")
+        ttk.Label(self.bundle,text="Create a clean ZIP of the current HEAD without the .git directory.",wraplength=800).pack(anchor="w",pady=(2,8))
+        ttk.Button(self.bundle,text="Export current HEAD as ZIP",command=self.export_zip).pack(anchor="w")
+        ttk.Separator(self.bundle).pack(fill="x",pady=18)
+        ttk.Label(self.bundle,text="Recovery commands",font=("Segoe UI Semibold",11)).pack(anchor="w")
+        self.recovery=tk.Text(self.bundle,height=10,wrap="none",font=("Consolas",9),bg="#f8fafc");self.recovery.pack(fill="x",pady=6)
+        self.recovery.insert("1.0","Clone from a bundle:\n  git clone repository.bundle recovered-repository\n\nVerify a bundle:\n  git bundle verify repository.bundle\n\nList contained references:\n  git bundle list-heads repository.bundle")
+        self.recovery.config(state="disabled")
+
+    def gh(self,*args):
+        try:
+            r=subprocess.run(["gh",*args],cwd=self.repo,text=True,capture_output=True,timeout=900,encoding="utf-8",errors="replace")
+        except FileNotFoundError: raise GitError("GitHub CLI (gh) is not installed or is not on PATH. Install it, then run 'gh auth login'.")
+        out=(r.stdout+"\n"+r.stderr).strip()
+        if r.returncode: raise GitError(out or "GitHub CLI command failed")
+        return out or "Completed successfully."
+
+    def refresh(self):
+        checks=[]
+        def check(name,ok,detail):checks.append(("PASS" if ok else "WARN",name,detail))
+        try:
+            status=git(self.repo,"status","--porcelain")
+            check("Working tree clean",status=="Completed successfully.","Clean" if status=="Completed successfully." else "Commit or stash local changes")
+            branch=git(self.repo,"branch","--show-current");check("On a branch",branch!="Completed successfully." and bool(branch),branch)
+            remote=git(self.repo,"remote","get-url","origin");check("Origin remote",bool(remote),remote)
+            try: upstream=git(self.repo,"rev-parse","--abbrev-ref","--symbolic-full-name","@{u}");check("Upstream configured",True,upstream)
+            except Exception: check("Upstream configured",False,"Push with upstream before release")
+            try:
+                behind=git(self.repo,"rev-list","--count","HEAD..@{u}");ahead=git(self.repo,"rev-list","--count","@{u}..HEAD")
+                check("Remote synchronization",behind in ("0","Completed successfully."),f"Ahead {ahead}; behind {behind}")
+            except Exception:check("Remote synchronization",False,"Unable to compare with upstream")
+            for filename in ("README.md","CHANGELOG.md","LICENSE"):
+                check(filename,(Path(self.repo)/filename).exists(),"Present" if (Path(self.repo)/filename).exists() else "Missing")
+            try:self.gh("--version");check("GitHub CLI",True,"Available")
+            except Exception as e:check("GitHub CLI",False,str(e))
+            self.target_var.set(branch if branch!="Completed successfully." else "main")
+            self.readiness.config(state="normal");self.readiness.delete("1.0","end")
+            self.readiness.insert("1.0","RELEASE READINESS REPORT\n"+"="*72+"\n\n")
+            for state,name,detail in checks:self.readiness.insert("end",f"[{state:4}] {name}\n       {detail}\n\n")
+            self.readiness.config(state="disabled")
+        except Exception as exc:messagebox.showerror("Readiness",str(exc),parent=self)
+
+    def generate_notes(self):
+        try:
+            last=git(self.repo,"describe","--tags","--abbrev=0")
+            args=["log","--pretty=format:- %s (%h)"]
+            if last!="Completed successfully.":args.append(f"{last}..HEAD")
+            notes=git(self.repo,*args)
+            self.notes.delete("1.0","end");self.notes.insert("1.0",f"## What's changed\n\n{notes}\n")
+        except Exception as exc:messagebox.showerror("Release notes",str(exc),parent=self)
+
+    def add_assets(self):
+        files=filedialog.askopenfilenames(title="Select release assets",parent=self)
+        if files:self.assets=list(files);self.asset_label.config(text=f"{len(files)} asset(s) selected")
+
+    def publish_release(self):
+        tag=self.tag_var.get().strip();title=self.title_var.get().strip() or tag;target=self.target_var.get().strip();notes=self.notes.get("1.0","end-1c").strip()
+        if not tag:return messagebox.showwarning("Release","Enter a version tag such as v0.5.0.",parent=self)
+        if not re.match(r"^[A-Za-z0-9._/-]+$",tag):return messagebox.showwarning("Release","Tag contains unsupported characters.",parent=self)
+        summary=f"Tag: {tag}\nTitle: {title}\nTarget: {target}\nAssets: {len(self.assets)}\n\nCreate and publish this release?"
+        if not messagebox.askyesno("Publish release",summary,parent=self):return
+        try:
+            status=git(self.repo,"status","--porcelain")
+            if status!="Completed successfully.":raise GitError("Working tree is not clean. Commit or stash changes first.")
+            existing=git(self.repo,"tag","--list",tag)
+            if existing=="Completed successfully.":git(self.repo,"tag","-a",tag,"-m",title)
+            git(self.repo,"push","origin",tag)
+            args=["release","create",tag,"--title",title,"--notes",notes or title]
+            if target:args += ["--target",target]
+            if self.draft_var.get():args.append("--draft")
+            if self.pre_var.get():args.append("--prerelease")
+            args += self.assets
+            out=self.gh(*args);messagebox.showinfo("Release published",out,parent=self);self.refresh()
+        except Exception as exc:messagebox.showerror("Release failed",str(exc),parent=self)
+
+    def create_bundle(self):
+        default=(self.tag_var.get().strip() or Path(self.repo).name)+"-full.bundle"
+        path=filedialog.asksaveasfilename(parent=self,defaultextension=".bundle",initialfile=default,filetypes=[("Git bundle","*.bundle")])
+        if path:
+            try:out=git(self.repo,"bundle","create",path,"--all");messagebox.showinfo("Bundle",f"{out}\n\nSaved: {path}",parent=self)
+            except Exception as exc:messagebox.showerror("Bundle",str(exc),parent=self)
+
+    def export_zip(self):
+        default=(self.tag_var.get().strip() or Path(self.repo).name)+".zip"
+        path=filedialog.asksaveasfilename(parent=self,defaultextension=".zip",initialfile=default,filetypes=[("ZIP archive","*.zip")])
+        if path:
+            try:out=git(self.repo,"archive","--format=zip",f"--output={path}","HEAD");messagebox.showinfo("Archive",f"{out}\n\nSaved: {path}",parent=self)
+            except Exception as exc:messagebox.showerror("Archive",str(exc),parent=self)
