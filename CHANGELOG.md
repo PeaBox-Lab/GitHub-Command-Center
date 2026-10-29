@@ -1,20 +1,22 @@
 # Changelog
 
-## v2.0.0
-- Added searchable Command Palette and extensible feature-center registration model
-- Added Git Hooks Manager with templates, enable/disable and test workflows
-- Added Git LFS Center with tracking, inventory, pull and prune workflows
-- Added repository-local Automation Recipes with captured output and exit codes
-- Consolidated multiple major updates into one release while retaining all v0.1-v1.6 features
+## v2.1.0
+- Added Identity & Signing Center for repository identity, signing key, GPG inventory and verification
+- Added Conventional Commit Message Studio with live preview, breaking changes and guarded commit
+- Added Changelog Studio with commit categorization and CHANGELOG prepend/export workflows
+- Added Remote Migration & Mirror Center with typed confirmation and origin protection
+- Retained and registered the complete v0.1-v2.0 feature set in Command Palette
 
+## v2.0.0
+- Added extensible Command Palette, Git Hooks Manager, Git LFS Center and Automation Recipes
 ## v1.6.0
 - Added Repository Task Center and Archive & Handover Center
 ## v1.5.0
-- Added Commit Inspector, file history, blame and Submodule Center
+- Added Commit Inspector and Submodule Center
 ## v1.4.0
 - Added Patch Center and Regression Finder
 ## v1.3.0
-- Added Branch Cleanup Center and Project Snapshot
+- Added Branch Cleanup and Project Snapshot
 ## v1.2.0
 - Added Pre-Commit Review and Repository Notes
 ## v1.1.0
@@ -32,7 +34,7 @@
 ## v0.5.0
 - Added Release Center
 ## v0.4.0
-- Added advanced history-changing workflows and .gitignore editor
+- Added advanced history operations and .gitignore editor
 ## v0.3.0
 - Added visual graph and conflict resolver
 ## v0.2.0

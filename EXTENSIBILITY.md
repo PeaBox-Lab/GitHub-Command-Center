@@ -10,3 +10,6 @@ New operations should:
 3. Prefer safe defaults such as FF-only pull and non-force branch deletion.
 4. Display command output and errors.
 5. Preserve prior features and update cumulative documentation.
+
+## v2.1 center registrations
+IdentitySigningCenter, CommitMessageStudio, ChangelogStudio and RemoteMigrationCenter are registered in CommandPalette with dedicated search keywords. New release-engineering centers should follow the same independent-window pattern and keep destructive remote operations behind explicit confirmations.

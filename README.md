@@ -1,35 +1,40 @@
-# GitHub Command Center v2.0.0
+# GitHub Command Center v2.1.0
 
-An extensible Python desktop command center for GitHub and local Git, designed to replace routine TortoiseGit menus and frequent GitHub.com navigation.
+An extensible Python desktop command center for Git and GitHub. Version 2.1 is a bundled productivity, identity and release-engineering update built on the v2.0 Command Palette architecture.
 
-## Why 2.0
-The application now contains a broad toolset. Version 2.0 introduces a searchable Command Palette so features remain discoverable without expanding the main toolbar indefinitely. New feature centers are modular top-level classes, making future centers easy to register in the palette.
+## Bundled v2.1 updates
+### Identity & Signing Center
+- Repository-level Git name and email configuration
+- Signing-key configuration and commit-signing default
+- GPG secret-key inventory
+- Signature inspection for recent commits
+- Local signed test tag with confirmation
 
-## Major bundled updates
-### Searchable Command Palette
-- Launch every advanced center by name or keyword
-- Includes visual history, conflicts, releases, PRs, Actions, security, health, worktrees, compare, recovery, diagnostics, sync, review, patches, bisect, submodules, tasks, archive and new v2.0 tools
-- Reduces toolbar clutter and provides an extensible registration pattern
+### Commit Message Studio
+- Conventional Commit types: feat, fix, docs, refactor, perf, test, build, ci, chore and more
+- Optional scope and breaking-change marker
+- Body and issue/footer fields
+- Live preview and clipboard copy
+- Commit staged changes directly with empty-stage safeguards
 
-### Git Hooks Manager
-- Edit repository-local pre-commit, commit-msg and pre-push hooks
-- Safe built-in templates for whitespace, Python syntax and commit-message length
-- Save and enable executable hooks, disable hooks, and test hooks
+### Changelog Studio
+- Generate a Markdown changelog section from commits since the latest tag or chosen ref
+- Categorize Conventional Commit messages into Added, Fixed, Changed, Documentation, Tests, Build/CI and Other
+- Prepend a reviewed section to CHANGELOG.md
+- Save or copy generated sections
 
-### Git LFS Center
-- Inspect Git LFS environment, tracked patterns and LFS files
-- Track/untrack patterns such as `*.zip`
-- Pull LFS objects and safely prune old local LFS data
-- Explicitly notes that untracking does not rewrite existing history
+### Remote Migration & Mirror Center
+- Inventory remotes and refs
+- Add/update a dedicated migration or backup remote
+- Fetch/prune all remotes
+- Deliberately mirror all refs to a dedicated remote with warning and typed confirmation
+- Blocks mirror push to `origin`
 
-### Automation Recipes
-- Repository-local JSON recipes under `.git/gccc-recipes.json`
-- Built-in Python syntax, Git integrity and whitespace recipes
-- Add/delete/reset recipes and run commands with captured output and exit code
-- Local-only storage keeps personal automation outside repository history
+## Extensible architecture
+All advanced centers are searchable through Commands. New centers remain independent `tk.Toplevel` modules registered with keywords in Command Palette.
 
-## Cumulative capabilities
-Includes every feature from v0.1 through v1.6: GitHub dashboard, local Git workspace, visual graph, conflict resolution, branches, tags, stash, remotes, rebase, cherry-pick, reset safety, releases, PRs, Actions, security, repository health, worktrees, compare, recovery, multi-repository management, diagnostics, smart sync, search, pre-commit review, notes, cleanup, snapshots, patches, bisect, commit inspection, submodules, tasks and archive/handover.
+## Cumulative capability
+Every feature from v0.1 through v2.0 remains included: account dashboard, local Git, graph/conflicts, advanced history operations, releases, PRs, Actions, security, health, worktrees, compare/recovery, repository portfolio management, diagnostics, smart sync, review/notes, cleanup/snapshots, patches/bisect, inspection/submodules, tasks/archive, hooks, LFS and automation recipes.
 
-## Windows
-Extract and run `run_windows.bat`. Requires Python 3.10+ and Git. GitHub CLI is required for Releases, PRs, Actions and GitHub security APIs. Git LFS is optional for LFS features.
+## Requirements
+Python 3.10+ and Git. GitHub CLI is required for Releases, PRs, Actions and security APIs. GPG and Git LFS are optional for their respective centers.

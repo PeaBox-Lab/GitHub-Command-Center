@@ -71,3 +71,17 @@ Install Git LFS and run `git lfs install` once. Track large binary patterns befo
 
 ## Automation Recipes
 Recipes execute local commands in the repository directory. Review commands before running them. Recipes are stored under `.git` and are not shared through normal commits.
+
+# Version 2.1 Addendum
+
+## Identity & Signing
+Configure repository-level identity before committing. Signing requires a working GPG or SSH signing configuration supported by your Git installation. Use Verify recent commits to inspect signature output.
+
+## Commit Message Studio
+Choose a Conventional Commit type, optional scope and concise subject. Add a body for rationale and a footer for issue references or breaking-change detail. Stage files first, then commit from the studio.
+
+## Changelog Studio
+Choose the prior release tag or leave it blank to use the latest tag. Review generated categories before prepending to CHANGELOG.md.
+
+## Remote Migration & Mirror
+Add a dedicated backup remote first. Mirror push is destructive to destination refs and therefore requires a non-origin remote, warning confirmation and an exact typed remote name.
