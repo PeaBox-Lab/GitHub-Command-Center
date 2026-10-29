@@ -52,3 +52,17 @@ Notes attach metadata without changing commit hashes. Notes live in a separate r
 
 ## External diff and merge tools
 Install the selected tool first, then configure it for the repository. Use Difftool for comparison and Mergetool during conflicts.
+
+# Version 3.6 Addendum
+
+## Recorded conflict resolution
+Enable rerere before recurring merge/rebase work. Autoupdate can stage reused resolutions, so review staged changes before committing.
+
+## Remote branches
+Use Remote Branch Center for explicit tracking and publishing. Remote deletion requires the exact branch name to reduce accidental server-side deletion.
+
+## Ignore and attributes
+Test a path before relying on a new ignore or attribute pattern, then review and stage the tracked configuration files.
+
+## Advanced cloning
+Use depth or blob filtering to reduce initial transfer for very large repositories. Partial and shallow clones have history/content limitations, so use a full clone when complete offline history is required.

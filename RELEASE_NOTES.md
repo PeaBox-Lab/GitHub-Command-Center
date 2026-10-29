@@ -1,3 +1,3 @@
-# GitHub Command Center 3.5.0 Release Notes
+# GitHub Command Center 3.6.0 Release Notes
 
-Version 3.5 adds essential support for large repositories, safe maintenance, commit annotations and professional external diff/merge tools. The release preserves the non-destructive defaults established in prior versions.
+Version 3.6 improves repeated-conflict handling, remote-branch administration, repository rule authoring and large-repository onboarding. It keeps destructive server-side operations behind explicit confirmation and continues decimal version progression within major version 3.

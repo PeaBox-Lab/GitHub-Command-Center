@@ -1,34 +1,35 @@
-# GitHub Command Center v3.5.0
+# GitHub Command Center v3.6.0
 
-Version 3.5 bundles four essential Git capabilities for large repositories, maintenance, non-rewriting metadata and external comparison tools.
+Version 3.6 bundles four practical Git capabilities focused on recurring conflicts, remote branches, repository rules and large-repository cloning.
 
-## Sparse Checkout Center
-- Cone-mode initialization
-- Select top-level folders to materialize
-- Add another sparse path
-- Restore the full working tree
-- Clean-working-tree safety gate
+## Recorded Conflict Resolution (rerere)
+- Enable `rerere.enabled`
+- Optional `rerere.autoupdate`
+- Review rerere status and remaining conflicts
+- Re-run recorded resolution processing
+- Forget a saved resolution for selected paths
+- Clear the rerere cache with confirmation
 
-## Repository Maintenance Center
-- Object database size/count analysis
-- `git maintenance run --auto`
-- Normal `git gc`
-- Full `git fsck`
-- Commit-graph generation with changed paths
-- Optional Git scheduled-maintenance registration
-- No aggressive GC or immediate reflog expiration
+## Remote Branch Center
+- Unified local/remote branch inventory with upstream and ahead/behind counts
+- Fetch/prune
+- Create a local tracking branch from a remote branch
+- Publish the current branch and set upstream
+- Rename local branches
+- Delete a server-side branch only after exact typed confirmation
 
-## Git Notes Center
-- Browse 200 recent commits
-- Read, add, replace and remove notes
-- Custom notes refs
-- Explicit push of a notes ref to origin
-- Commit hashes remain unchanged
+## Ignore & Attributes Studio
+- Edit `.gitignore` and `.gitattributes` together
+- Test ignore rules using `git check-ignore -v --no-index`
+- Inspect attributes using `git check-attr -a`
+- Add Python ignore defaults and common binary/text attribute defaults
 
-## Diff & Merge Tool Center
-- Repository-level setup for VS Code, WinMerge, Beyond Compare or KDiff3
-- Launch difftool for all changes or one path
-- Launch mergetool for unresolved conflicts
-- Displays current diff/merge tool configuration
+## Advanced Clone Wizard
+- Full or shallow clone with configurable depth
+- Optional branch and single-branch clone
+- No-checkout mode
+- Partial clone using `--filter=blob:none`
+- Recursive submodules
+- Destination-folder picker and command output
 
-All earlier features remain available through Command Palette. Decimal versioning remains within major version 3.
+All v0.1-v3.5 features remain included through the Command Palette. Versioning remains decimal within major version 3.

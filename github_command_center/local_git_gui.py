@@ -1514,7 +1514,7 @@ class CommandPalette(tk.Toplevel):
             ("Regression Finder",lambda:BisectCenter(self,repo),"bisect regression"),("Commit Inspector",lambda:CommitInspector(self,repo),"blame file history commit"),
             ("Submodule Center",lambda:SubmoduleCenter(self,repo),"submodule recursive"),("Repository Tasks",lambda:TaskCenter(self,repo),"checklist tasks"),
             ("Archive & Handover",lambda:ArchiveCenter(self,repo),"zip bundle support pack"),("Git Hooks Manager",lambda:HooksCenter(self,repo),"hooks pre-commit commit-msg"),
-            ("Git LFS Center",lambda:LFSCenter(self,repo),"large files lfs track"),("Automation Recipes",lambda:AutomationCenter(self,repo),"automation recipes checks"),("Identity & Signing",lambda:IdentitySigningCenter(self,repo),"identity email gpg sign verify"),("Commit Message Studio",lambda:CommitMessageStudio(self,repo),"conventional commits message"),("Changelog Studio",lambda:ChangelogStudio(self,repo),"changelog release notes commits"),("Remote Migration & Mirror",lambda:RemoteMigrationCenter(self,repo),"remote backup mirror migration"),("Credential & Remote Hygiene",lambda:CredentialAuditCenter(self,repo),"credentials helper url ssh https auth"),("Release Policy Center",lambda:ReleasePolicyCenter(self,repo),"release policy gates semver version"),("Repository Metrics",lambda:RepositoryMetricsCenter(self,repo),"metrics contributors languages commits activity"),("Plugin Manager",lambda:PluginManager(self,repo),"plugins extensions commands"),("Batch Operations",lambda:BatchOperationsCenter(self,repo),"batch multiple repositories portfolio"),("Operations Dashboard",lambda:RepositoryDashboardCenter(self,repo),"dashboard operational status next action"),("Repository Data Export",lambda:DataExportCenter(self,repo),"export json csv commits metadata"),("Background Jobs",lambda:BackgroundJobsCenter(self,repo),"jobs queue background cancel logs"),("Preferences",lambda:PreferencesCenter(self,repo),"preferences theme appearance defaults"),("Portfolio History",lambda:PortfolioHistoryCenter(self,repo),"sqlite portfolio history snapshots trends"),("Self-Test & Readiness",lambda:SelfTestCenter(self,repo),"self test readiness smoke diagnostics"),("Partial Staging",lambda:PartialStagingCenter(self,repo),"partial stage hunk line add patch"),("Reflog Recovery",lambda:ReflogRecoveryCenter(self,repo),"reflog recover lost commit reset checkout branch"),("Interactive Rebase Editor",lambda:InteractiveRebaseEditor(self,repo),"interactive rebase squash fixup reword edit drop reorder"),("Unified Ref Browser",lambda:UnifiedRefBrowser(self,repo),"refs branches remotes tags stash notes"),("Repository History Browser",lambda:RepositoryHistoryBrowser(self,repo),"history browse tree file commit export"),("Sparse Checkout",lambda:SparseCheckoutCenter(self,repo),"sparse checkout cone large repository folders"),("Repository Maintenance",lambda:MaintenanceCenter(self,repo),"maintenance gc fsck objects commit graph"),("Git Notes",lambda:GitNotesCenter(self,repo),"git notes annotation metadata commit"),("Diff & Merge Tools",lambda:DiffMergeToolCenter(self,repo),"difftool mergetool vscode winmerge beyond compare kdiff3")]
+            ("Git LFS Center",lambda:LFSCenter(self,repo),"large files lfs track"),("Automation Recipes",lambda:AutomationCenter(self,repo),"automation recipes checks"),("Identity & Signing",lambda:IdentitySigningCenter(self,repo),"identity email gpg sign verify"),("Commit Message Studio",lambda:CommitMessageStudio(self,repo),"conventional commits message"),("Changelog Studio",lambda:ChangelogStudio(self,repo),"changelog release notes commits"),("Remote Migration & Mirror",lambda:RemoteMigrationCenter(self,repo),"remote backup mirror migration"),("Credential & Remote Hygiene",lambda:CredentialAuditCenter(self,repo),"credentials helper url ssh https auth"),("Release Policy Center",lambda:ReleasePolicyCenter(self,repo),"release policy gates semver version"),("Repository Metrics",lambda:RepositoryMetricsCenter(self,repo),"metrics contributors languages commits activity"),("Plugin Manager",lambda:PluginManager(self,repo),"plugins extensions commands"),("Batch Operations",lambda:BatchOperationsCenter(self,repo),"batch multiple repositories portfolio"),("Operations Dashboard",lambda:RepositoryDashboardCenter(self,repo),"dashboard operational status next action"),("Repository Data Export",lambda:DataExportCenter(self,repo),"export json csv commits metadata"),("Background Jobs",lambda:BackgroundJobsCenter(self,repo),"jobs queue background cancel logs"),("Preferences",lambda:PreferencesCenter(self,repo),"preferences theme appearance defaults"),("Portfolio History",lambda:PortfolioHistoryCenter(self,repo),"sqlite portfolio history snapshots trends"),("Self-Test & Readiness",lambda:SelfTestCenter(self,repo),"self test readiness smoke diagnostics"),("Partial Staging",lambda:PartialStagingCenter(self,repo),"partial stage hunk line add patch"),("Reflog Recovery",lambda:ReflogRecoveryCenter(self,repo),"reflog recover lost commit reset checkout branch"),("Interactive Rebase Editor",lambda:InteractiveRebaseEditor(self,repo),"interactive rebase squash fixup reword edit drop reorder"),("Unified Ref Browser",lambda:UnifiedRefBrowser(self,repo),"refs branches remotes tags stash notes"),("Repository History Browser",lambda:RepositoryHistoryBrowser(self,repo),"history browse tree file commit export"),("Sparse Checkout",lambda:SparseCheckoutCenter(self,repo),"sparse checkout cone large repository folders"),("Repository Maintenance",lambda:MaintenanceCenter(self,repo),"maintenance gc fsck objects commit graph"),("Git Notes",lambda:GitNotesCenter(self,repo),"git notes annotation metadata commit"),("Diff & Merge Tools",lambda:DiffMergeToolCenter(self,repo),"difftool mergetool vscode winmerge beyond compare kdiff3"),("Recorded Conflict Resolution",lambda:RerereCenter(self,repo),"rerere recorded resolution recurring conflict"),("Remote Branch Center",lambda:RemoteBranchCenter(self,repo),"remote branch track publish rename delete"),("Ignore & Attributes Studio",lambda:IgnoreAttributesStudio(self,repo),"gitignore gitattributes check-ignore attributes"),("Advanced Clone Wizard",lambda:CloneWizard(self),"clone shallow depth partial single branch blob filter")]
         self.render()
     def render(self):
         q=self.q.get().lower().strip();self.filtered=[c for c in self.commands if not q or q in (c[0]+" "+c[2]).lower()];self.list.delete(0,"end")
@@ -2697,3 +2697,164 @@ class DiffMergeToolCenter(tk.Toplevel):
     def mergetool(self):
         try:messagebox.showinfo("Mergetool",git(self.repo,"mergetool","--no-prompt"),parent=self)
         except Exception as e:messagebox.showerror("Mergetool",str(e),parent=self)
+
+class RerereCenter(tk.Toplevel):
+    """Recorded-resolution management for recurring merge/rebase conflicts."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Recorded Conflict Resolution (rerere)");self.geometry("1050x700");self._build();self.refresh()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x");
+        for text,cmd in [("Refresh",self.refresh),("Enable rerere",self.enable),("Enable autoupdate",self.autoupdate),("Run rerere",self.run_rerere),("Forget selected paths",self.forget),("Clear cache",self.clear)]:ttk.Button(top,text=text,command=cmd).pack(side="left",padx=2)
+        self.path=tk.StringVar();ttk.Entry(top,textvariable=self.path).pack(side="left",fill="x",expand=True,padx=5)
+        self.text=tk.Text(self,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
+        ttk.Label(self,text="rerere records conflict resolutions so Git can reuse them later. Clear/forget only affects the resolution cache, not commits.",padding=8).pack(fill="x")
+    def cfg(self,key):
+        try:return git(self.repo,"config","--get",key)
+        except:return "Not set"
+    def refresh(self):
+        try:status=git(self.repo,"rerere","status")
+        except Exception:status="No recorded conflict currently active."
+        try:remaining=git(self.repo,"rerere","remaining")
+        except Exception:remaining="None"
+        report=f"RERERE CONFIGURATION\n{'='*72}\nrerere.enabled: {self.cfg('rerere.enabled')}\nrerere.autoupdate: {self.cfg('rerere.autoupdate')}\n\nSTATUS\n{status}\n\nREMAINING\n{remaining}"
+        self.text.delete("1.0","end");self.text.insert("1.0",report)
+    def enable(self):
+        try:git(self.repo,"config","rerere.enabled","true");messagebox.showinfo("rerere","Enabled for this repository.",parent=self);self.refresh()
+        except Exception as e:messagebox.showerror("rerere",str(e),parent=self)
+    def autoupdate(self):
+        try:git(self.repo,"config","rerere.autoupdate","true");messagebox.showinfo("rerere","Autoupdate enabled. Review automatically staged resolutions before committing.",parent=self);self.refresh()
+        except Exception as e:messagebox.showerror("rerere",str(e),parent=self)
+    def run_rerere(self):
+        try:messagebox.showinfo("rerere",git(self.repo,"rerere"),parent=self);self.refresh()
+        except Exception as e:messagebox.showerror("rerere",str(e),parent=self)
+    def forget(self):
+        paths=[x.strip() for x in self.path.get().split(",") if x.strip()]
+        if not paths:return messagebox.showwarning("rerere","Enter one or more comma-separated conflicted paths.",parent=self)
+        if messagebox.askyesno("Forget resolution",f"Forget saved resolution for:\n"+"\n".join(paths),parent=self):
+            try:messagebox.showinfo("rerere",git(self.repo,"rerere","forget","--",*paths),parent=self);self.refresh()
+            except Exception as e:messagebox.showerror("rerere",str(e),parent=self)
+    def clear(self):
+        if messagebox.askyesno("Clear rerere cache","Clear recorded conflict resolutions for this repository? This does not change commits.",parent=self):
+            try:messagebox.showinfo("rerere",git(self.repo,"rerere","clear"),parent=self);self.refresh()
+            except Exception as e:messagebox.showerror("rerere",str(e),parent=self)
+
+class RemoteBranchCenter(tk.Toplevel):
+    """Explicit remote branch tracking, publish, rename and delete workflows."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Remote Branch Center");self.geometry("1160x740");self.rows=[];self._build();self.refresh()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x")
+        for text,cmd in [("Refresh",self.refresh),("Fetch/prune",self.fetch),("Track selected",self.track),("Publish current",self.publish),("Rename local branch",self.rename),("Delete remote branch",self.delete_remote)]:ttk.Button(top,text=text,command=cmd).pack(side="left",padx=2)
+        self.tree=ttk.Treeview(self,columns=("type","name","upstream","ahead","behind","sha"),show="headings")
+        for c,t,w in [("type","Type",100),("name","Branch",300),("upstream","Upstream",260),("ahead","Ahead",70),("behind","Behind",70),("sha","Commit",100)]:self.tree.heading(c,text=t);self.tree.column(c,width=w,anchor="w")
+        self.tree.pack(fill="both",expand=True,padx=8,pady=5)
+        ttk.Label(self,text="Remote deletion requires exact typed confirmation. Tracking creates a local branch from a selected remote-tracking ref.",padding=8).pack(fill="x")
+    def safe_count(self,spec):
+        try:return git(self.repo,"rev-list","--count",spec)
+        except:return "-"
+    def refresh(self):
+        self.rows=[];self.tree.delete(*self.tree.get_children())
+        try:
+            raw=git(self.repo,"for-each-ref","--format=%(refname)%09%(refname:short)%09%(upstream:short)%09%(objectname:short)","refs/heads/","refs/remotes/")
+            for line in raw.splitlines():
+                p=line.split("\t");full=p[0];name=p[1];up=p[2] if len(p)>2 else "";sha=p[3] if len(p)>3 else "";typ="Local" if full.startswith("refs/heads/") else "Remote"
+                ahead=behind="-"
+                if typ=="Local" and up:ahead=self.safe_count(f"{up}..{name}");behind=self.safe_count(f"{name}..{up}")
+                r=dict(type=typ,name=name,upstream=up,sha=sha,ahead=ahead,behind=behind);self.rows.append(r);self.tree.insert("","end",iid=str(len(self.rows)-1),values=(typ,name,up or "-",ahead,behind,sha))
+        except Exception as e:messagebox.showerror("Remote branches",str(e),parent=self)
+    def selected(self):
+        s=self.tree.selection();return self.rows[int(s[0])] if s else None
+    def fetch(self):
+        try:messagebox.showinfo("Fetch",git(self.repo,"fetch","--all","--prune"),parent=self);self.refresh()
+        except Exception as e:messagebox.showerror("Fetch",str(e),parent=self)
+    def track(self):
+        import re
+        r=self.selected()
+        if not r or r["type"]!="Remote":return messagebox.showinfo("Track","Select a remote-tracking branch.",parent=self)
+        if r["name"].endswith("/HEAD"):return
+        default=r["name"].split("/",1)[1] if "/" in r["name"] else r["name"];name=simpledialog.askstring("Track branch","Local branch name:",initialvalue=default,parent=self)
+        if name and re.match(r"^[A-Za-z0-9._/-]+$",name):
+            try:messagebox.showinfo("Track",git(self.repo,"switch","-c",name,"--track",r["name"]),parent=self);self.refresh()
+            except Exception as e:messagebox.showerror("Track",str(e),parent=self)
+    def publish(self):
+        try:b=git(self.repo,"branch","--show-current")
+        except Exception as e:return messagebox.showerror("Publish",str(e),parent=self)
+        if not b:return
+        if messagebox.askyesno("Publish branch",f"Push {b} to origin and set upstream?",parent=self):
+            try:messagebox.showinfo("Publish",git(self.repo,"push","-u","origin",b),parent=self);self.refresh()
+            except Exception as e:messagebox.showerror("Publish",str(e),parent=self)
+    def rename(self):
+        r=self.selected()
+        if not r or r["type"]!="Local":return messagebox.showinfo("Rename","Select a local branch.",parent=self)
+        new=simpledialog.askstring("Rename branch",f"New name for {r['name']}:",parent=self)
+        if new:
+            try:messagebox.showinfo("Rename",git(self.repo,"branch","-m",r["name"],new),parent=self);self.refresh()
+            except Exception as e:messagebox.showerror("Rename",str(e),parent=self)
+    def delete_remote(self):
+        r=self.selected()
+        if not r or r["type"]!="Remote":return messagebox.showinfo("Delete remote branch","Select a remote branch.",parent=self)
+        if "/" not in r["name"] or r["name"].endswith("/HEAD"):return
+        remote,branch=r["name"].split("/",1);typed=simpledialog.askstring("Delete remote branch",f"This deletes {remote}/{branch} on the server.\nType the branch name exactly to continue:\n{branch}",parent=self)
+        if typed!=branch:return
+        try:messagebox.showinfo("Delete remote branch",git(self.repo,"push",remote,"--delete",branch),parent=self);self.refresh()
+        except Exception as e:messagebox.showerror("Delete remote branch",str(e),parent=self)
+
+class IgnoreAttributesStudio(tk.Toplevel):
+    """Unified editor and tester for .gitignore and .gitattributes."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Ignore & Attributes Studio");self.geometry("1180x760");self._build();self.load()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x");self.path=tk.StringVar();ttk.Entry(top,textvariable=self.path).pack(side="left",fill="x",expand=True)
+        for text,cmd in [("Test ignore",self.test_ignore),("Check attributes",self.check_attr),("Save files",self.save),("Add Python defaults",self.python_defaults),("Add binary defaults",self.binary_defaults)]:ttk.Button(top,text=text,command=cmd).pack(side="left",padx=2)
+        nb=ttk.Notebook(self);nb.pack(fill="both",expand=True,padx=8,pady=5);a=ttk.Frame(nb);b=ttk.Frame(nb);c=ttk.Frame(nb);nb.add(a,text=".gitignore");nb.add(b,text=".gitattributes");nb.add(c,text="Test results")
+        self.ignore=tk.Text(a,wrap="none",undo=True,font=("Consolas",9));self.ignore.pack(fill="both",expand=True)
+        self.attrs=tk.Text(b,wrap="none",undo=True,font=("Consolas",9));self.attrs.pack(fill="both",expand=True)
+        self.out=tk.Text(c,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.out.pack(fill="both",expand=True)
+    def load(self):
+        for widget,name in ((self.ignore,".gitignore"),(self.attrs,".gitattributes")):
+            p=Path(self.repo)/name;widget.delete("1.0","end");widget.insert("1.0",p.read_text(encoding="utf-8",errors="replace") if p.exists() else "")
+    def save(self):
+        (Path(self.repo)/".gitignore").write_text(self.ignore.get("1.0","end-1c")+"\n",encoding="utf-8");(Path(self.repo)/".gitattributes").write_text(self.attrs.get("1.0","end-1c")+"\n",encoding="utf-8");messagebox.showinfo("Ignore & Attributes","Saved both files. Review and stage them when ready.",parent=self)
+    def result(self,v):self.out.delete("1.0","end");self.out.insert("1.0",v)
+    def test_ignore(self):
+        p=self.path.get().strip()
+        if not p:return
+        try:self.result(git(self.repo,"check-ignore","-v","--no-index","--",p))
+        except Exception as e:self.result("Path is not ignored, or Git returned:\n"+str(e))
+    def check_attr(self):
+        p=self.path.get().strip()
+        if not p:return
+        try:self.result(git(self.repo,"check-attr","-a","--",p))
+        except Exception as e:self.result(str(e))
+    def append_unique(self,w,text):
+        cur=w.get("1.0","end-1c")
+        for line in text.splitlines():
+            if line and line not in cur.splitlines():w.insert("end",("\n" if w.get("1.0","end-1c") else "")+line)
+    def python_defaults(self):self.append_unique(self.ignore,"__pycache__/\n*.py[cod]\n.venv/\nbuild/\ndist/\n*.egg-info/\n.env")
+    def binary_defaults(self):self.append_unique(self.attrs,"* text=auto eol=lf\n*.bat text eol=crlf\n*.cmd text eol=crlf\n*.png binary\n*.jpg binary\n*.jpeg binary\n*.gif binary\n*.zip binary\n*.pdf binary")
+
+class CloneWizard(tk.Toplevel):
+    """Guided clone with depth, single-branch, no-checkout and blob-filter options."""
+    def __init__(self,parent):
+        super().__init__(parent);self.title("Advanced Clone Wizard");self.geometry("820x620");self._build()
+    def _build(self):
+        f=ttk.Frame(self,padding=14);f.pack(fill="both",expand=True);self.url=tk.StringVar();self.dest=tk.StringVar();self.branch=tk.StringVar();self.depth=tk.IntVar(value=0);self.single=tk.BooleanVar();self.no_checkout=tk.BooleanVar();self.partial=tk.BooleanVar();self.recurse=tk.BooleanVar(value=True)
+        rows=[("Repository URL",ttk.Entry(f,textvariable=self.url)),("Destination parent",ttk.Entry(f,textvariable=self.dest)),("Branch (optional)",ttk.Entry(f,textvariable=self.branch)),("Depth (0 = full)",ttk.Spinbox(f,from_=0,to=100000,textvariable=self.depth))]
+        for i,(label,w) in enumerate(rows):ttk.Label(f,text=label).grid(row=i,column=0,sticky="w",pady=7);w.grid(row=i,column=1,sticky="ew",padx=8,pady=7)
+        ttk.Button(f,text="Browse destination",command=lambda:self.dest.set(filedialog.askdirectory(parent=self) or self.dest.get())).grid(row=1,column=2)
+        for j,(text,var) in enumerate((("Single branch",self.single),("No checkout",self.no_checkout),("Partial clone: filter blobs",self.partial),("Recurse submodules",self.recurse)),start=4):ttk.Checkbutton(f,text=text,variable=var).grid(row=j,column=1,sticky="w",pady=5)
+        f.columnconfigure(1,weight=1);ttk.Button(f,text="Clone repository",command=self.clone,style="Accent.TButton").grid(row=9,column=1,sticky="e",pady=20)
+        self.out=tk.Text(f,height=10,wrap="word",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.out.grid(row=10,column=0,columnspan=3,sticky="nsew");f.rowconfigure(10,weight=1)
+    def clone(self):
+        u=self.url.get().strip();d=self.dest.get().strip()
+        if not u or not d:return messagebox.showwarning("Clone","Repository URL and destination are required.",parent=self)
+        args=["clone"]
+        if self.depth.get()>0:args += ["--depth",str(self.depth.get())]
+        if self.branch.get().strip():args += ["--branch",self.branch.get().strip()]
+        if self.single.get():args.append("--single-branch")
+        if self.no_checkout.get():args.append("--no-checkout")
+        if self.partial.get():args += ["--filter=blob:none"]
+        if self.recurse.get():args.append("--recurse-submodules")
+        args.append(u)
+        try:out=git(d,*args);self.out.delete("1.0","end");self.out.insert("1.0",out);messagebox.showinfo("Clone","Clone completed.",parent=self)
+        except Exception as e:self.out.delete("1.0","end");self.out.insert("1.0",str(e));messagebox.showerror("Clone",str(e),parent=self)
