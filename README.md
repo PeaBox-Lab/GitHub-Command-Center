@@ -1,35 +1,44 @@
-# GitHub Command Center v0.9.0
+# GitHub Command Center v1.0.0
 
-Python desktop command center for GitHub and local Git workflows.
+Production-oriented Python desktop command center for GitHub and local Git workflows, designed to replace routine TortoiseGit menus and frequent visits to GitHub.com.
 
-## New: Compare & Review Center
-- Compare any local branch, remote-tracking branch, tag, or commit ref
-- Ahead/behind commit counts
-- Changed-file count, additions and deletions
-- Name/status inventory
-- Commit list unique to the compare ref
-- Unified diff viewer
-- Export a complete review report to text
+## v1.0 highlights
+### Multi-Repository Manager
+- Point the application at a workspace containing multiple Git repositories
+- View current branch, clean/changed state, origin URL, and upstream ahead/behind counts
+- Multi-select repositories and fetch/prune remotes
+- Open a selected repository directly in the Local Git workspace
 
-This provides a visual pre-merge and pre-release review step without needing GitHub's compare page.
+### Diagnostics & Configuration
+- Python and operating-system details
+- Git availability/version
+- GitHub CLI availability/version
+- Optional pip-audit and Bandit availability
+- Git identity and key configuration values
+- Repository `git fsck` integrity check
+- Copyable diagnostic report for troubleshooting
 
-## New: Backup & Recovery Center
-- Create timestamped `gccc-backup/*` checkpoint branches before risky work
-- Inventory existing safety branches and stashes
-- Create a full Git bundle with all refs
-- Verify an existing bundle
-- Restore a bundle into a new repository folder directly from the GUI
+## Complete capability set
+- GitHub account dashboard, repository statistics, issues and repository creation
+- Local clone/init, status, staging, commits, fetch, pull and push
+- Visual commit topology graph
+- Three-pane conflict-resolution editor
+- Branches, merges, tags, remotes, stash, cherry-pick, rebase, revert and guarded reset
+- `.gitignore` editor and safety backup branches
+- Release Center with readiness checks, notes, tags, assets, releases, bundles and archive ZIPs
+- Pull Request Center and GitHub Actions Center
+- Security Center for Dependabot, code scanning, secret scanning, local audit and checksums
+- Repository Health Center and governance-file generation
+- Worktree management
+- Branch/tag/ref comparison with exportable reports
+- Backup and bundle recovery workflows
+- Multi-repository portfolio management
+- Diagnostics and environment reporting
 
-## Cumulative capabilities
-- GitHub dashboard, repositories, issues and account insights
-- Full local Git workspace and visual commit graph
-- Three-pane merge conflict resolution
-- Advanced branch, cherry-pick, rebase, revert and reset workflows
-- Release, Pull Request and GitHub Actions centers
-- Security & Dependency Center
-- Repository Health Center and governance-template generators
-- Git Worktree Center
-- ZIP and Git bundle export
+## Windows quick start
+1. Extract the ZIP.
+2. Double-click `run_windows.bat`.
+3. Connect GitHub with a fine-grained token for account APIs.
+4. Use authenticated GitHub CLI (`gh auth login`) for Releases, PRs, Actions and security APIs.
 
-## Requirements
-Python 3.10+, Git. Authenticated GitHub CLI is required for GitHub Releases, PRs, Actions and GitHub security APIs.
+Requires Python 3.10+ and Git on PATH.

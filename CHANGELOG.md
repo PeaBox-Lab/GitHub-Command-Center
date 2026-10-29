@@ -1,11 +1,16 @@
 # Changelog
 
+## v1.0.0
+- Added Multi-Repository Manager with portfolio scan, branch/status/ahead/behind/origin visibility
+- Added multi-repository fetch/prune and direct opening in Local Git
+- Added Diagnostics & Configuration Center
+- Added Python, OS, Git, GitHub CLI, pip-audit and Bandit diagnostics
+- Added Git user/config reporting and repository integrity check
+- Added copyable troubleshooting report
+- Promoted application to 1.0 after retaining all v0.1-v0.9 capabilities
+
 ## v0.9.0
-- Added Compare & Review Center for branches, tags and refs
-- Added ahead/behind counts, changed-file/addition/deletion metrics, commit list and unified diff
-- Added exportable comparison reports
-- Added Backup & Recovery Center
-- Added manual safety checkpoints, bundle verification and GUI bundle restoration
+- Added Compare & Review Center and Backup & Recovery Center
 
 ## v0.8.0
 - Added Repository Health Center, governance generators and Git Worktree Center

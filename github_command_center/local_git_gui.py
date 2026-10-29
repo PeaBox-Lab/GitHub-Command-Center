@@ -23,7 +23,7 @@ class LocalGitWindow(tk.Toplevel):
         left=ttk.Frame(pane);right=ttk.Frame(pane);pane.add(left,weight=3);pane.add(right,weight=2)
         self.files=ttk.Treeview(left,columns=("state","file"),show="headings",selectmode="extended");self.files.heading("state",text="State");self.files.heading("file",text="File");self.files.column("state",width=70);self.files.column("file",width=470);self.files.pack(fill="both",expand=True)
         foot=ttk.Frame(left);foot.pack(fill="x",pady=5)
-        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Release Center",lambda:ReleaseCenter(self,self.repo)),("Pull Requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Security",lambda:SecurityCenter(self,self.repo)),("Health",lambda:RepositoryHealthCenter(self,self.repo)),("Worktrees",lambda:WorktreeCenter(self,self.repo)),("Compare",lambda:RepositoryCompareCenter(self,self.repo)),("Recovery",lambda:BackupRestoreCenter(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
+        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Release Center",lambda:ReleaseCenter(self,self.repo)),("Pull Requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Security",lambda:SecurityCenter(self,self.repo)),("Health",lambda:RepositoryHealthCenter(self,self.repo)),("Worktrees",lambda:WorktreeCenter(self,self.repo)),("Compare",lambda:RepositoryCompareCenter(self,self.repo)),("Recovery",lambda:BackupRestoreCenter(self,self.repo)),("Repo Manager",lambda:RepositoryManager(self,self.repo)),("Diagnostics",lambda:SettingsDiagnosticsCenter(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
         self.tabs=ttk.Notebook(right);self.tabs.pack(fill="both",expand=True)
         self.texts={}
         for n in ["History","Branches","Stash","Tags","Remotes","Conflicts"]:
@@ -945,3 +945,78 @@ class BackupRestoreCenter(tk.Toplevel):
         if name:
             try:messagebox.showinfo("Restore",git(parent,"clone",p,name),parent=self)
             except Exception as e:messagebox.showerror("Restore",str(e),parent=self)
+
+class RepositoryManager(tk.Toplevel):
+    """Multi-repository command center for local portfolios."""
+    def __init__(self,parent,start_repo=""):
+        super().__init__(parent);self.title("Repository Manager");self.geometry("1200x760");self.minsize(980,650)
+        self.workspace=Path(start_repo).parent if start_repo else Path.home()/"GitHub";self.rows=[];self._build();self.scan()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x");self.path=tk.StringVar(value=str(self.workspace));ttk.Entry(top,textvariable=self.path).pack(side="left",fill="x",expand=True)
+        ttk.Button(top,text="Browse",command=self.browse).pack(side="left",padx=3);ttk.Button(top,text="Scan",command=self.scan).pack(side="left");ttk.Button(top,text="Fetch selected",command=self.fetch).pack(side="left",padx=3);ttk.Button(top,text="Open Local Git",command=self.open_local).pack(side="left")
+        cols=("repo","branch","state","ahead","behind","remote")
+        self.tree=ttk.Treeview(self,columns=cols,show="headings",selectmode="extended")
+        for c,t,w in [("repo","Repository",260),("branch","Branch",130),("state","Working tree",110),("ahead","Ahead",70),("behind","Behind",70),("remote","Origin",420)]:self.tree.heading(c,text=t);self.tree.column(c,width=w,anchor="w")
+        self.tree.pack(fill="both",expand=True,padx=8,pady=5);self.tree.bind("<Double-1>",lambda e:self.open_local())
+    def browse(self):
+        p=filedialog.askdirectory(parent=self)
+        if p:self.path.set(p);self.scan()
+    def scan(self):
+        root=Path(self.path.get());self.rows=[];self.tree.delete(*self.tree.get_children())
+        if not root.exists():return
+        candidates=[]
+        if (root/".git").exists():candidates=[root]
+        else:
+            for p in root.iterdir():
+                if p.is_dir() and (p/".git").exists():candidates.append(p)
+        for p in sorted(candidates):
+            try:
+                branch=git(p,"branch","--show-current");status=git(p,"status","--porcelain");state="Clean" if status=="Completed successfully." else "Changed"
+                try:remote=git(p,"remote","get-url","origin")
+                except:remote="-"
+                try:ahead=git(p,"rev-list","--count","@{u}..HEAD");behind=git(p,"rev-list","--count","HEAD..@{u}")
+                except:ahead=behind="-"
+                row={"path":str(p),"branch":branch,"state":state,"ahead":ahead,"behind":behind,"remote":remote};self.rows.append(row)
+                self.tree.insert("","end",iid=str(len(self.rows)-1),values=(p.name,branch,state,ahead,behind,remote))
+            except Exception:pass
+    def selected(self):return [self.rows[int(i)] for i in self.tree.selection()]
+    def fetch(self):
+        selected=self.selected()
+        if not selected:return
+        errors=[]
+        for r in selected:
+            try:git(r["path"],"fetch","--all","--prune")
+            except Exception as e:errors.append(f"{Path(r['path']).name}: {e}")
+        self.scan();messagebox.showinfo("Fetch", "Completed." if not errors else "Completed with errors:\n"+"\n".join(errors),parent=self)
+    def open_local(self):
+        s=self.selected()
+        if s:LocalGitWindow(self,s[0]["path"])
+
+class SettingsDiagnosticsCenter(tk.Toplevel):
+    """1.0 diagnostics for required tools and repository configuration."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Diagnostics & Configuration");self.geometry("1000x700");self._build();self.refresh()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x");ttk.Button(top,text="Run diagnostics",command=self.refresh).pack(side="left");ttk.Button(top,text="Copy report",command=self.copy).pack(side="left",padx=3)
+        self.text=tk.Text(self,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
+    def cmdver(self,cmd,args):
+        try:
+            r=subprocess.run([cmd,*args],text=True,capture_output=True,timeout=20,encoding="utf-8",errors="replace")
+            return (r.returncode==0,(r.stdout or r.stderr).strip().splitlines()[0] if (r.stdout or r.stderr).strip() else "Available")
+        except Exception as e:return False,str(e)
+    def refresh(self):
+        lines=["GITHUB COMMAND CENTER 1.0 DIAGNOSTICS","="*78]
+        import sys,platform
+        lines += [f"Python: {sys.version.split()[0]}",f"OS: {platform.platform()}",f"Repository: {self.repo}"]
+        for name,cmd,args in [("Git","git",["--version"]),("GitHub CLI","gh",["--version"]),("pip-audit","pip-audit",["--version"]),("Bandit","bandit",["--version"])]:
+            ok,v=self.cmdver(cmd,args);lines.append(f"{'PASS' if ok else 'WARN':4} {name}: {v}")
+        try:
+            lines.append("\nGit config")
+            for key in ("user.name","user.email","core.autocrlf","pull.rebase"):
+                try:v=git(self.repo,"config","--get",key)
+                except:v="Not set"
+                lines.append(f"  {key}: {v}")
+            lines.append("\nRepository integrity\n  "+git(self.repo,"fsck","--no-progress").replace("\n","\n  "))
+        except Exception as e:lines.append("Repository diagnostics error: "+str(e))
+        self.report="\n".join(lines);self.text.delete("1.0","end");self.text.insert("1.0",self.report)
+    def copy(self):self.clipboard_clear();self.clipboard_append(getattr(self,"report",""));messagebox.showinfo("Diagnostics","Report copied to clipboard.",parent=self)
