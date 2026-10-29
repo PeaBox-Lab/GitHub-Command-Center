@@ -1,27 +1,28 @@
-# GitHub Command Center v3.16.0
+# GitHub Command Center v3.17.0
 
-Version 3.16 continues decimal progression within major version 3 and builds directly from the complete v3.15 project export.
+Version 3.17 continues the major-version-3 decimal release train and focuses on repository onboarding, technical audit evidence, and lifecycle management of the safety branches created by protected workflows.
 
-## New in v3.16
+## New in v3.17
 
-### Repository Rules Audit
-- README, CHANGELOG, LICENSE, SECURITY, CONTRIBUTING, `.gitignore`, and `.gitattributes` checks
-- CODEOWNERS and CI workflow detection
-- Upstream configuration check
-- PASS / REVIEW REQUIRED result with export
+### Repository Onboarding Center
+- Audit starter repository controls
+- Initialize Git when needed
+- Generate missing README, CHANGELOG, SECURITY, CONTRIBUTING, `.gitignore`, and `.gitattributes` starter files
+- Never overwrites existing starter files
 
-### Commit Range Exporter
-- Preview any `base..tip` range
-- Export as `git format-patch` series
-- Export selected range as Git bundle
-- Export Markdown commit inventory
+### Repository Audit Pack
+- Exportable Markdown evidence pack
+- Working-tree/branch status
+- Remotes
+- Recent commits and tags
+- Git object integrity
+- Effective Git configuration origins
 
-### Local Branch Dashboard
-- Local branches and upstreams
-- Ahead/behind counts
-- Last-commit date and subject
-- Switch selected branch
-- Compare selected branch with current using left/right graph
-- Direct access to Safe Branch Delete
+### Safety Branch Manager
+- Inventory `gccc-backup/*` branches created by protected rebase/reset/sync/cherry-pick workflows
+- Date, hash and subject visibility
+- Inspect a safety branch
+- Conservative normal `git branch -d` cleanup only
+- Unmerged safety branches remain protected
 
-All v0.1-v3.15 features remain included through the Command Palette.
+All earlier v0.1-v3.16 capabilities remain available through Command Palette.
