@@ -21,9 +21,9 @@ MUTED = "#64748b"
 class GitHubCommandCenter(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("GitHub Command Center")
-        self.geometry("1280x780")
-        self.minsize(1040, 680)
+        self.title("GitHub Command Center 3.2")
+        self.geometry("1400x860")
+        self.minsize(1120, 720)
         self.configure(bg=BG)
         self.config_data = load_config()
         self.client = None

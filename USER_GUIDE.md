@@ -13,3 +13,9 @@ Capture a snapshot from the parent workspace whenever you want a point-in-time v
 Run Self-Test after installation, environment changes or upgrades. A PASS confirms core command and parser readiness, not correctness of every external GitHub permission.
 
 All earlier centers remain searchable through Commands.
+
+# Version 3.2 UI Guide
+
+Use the top action bar for daily Git tasks. Use the left navigation for common work, collaboration and quality centers. Press Ctrl+K for the complete searchable feature list. The badges above the working tree show the current branch, number of changed entries and upstream divergence.
+
+Keyboard shortcuts: Ctrl+K opens Commands, F5 refreshes, and Ctrl+Enter opens commit entry.

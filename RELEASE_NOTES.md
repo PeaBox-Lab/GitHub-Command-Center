@@ -1,3 +1,5 @@
-# GitHub Command Center 3.1.0 Release Notes
+# GitHub Command Center 3.2.0 Release Notes
 
-Version 3.1 delivers four roadmap foundations in one release: background command execution with cancellation, persistent appearance/preferences, SQLite portfolio snapshots and built-in readiness tests. These changes improve responsiveness, continuity and release confidence while preserving all prior features.
+Version 3.2 is a dedicated usability release. The Local Git Workspace has been rebuilt around a clear daily workflow, categorized navigation and an always-available Command Palette. Repository state is now visible through branch, change and synchronization badges, while advanced tools no longer overcrowd the interface.
+
+All earlier functionality remains included. Versioning stays within major version 3 for incremental releases.

@@ -13,30 +13,92 @@ def git(cwd,*args):
 
 class LocalGitWindow(tk.Toplevel):
     def __init__(self,parent,start=""):
-        super().__init__(parent);self.title("Local Git Workspace");self.geometry("1250x760");self.minsize(1000,650)
+        super().__init__(parent)
+        self.title("GitHub Command Center - Local Git")
+        self.geometry("1440x860");self.minsize(1120,700)
         self.repo=start;self.sel=tk.StringVar(value=start or "No repository selected")
-        top=ttk.Frame(self,padding=10);top.pack(fill="x");ttk.Label(top,textvariable=self.sel,font=("Segoe UI Semibold",11)).pack(side="left",fill="x",expand=True)
-        ttk.Button(top,text="Choose / Init",command=self.choose).pack(side="right",padx=3);ttk.Button(top,text="Clone",command=self.clone).pack(side="right",padx=3)
-        bar=ttk.Frame(self,padding=(10,0));bar.pack(fill="x")
-        for t,c in [("Refresh",self.refresh),("Stage selected",self.stage),("Stage all",lambda:self.run("add","--all")),("Unstage",self.unstage),("Commit",self.commit),("Fetch",lambda:self.run("fetch","--all","--prune")),("Pull FF-only",lambda:self.run("pull","--ff-only")),("Push",lambda:self.run("push"))]:ttk.Button(bar,text=t,command=c).pack(side="left",padx=2,pady=5)
-        pane=ttk.Panedwindow(self,orient="horizontal");pane.pack(fill="both",expand=True,padx=10,pady=8)
-        left=ttk.Frame(pane);right=ttk.Frame(pane);pane.add(left,weight=3);pane.add(right,weight=2)
-        self.files=ttk.Treeview(left,columns=("state","file"),show="headings",selectmode="extended");self.files.heading("state",text="State");self.files.heading("file",text="File");self.files.column("state",width=70);self.files.column("file",width=470);self.files.pack(fill="both",expand=True)
-        foot=ttk.Frame(left);foot.pack(fill="x",pady=5)
-        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Release Center",lambda:ReleaseCenter(self,self.repo)),("Pull Requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Security",lambda:SecurityCenter(self,self.repo)),("Health",lambda:RepositoryHealthCenter(self,self.repo)),("Worktrees",lambda:WorktreeCenter(self,self.repo)),("Compare",lambda:RepositoryCompareCenter(self,self.repo)),("Recovery",lambda:BackupRestoreCenter(self,self.repo)),("Repo Manager",lambda:RepositoryManager(self,self.repo)),("Diagnostics",lambda:SettingsDiagnosticsCenter(self,self.repo)),("Smart Sync",lambda:SyncCenter(self,self.repo)),("Search",lambda:SearchCenter(self,self.repo)),("Review",lambda:ChangeReviewCenter(self,self.repo)),("Notes",lambda:RepositoryNotesCenter(self,self.repo)),("Cleanup",lambda:BranchCleanupCenter(self,self.repo)),("Snapshot",lambda:ProjectSnapshotCenter(self,self.repo)),("Patches",lambda:PatchCenter(self,self.repo)),("Bisect",lambda:BisectCenter(self,self.repo)),("Inspector",lambda:CommitInspector(self,self.repo)),("Submodules",lambda:SubmoduleCenter(self,self.repo)),("Tasks",lambda:TaskCenter(self,self.repo)),("Archive",lambda:ArchiveCenter(self,self.repo)),("Commands",lambda:CommandPalette(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
-        self.tabs=ttk.Notebook(right);self.tabs.pack(fill="both",expand=True)
+        self.status_text=tk.StringVar(value="Ready")
+        self.configure(bg="#eef2f7")
+        self._apply_modern_style()
+
+        # Header
+        header=tk.Frame(self,bg="#111827",height=72);header.pack(fill="x");header.pack_propagate(False)
+        tk.Label(header,text="GCC",bg="#4f46e5",fg="white",font=("Segoe UI Semibold",15),width=4,height=2).pack(side="left",padx=(14,10),pady=11)
+        title=tk.Frame(header,bg="#111827");title.pack(side="left",fill="x",expand=True,pady=10)
+        tk.Label(title,text="Local Git Workspace",bg="#111827",fg="white",font=("Segoe UI Semibold",17)).pack(anchor="w")
+        tk.Label(title,textvariable=self.sel,bg="#111827",fg="#9ca3af",font=("Segoe UI",9)).pack(anchor="w")
+        ttk.Button(header,text="Command Palette  Ctrl+K",style="Accent.TButton",command=lambda:CommandPalette(self,self.repo)).pack(side="right",padx=(5,14),pady=18)
+        ttk.Button(header,text="Choose Repository",command=self.choose).pack(side="right",padx=5,pady=18)
+        ttk.Button(header,text="Clone",command=self.clone).pack(side="right",padx=5,pady=18)
+
+        # Primary actions, intentionally limited to the daily workflow
+        action=tk.Frame(self,bg="white",height=58,highlightbackground="#dbe3ef",highlightthickness=1);action.pack(fill="x");action.pack_propagate(False)
+        daily=[("Refresh",self.refresh),("Stage selected",self.stage),("Stage all",lambda:self.run("add","--all")),("Unstage",self.unstage),("Commit",self.commit),("Fetch",lambda:self.run("fetch","--all","--prune")),("Pull safely",lambda:self.run("pull","--ff-only")),("Push",lambda:self.run("push"))]
+        for i,(text,cmd) in enumerate(daily):ttk.Button(action,text=text,command=cmd,style="Accent.TButton" if text=="Commit" else "TButton").pack(side="left",padx=(12 if i==0 else 3,3),pady=11)
+        ttk.Button(action,text="Smart Sync",command=lambda:SyncCenter(self,self.repo)).pack(side="right",padx=12,pady=11)
+        ttk.Button(action,text="Pre-Commit Review",command=lambda:ChangeReviewCenter(self,self.repo)).pack(side="right",padx=3,pady=11)
+
+        body=tk.Frame(self,bg="#eef2f7");body.pack(fill="both",expand=True)
+        # Compact sidebar replaces the long overflowing button strip
+        side=tk.Frame(body,bg="#182235",width=212);side.pack(side="left",fill="y");side.pack_propagate(False)
+        groups=[
+            ("WORK",[("Dashboard",lambda:RepositoryDashboardCenter(self,self.repo)),("Changes",self.refresh),("History",lambda:CommitGraphWindow(self,self.repo)),("Search",lambda:SearchCenter(self,self.repo))]),
+            ("COLLABORATE",[("Pull requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Releases",lambda:ReleaseCenter(self,self.repo))]),
+            ("QUALITY",[("Conflicts",lambda:ConflictResolver(self,self.repo)),("Security",lambda:SecurityCenter(self,self.repo)),("Health",lambda:RepositoryHealthCenter(self,self.repo)),("Compare",lambda:RepositoryCompareCenter(self,self.repo))]),
+            ("TOOLS",[("Branches & advanced",lambda:AdvancedGitWindow(self,self.repo)),("Recovery",lambda:BackupRestoreCenter(self,self.repo)),("Worktrees",lambda:WorktreeCenter(self,self.repo)),("All commands",lambda:CommandPalette(self,self.repo))])]
+        for heading,items in groups:
+            tk.Label(side,text=heading,bg="#182235",fg="#72819a",font=("Segoe UI Semibold",8),anchor="w").pack(fill="x",padx=16,pady=(16,5))
+            for text,cmd in items:
+                tk.Button(side,text=text,command=cmd,anchor="w",relief="flat",bd=0,bg="#182235",fg="#d7deea",activebackground="#27344a",activeforeground="white",font=("Segoe UI",10),padx=16,pady=8,cursor="hand2").pack(fill="x")
+
+        workspace=tk.Frame(body,bg="#eef2f7");workspace.pack(side="left",fill="both",expand=True,padx=12,pady=12)
+        summary=tk.Frame(workspace,bg="white",highlightbackground="#dbe3ef",highlightthickness=1);summary.pack(fill="x",pady=(0,10))
+        self.branch_badge=tk.Label(summary,text="Branch: -",bg="#eef2ff",fg="#4338ca",font=("Segoe UI Semibold",9),padx=10,pady=6);self.branch_badge.pack(side="left",padx=10,pady=8)
+        self.change_badge=tk.Label(summary,text="Changes: -",bg="#fef3c7",fg="#92400e",font=("Segoe UI Semibold",9),padx=10,pady=6);self.change_badge.pack(side="left",padx=4,pady=8)
+        self.sync_badge=tk.Label(summary,text="Sync: -",bg="#ecfdf5",fg="#047857",font=("Segoe UI Semibold",9),padx=10,pady=6);self.sync_badge.pack(side="left",padx=4,pady=8)
+        ttk.Button(summary,text="Open folder",command=self.open_folder).pack(side="right",padx=10,pady=8)
+
+        pane=ttk.Panedwindow(workspace,orient="horizontal");pane.pack(fill="both",expand=True)
+        left=tk.Frame(pane,bg="white",highlightbackground="#dbe3ef",highlightthickness=1);right=tk.Frame(pane,bg="white",highlightbackground="#dbe3ef",highlightthickness=1);pane.add(left,weight=3);pane.add(right,weight=2)
+        tk.Label(left,text="Working Tree",bg="white",fg="#111827",font=("Segoe UI Semibold",12)).pack(anchor="w",padx=12,pady=(12,6))
+        self.files=ttk.Treeview(left,columns=("state","file"),show="headings",selectmode="extended");self.files.heading("state",text="State");self.files.heading("file",text="File");self.files.column("state",width=75,anchor="center");self.files.column("file",width=520);self.files.pack(fill="both",expand=True,padx=10,pady=(0,6));self.files.bind("<Double-1>",lambda e:self.diff())
+        filebar=tk.Frame(left,bg="white");filebar.pack(fill="x",padx=8,pady=(0,9))
+        for text,cmd in [("View diff",self.diff),("Discard selected",self.discard),("Clean preview",self.clean)]:ttk.Button(filebar,text=text,command=cmd).pack(side="left",padx=2)
+
+        self.tabs=ttk.Notebook(right);self.tabs.pack(fill="both",expand=True,padx=8,pady=8)
         self.texts={}
-        for n in ["History","Branches","Stash","Tags","Remotes","Conflicts"]:
-            f=ttk.Frame(self.tabs);self.tabs.add(f,text=n);b=ttk.Frame(f);b.pack(fill="x")
-            if n=="Branches":
-                for t,c in [("New",self.branch_new),("Switch",self.branch_switch),("Merge",self.branch_merge),("Delete",self.branch_delete),("Abort",lambda:self.run("merge","--abort"))]:ttk.Button(b,text=t,command=c).pack(side="left",padx=1,pady=3)
-            elif n=="Stash":
-                ttk.Button(b,text="Save",command=self.stash).pack(side="left");ttk.Button(b,text="Pop",command=lambda:self.run("stash","pop")).pack(side="left")
-            elif n=="Tags":
-                ttk.Button(b,text="Create",command=self.tag).pack(side="left");ttk.Button(b,text="Delete",command=self.tag_delete).pack(side="left");ttk.Button(b,text="Push tags",command=lambda:self.run("push","origin","--tags")).pack(side="left")
-            elif n=="Remotes":ttk.Button(b,text="Add/update",command=self.remote).pack(side="left")
-            x=tk.Text(f,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");x.pack(fill="both",expand=True);self.texts[n]=x
+        for name in ["History","Branches","Stash","Tags","Remotes","Conflicts"]:
+            frame=tk.Frame(self.tabs,bg="white");self.tabs.add(frame,text=name)
+            controls=tk.Frame(frame,bg="white");controls.pack(fill="x",padx=5,pady=4)
+            if name=="Branches":
+                for t,c in [("New",self.branch_new),("Switch",self.branch_switch),("Merge",self.branch_merge),("Delete",self.branch_delete)]:ttk.Button(controls,text=t,command=c).pack(side="left",padx=2)
+            elif name=="Stash":
+                ttk.Button(controls,text="Save stash",command=self.stash).pack(side="left");ttk.Button(controls,text="Pop latest",command=lambda:self.run("stash","pop")).pack(side="left",padx=2)
+            elif name=="Tags":
+                ttk.Button(controls,text="Create tag",command=self.tag).pack(side="left");ttk.Button(controls,text="Push tags",command=lambda:self.run("push","origin","--tags")).pack(side="left",padx=2)
+            elif name=="Remotes":ttk.Button(controls,text="Add/update",command=self.remote).pack(side="left")
+            elif name=="Conflicts":ttk.Button(controls,text="Open resolver",command=lambda:ConflictResolver(self,self.repo)).pack(side="left")
+            text=tk.Text(frame,wrap="none",font=("Consolas",9),bg="#101827",fg="#dbeafe",insertbackground="white",bd=0);text.pack(fill="both",expand=True,padx=6,pady=(0,6));self.texts[name]=text
+
+        status=tk.Frame(self,bg="#111827",height=28);status.pack(fill="x");status.pack_propagate(False)
+        tk.Label(status,textvariable=self.status_text,bg="#111827",fg="#cbd5e1",font=("Segoe UI",9)).pack(side="left",padx=12,pady=5)
+        tk.Label(status,text="Ctrl+K Commands    F5 Refresh    Ctrl+Enter Commit",bg="#111827",fg="#64748b",font=("Segoe UI",8)).pack(side="right",padx=12)
+        self.bind("<Control-k>",lambda e:CommandPalette(self,self.repo));self.bind("<F5>",lambda e:self.refresh());self.bind("<Control-Return>",lambda e:self.commit())
         if self.repo:self.refresh()
+
+    def _apply_modern_style(self):
+        style=ttk.Style(self)
+        try:style.theme_use("clam")
+        except:pass
+        style.configure("TButton",font=("Segoe UI",9),padding=(10,7),background="#f8fafc")
+        style.map("TButton",background=[("active","#e5e7eb")])
+        style.configure("Accent.TButton",font=("Segoe UI Semibold",9),padding=(11,7),background="#4f46e5",foreground="white")
+        style.map("Accent.TButton",background=[("active","#4338ca")])
+        style.configure("Treeview",font=("Segoe UI",9),rowheight=29,background="white",fieldbackground="white",borderwidth=0)
+        style.configure("Treeview.Heading",font=("Segoe UI Semibold",9),padding=8,background="#f1f5f9",foreground="#334155")
+        style.map("Treeview",background=[("selected","#e0e7ff")],foreground=[("selected","#111827")])
+        style.configure("TNotebook",background="white",borderwidth=0);style.configure("TNotebook.Tab",font=("Segoe UI",9),padding=(10,7))
+
     def choose(self):
         p=filedialog.askdirectory(parent=self)
         if not p:return
@@ -59,6 +121,7 @@ class LocalGitWindow(tk.Toplevel):
     def paths(self):return [self.files.item(i,"values")[1] for i in self.files.selection()]
     def refresh(self):
         if not self.repo:return
+        self.status_text.set("Refreshing repository...")
         try:
             status=git(self.repo,"status","--porcelain=v1");self.files.delete(*self.files.get_children())
             for i,l in enumerate(status.splitlines()):
@@ -66,7 +129,14 @@ class LocalGitWindow(tk.Toplevel):
             data={"History":git(self.repo,"log","-100","--date=short","--pretty=format:%h  %ad  %an  %s"),"Branches":git(self.repo,"branch","-vv"),"Stash":git(self.repo,"stash","list"),"Tags":git(self.repo,"tag","--sort=-creatordate"),"Remotes":git(self.repo,"remote","-v"),"Conflicts":git(self.repo,"diff","--name-only","--diff-filter=U")}
             branch=git(self.repo,"branch","--show-current");self.sel.set(f"{self.repo}  |  {branch or 'detached HEAD'}")
             for n,v in data.items():self.texts[n].delete("1.0","end");self.texts[n].insert("1.0",v or ("No conflicts" if n=="Conflicts" else "None"))
-        except Exception as e:messagebox.showerror("Refresh",str(e),parent=self)
+            changed=len([x for x in status.splitlines() if x and x!="Completed successfully."])
+            self.branch_badge.config(text=f"Branch: {branch or 'detached'}")
+            self.change_badge.config(text=f"Changes: {changed}",bg="#ecfdf5" if changed==0 else "#fef3c7",fg="#047857" if changed==0 else "#92400e")
+            try:
+                ahead=git(self.repo,"rev-list","--count","@{u}..HEAD");behind=git(self.repo,"rev-list","--count","HEAD..@{u}");sync=f"Sync: +{ahead} / -{behind}"
+            except:sync="Sync: no upstream"
+            self.sync_badge.config(text=sync);self.status_text.set("Repository refreshed")
+        except Exception as e:self.status_text.set("Refresh failed");messagebox.showerror("Refresh",str(e),parent=self)
     def stage(self):
         p=self.paths()
         if p:self.run("add","--",*p)

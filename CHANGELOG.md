@@ -1,14 +1,18 @@
 # Changelog
 
-## v3.1.0
-- Added Background Jobs Center with queue, live logs, exit status and cancellation
-- Added persistent Preferences & Appearance under the user home directory
-- Added SQLite Portfolio History with multi-repository snapshots and CSV export
-- Added Self-Test & Readiness Center with Git/parser/configuration/source-compilation checks
-- Retained all v0.1-v3.0 functionality
+## v3.2.0
+- Redesigned Local Git Workspace with modern header, compact daily-action bar and grouped side navigation
+- Removed overflowing advanced-feature button row in favor of Command Palette and categorized navigation
+- Added branch, change-count and sync-state badges
+- Added live status bar and keyboard shortcuts
+- Improved typography, spacing, tree rows, tab styling and overall window sizing
+- Added double-click diff access from the working tree
+- Preserved all v0.1-v3.1 functionality and decimal versioning policy
 
+## v3.1.0
+- Added Background Jobs, Preferences, SQLite Portfolio History and Self-Test Center
 ## v3.0.0
-- Added Plugin Manager, Batch Operations, Operations Dashboard and structured data export
+- Added Plugin Manager, Batch Operations, Operations Dashboard and structured exports
 ## v2.0-v2.2
 - Added extensibility, Hooks, LFS, automation, signing, changelog, migration, credential hygiene, release policy and metrics
 ## v1.0-v1.6
