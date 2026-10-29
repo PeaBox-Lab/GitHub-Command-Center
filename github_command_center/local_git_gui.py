@@ -23,7 +23,7 @@ class LocalGitWindow(tk.Toplevel):
         left=ttk.Frame(pane);right=ttk.Frame(pane);pane.add(left,weight=3);pane.add(right,weight=2)
         self.files=ttk.Treeview(left,columns=("state","file"),show="headings",selectmode="extended");self.files.heading("state",text="State");self.files.heading("file",text="File");self.files.column("state",width=70);self.files.column("file",width=470);self.files.pack(fill="both",expand=True)
         foot=ttk.Frame(left);foot.pack(fill="x",pady=5)
-        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Release Center",lambda:ReleaseCenter(self,self.repo)),("Pull Requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
+        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Release Center",lambda:ReleaseCenter(self,self.repo)),("Pull Requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Security",lambda:SecurityCenter(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
         self.tabs=ttk.Notebook(right);self.tabs.pack(fill="both",expand=True)
         self.texts={}
         for n in ["History","Branches","Stash","Tags","Remotes","Conflicts"]:
@@ -585,3 +585,140 @@ class ActionsCenter(tk.Toplevel):
         except Exception as e:messagebox.showerror("Workflow",str(e),parent=self)
     def output(self,title,value):
         w=tk.Toplevel(self);w.title(title);w.geometry("1000x650");t=tk.Text(w,wrap="none",font=("Consolas",9));t.pack(fill="both",expand=True);t.insert("1.0",value)
+
+class SecurityCenter(tk.Toplevel):
+    """Repository security overview using GitHub CLI API and local Git checks."""
+    def __init__(self, parent, repo):
+        super().__init__(parent); self.repo=repo
+        self.title("Security & Dependency Center"); self.geometry("1220x780"); self.minsize(980,650)
+        self.rows=[]; self._build(); self.refresh_all()
+
+    def gh(self, *args):
+        try:
+            r=subprocess.run(["gh",*args],cwd=self.repo,text=True,capture_output=True,timeout=900,encoding="utf-8",errors="replace")
+        except FileNotFoundError:
+            raise GitError("GitHub CLI (gh) is required. Install it and run 'gh auth login'.")
+        out=(r.stdout+"\n"+r.stderr).strip()
+        if r.returncode: raise GitError(out or "GitHub CLI command failed")
+        return out
+
+    def repo_slug(self):
+        import re
+        url=git(self.repo,"remote","get-url","origin")
+        m=re.search(r"github\.com[:/]([^/]+)/([^/]+?)(?:\.git)?$",url)
+        if not m: raise GitError("The origin remote is not a GitHub repository.")
+        return f"{m.group(1)}/{m.group(2)}"
+
+    def _build(self):
+        top=ttk.Frame(self,padding=8); top.pack(fill="x")
+        ttk.Label(top,text=self.repo,font=("Segoe UI Semibold",11)).pack(side="left",fill="x",expand=True)
+        ttk.Button(top,text="Refresh all",command=self.refresh_all).pack(side="right")
+        self.tabs=ttk.Notebook(self); self.tabs.pack(fill="both",expand=True,padx=8,pady=(0,8))
+        self.summary=ttk.Frame(self.tabs,padding=10); self.dependabot=ttk.Frame(self.tabs,padding=8); self.code=ttk.Frame(self.tabs,padding=8); self.secret=ttk.Frame(self.tabs,padding=8); self.local=ttk.Frame(self.tabs,padding=8)
+        for frame,title in [(self.summary,"Security summary"),(self.dependabot,"Dependabot"),(self.code,"Code scanning"),(self.secret,"Secret scanning"),(self.local,"Local audit")]: self.tabs.add(frame,text=title)
+        self.summary_text=tk.Text(self.summary,wrap="word",font=("Consolas",10),bg="#0f172a",fg="#e2e8f0"); self.summary_text.pack(fill="both",expand=True)
+        self.dep_tree=self.make_tree(self.dependabot,("number","severity","package","manifest","state"),("#","Severity","Package","Manifest","State"),(60,90,220,260,90))
+        depbar=ttk.Frame(self.dependabot);depbar.pack(fill="x",pady=5);ttk.Button(depbar,text="Open selected alert",command=lambda:self.open_alert(self.dep_tree)).pack(side="left")
+        self.code_tree=self.make_tree(self.code,("number","severity","rule","tool","state"),("#","Severity","Rule","Tool","State"),(60,90,330,170,90))
+        codebar=ttk.Frame(self.code);codebar.pack(fill="x",pady=5);ttk.Button(codebar,text="Open selected alert",command=lambda:self.open_alert(self.code_tree)).pack(side="left")
+        self.secret_tree=self.make_tree(self.secret,("number","type","location","state"),("#","Secret type","Location","State"),(60,260,430,90))
+        secbar=ttk.Frame(self.secret);secbar.pack(fill="x",pady=5);ttk.Button(secbar,text="Open selected alert",command=lambda:self.open_alert(self.secret_tree)).pack(side="left")
+        localbar=ttk.Frame(self.local);localbar.pack(fill="x")
+        for t,c in [("Run Git checks",self.local_checks),("Run pip-audit",self.pip_audit),("Run Bandit",self.bandit),("Generate checksums",self.checksums)]:ttk.Button(localbar,text=t,command=c).pack(side="left",padx=2)
+        self.local_text=tk.Text(self.local,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.local_text.pack(fill="both",expand=True,pady=6)
+
+    def make_tree(self,parent,cols,labels,widths):
+        tree=ttk.Treeview(parent,columns=cols,show="headings")
+        for c,l,w in zip(cols,labels,widths):tree.heading(c,text=l);tree.column(c,width=w,anchor="w")
+        tree.pack(fill="both",expand=True);return tree
+
+    def api_json(self,path):
+        import json
+        out=self.gh("api","-H","Accept: application/vnd.github+json",path,"--paginate")
+        return json.loads(out or "[]")
+
+    def refresh_all(self):
+        try:
+            slug=self.repo_slug(); self.slug=slug
+            errors=[]
+            try:self.dep_rows=self.api_json(f"repos/{slug}/dependabot/alerts?per_page=100&state=open")
+            except Exception as e:self.dep_rows=[];errors.append("Dependabot: "+str(e))
+            try:self.code_rows=self.api_json(f"repos/{slug}/code-scanning/alerts?per_page=100&state=open")
+            except Exception as e:self.code_rows=[];errors.append("Code scanning: "+str(e))
+            try:self.secret_rows=self.api_json(f"repos/{slug}/secret-scanning/alerts?per_page=100&state=open")
+            except Exception as e:self.secret_rows=[];errors.append("Secret scanning: "+str(e))
+            self.fill_alerts(); self.fill_summary(errors); self.local_checks()
+        except Exception as e:messagebox.showerror("Security Center",str(e),parent=self)
+
+    def fill_alerts(self):
+        self.dep_tree.delete(*self.dep_tree.get_children())
+        for i,a in enumerate(self.dep_rows):
+            package=(a.get("dependency") or {}).get("package",{}).get("name",""); manifest=(a.get("dependency") or {}).get("manifest_path",""); sev=(a.get("security_advisory") or {}).get("severity","")
+            self.dep_tree.insert("","end",iid=str(i),values=(a.get("number"),sev,package,manifest,a.get("state")),tags=(a.get("html_url","") or "",))
+        self.code_tree.delete(*self.code_tree.get_children())
+        for i,a in enumerate(self.code_rows):
+            rule=a.get("rule") or {};tool=(a.get("tool") or {}).get("name","")
+            self.code_tree.insert("","end",iid=str(i),values=(a.get("number"),rule.get("security_severity_level") or rule.get("severity"),rule.get("description") or rule.get("id"),tool,a.get("state")),tags=(a.get("html_url","") or "",))
+        self.secret_tree.delete(*self.secret_tree.get_children())
+        for i,a in enumerate(self.secret_rows):
+            loc=((a.get("locations") or [{}])[0].get("details") or {}).get("path","")
+            self.secret_tree.insert("","end",iid=str(i),values=(a.get("number"),a.get("secret_type_display_name") or a.get("secret_type"),loc,a.get("state")),tags=(a.get("html_url","") or "",))
+
+    def fill_summary(self,errors):
+        high=sum(1 for a in self.dep_rows if (a.get("security_advisory") or {}).get("severity") in ("high","critical"))
+        text=(f"SECURITY SUMMARY FOR {self.slug}\n"+"="*72+"\n\n"
+              f"Open Dependabot alerts : {len(self.dep_rows)}\n"
+              f"High/Critical dependencies: {high}\n"
+              f"Open code-scanning alerts: {len(self.code_rows)}\n"
+              f"Open secret-scanning alerts: {len(self.secret_rows)}\n\n")
+        if errors:text += "FEATURE OR PERMISSION WARNINGS\n"+"-"*72+"\n"+"\n".join("- "+e for e in errors)+"\n\n"
+        text += "Recommended order:\n1. Revoke and rotate exposed secrets immediately.\n2. Fix critical/high dependency alerts.\n3. Review code-scanning alerts.\n4. Commit lockfiles and rerun CI.\n"
+        self.summary_text.delete("1.0","end");self.summary_text.insert("1.0",text)
+
+    def open_alert(self,tree):
+        sel=tree.selection()
+        if not sel:return
+        tags=tree.item(sel[0],"tags")
+        if tags and tags[0]:
+            import webbrowser;webbrowser.open(tags[0])
+
+    def set_local(self,title,text):
+        self.local_text.delete("1.0","end");self.local_text.insert("1.0",title+"\n"+"="*72+"\n\n"+text)
+
+    def local_checks(self):
+        try:
+            lines=[]
+            tracked=git(self.repo,"ls-files")
+            suspicious=[x for x in tracked.splitlines() if x.lower().endswith((".pem",".key",".pfx",".p12",".env")) or "credential" in x.lower() or "secret" in x.lower()]
+            lines.append("Potentially sensitive tracked filenames:\n"+("\n".join("  - "+x for x in suspicious) if suspicious else "  None detected by filename"))
+            large=[]
+            for f in tracked.splitlines():
+                p=Path(self.repo)/f
+                try:
+                    if p.is_file() and p.stat().st_size>10*1024*1024:large.append(f"{f} ({p.stat().st_size/1024/1024:.1f} MB)")
+                except OSError:pass
+            lines.append("\nTracked files over 10 MB:\n"+("\n".join("  - "+x for x in large) if large else "  None"))
+            lines.append("\nGit fsck:\n"+git(self.repo,"fsck","--no-progress"))
+            self.set_local("LOCAL REPOSITORY AUDIT","\n".join(lines))
+        except Exception as e:self.set_local("LOCAL REPOSITORY AUDIT","ERROR: "+str(e))
+
+    def external_scan(self,cmd,title):
+        try:
+            r=subprocess.run(cmd,cwd=self.repo,text=True,capture_output=True,timeout=900,encoding="utf-8",errors="replace")
+            self.set_local(title,(r.stdout+"\n"+r.stderr).strip() or "No findings reported.")
+        except FileNotFoundError:self.set_local(title,f"Tool not installed. Install with: python -m pip install {cmd[0]}")
+        except Exception as e:self.set_local(title,"ERROR: "+str(e))
+    def pip_audit(self):self.external_scan(["pip-audit","-r","requirements.txt"],"PIP-AUDIT RESULTS")
+    def bandit(self):self.external_scan(["bandit","-r",".","-x",".venv,venv"],"BANDIT RESULTS")
+    def checksums(self):
+        import hashlib
+        files=filedialog.askopenfilenames(title="Select release files",parent=self)
+        if not files:return
+        lines=[]
+        for name in files:
+            h=hashlib.sha256()
+            with open(name,"rb") as f:
+                for block in iter(lambda:f.read(1024*1024),b""):h.update(block)
+            lines.append(f"{h.hexdigest()}  {Path(name).name}")
+        target=filedialog.asksaveasfilename(title="Save checksums",defaultextension=".txt",initialfile="SHA256SUMS.txt",parent=self)
+        if target:Path(target).write_text("\n".join(lines)+"\n",encoding="utf-8");messagebox.showinfo("Checksums",f"Saved {target}",parent=self)

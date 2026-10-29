@@ -1,30 +1,27 @@
-# GitHub Command Center v0.6.0
+# GitHub Command Center v0.7.0
 
-A Python desktop command center replacing routine GitHub web and TortoiseGit workflows.
+Python desktop command center replacing routine GitHub web and TortoiseGit workflows.
 
-## New in v0.6.0: Pull Request Center
-- View up to 100 open, closed, merged, and draft pull requests
-- Inspect PR details and comments
-- Create a pull request from the current branch
-- Checkout a PR locally
-- Merge using merge commit, squash, or rebase
-- Delete the PR branch after merge
-- Open a selected PR in GitHub only when needed
-
-## New in v0.6.0: GitHub Actions Center
-- View the latest 100 workflow runs
-- Workflow, branch, event, status, conclusion, and creation time
-- View workflow logs
-- Re-run a selected workflow run
-- Cancel a running workflow
-- Manually dispatch a workflow
+## New Security & Dependency Center
+- Consolidated security summary for the selected GitHub repository
+- Open Dependabot alerts with severity, package and manifest
+- Code-scanning alerts with severity, rule and analysis tool
+- Secret-scanning alerts with secret type and location
+- Open a selected alert in GitHub for remediation details
+- Permission and feature warnings when a security API is unavailable
+- Local audit for suspicious tracked filenames, tracked files over 10 MB and `git fsck`
+- Optional `pip-audit` dependency scan
+- Optional Bandit Python static-security scan
+- SHA-256 checksum generation for release assets
+- Remediation priority: secrets first, then critical/high dependencies, then code-scanning findings
 
 ## Previous capabilities retained
-- GitHub dashboard and repository/issue management
-- Complete local Git workspace with staging, commit, sync, branches, tags, stash and remotes
-- Visual commit graph and merge conflict resolver
-- Cherry-pick, safe rebase, revert, reset safeguards and `.gitignore` editor
-- Release Center with readiness checks, release notes, tags, assets, GitHub releases, Git bundles and ZIP exports
+- GitHub dashboard, repositories, issues and statistics
+- Full local Git workspace, visual graph and three-pane conflict resolution
+- Advanced cherry-pick, rebase, revert, guarded reset and `.gitignore` tools
+- Release Center with tags, assets, GitHub releases, bundles and ZIP exports
+- Pull Request Center
+- GitHub Actions workflow dashboard and controls
 
 ## Requirements
-Python 3.10+, Git. GitHub CLI `gh` authenticated with `gh auth login` is required for Releases, Pull Requests and Actions.
+Python 3.10+, Git, and authenticated GitHub CLI for GitHub security/PR/Actions/Release features. Optional local scanners: `python -m pip install pip-audit bandit`.
