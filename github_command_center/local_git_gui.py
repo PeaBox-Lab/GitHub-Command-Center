@@ -1444,7 +1444,7 @@ class CommandPalette(tk.Toplevel):
             ("Regression Finder",lambda:BisectCenter(self,repo),"bisect regression"),("Commit Inspector",lambda:CommitInspector(self,repo),"blame file history commit"),
             ("Submodule Center",lambda:SubmoduleCenter(self,repo),"submodule recursive"),("Repository Tasks",lambda:TaskCenter(self,repo),"checklist tasks"),
             ("Archive & Handover",lambda:ArchiveCenter(self,repo),"zip bundle support pack"),("Git Hooks Manager",lambda:HooksCenter(self,repo),"hooks pre-commit commit-msg"),
-            ("Git LFS Center",lambda:LFSCenter(self,repo),"large files lfs track"),("Automation Recipes",lambda:AutomationCenter(self,repo),"automation recipes checks"),("Identity & Signing",lambda:IdentitySigningCenter(self,repo),"identity email gpg sign verify"),("Commit Message Studio",lambda:CommitMessageStudio(self,repo),"conventional commits message"),("Changelog Studio",lambda:ChangelogStudio(self,repo),"changelog release notes commits"),("Remote Migration & Mirror",lambda:RemoteMigrationCenter(self,repo),"remote backup mirror migration"),("Credential & Remote Hygiene",lambda:CredentialAuditCenter(self,repo),"credentials helper url ssh https auth"),("Release Policy Center",lambda:ReleasePolicyCenter(self,repo),"release policy gates semver version"),("Repository Metrics",lambda:RepositoryMetricsCenter(self,repo),"metrics contributors languages commits activity")]
+            ("Git LFS Center",lambda:LFSCenter(self,repo),"large files lfs track"),("Automation Recipes",lambda:AutomationCenter(self,repo),"automation recipes checks"),("Identity & Signing",lambda:IdentitySigningCenter(self,repo),"identity email gpg sign verify"),("Commit Message Studio",lambda:CommitMessageStudio(self,repo),"conventional commits message"),("Changelog Studio",lambda:ChangelogStudio(self,repo),"changelog release notes commits"),("Remote Migration & Mirror",lambda:RemoteMigrationCenter(self,repo),"remote backup mirror migration"),("Credential & Remote Hygiene",lambda:CredentialAuditCenter(self,repo),"credentials helper url ssh https auth"),("Release Policy Center",lambda:ReleasePolicyCenter(self,repo),"release policy gates semver version"),("Repository Metrics",lambda:RepositoryMetricsCenter(self,repo),"metrics contributors languages commits activity"),("Plugin Manager",lambda:PluginManager(self,repo),"plugins extensions commands"),("Batch Operations",lambda:BatchOperationsCenter(self,repo),"batch multiple repositories portfolio"),("Operations Dashboard",lambda:RepositoryDashboardCenter(self,repo),"dashboard operational status next action"),("Repository Data Export",lambda:DataExportCenter(self,repo),"export json csv commits metadata")]
         self.render()
     def render(self):
         q=self.q.get().lower().strip();self.filtered=[c for c in self.commands if not q or q in (c[0]+" "+c[2]).lower()];self.list.delete(0,"end")
@@ -1814,3 +1814,153 @@ class RepositoryMetricsCenter(tk.Toplevel):
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile=Path(self.repo).name+"-metrics.txt")
         if p:Path(p).write_text(self.report,encoding="utf-8")
+
+class PluginManager(tk.Toplevel):
+    """Manage local JSON command plugins without importing arbitrary Python modules."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.dir=Path(repo)/".git"/"gccc-plugins";self.title("Plugin Manager");self.geometry("1080x720");self._build();self.load()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x")
+        for t,c in [("Refresh",self.load),("Create plugin",self.create),("Run selected",self.run),("Enable/disable",self.toggle),("Delete",self.delete),("Open plugin folder",self.open_folder)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        pane=ttk.Panedwindow(self,orient="horizontal");pane.pack(fill="both",expand=True,padx=8,pady=5);l=ttk.Frame(pane);r=ttk.Frame(pane);pane.add(l,weight=2);pane.add(r,weight=3)
+        self.list=tk.Listbox(l,font=("Segoe UI",10));self.list.pack(fill="both",expand=True);self.list.bind("<<ListboxSelect>>",lambda e:self.describe())
+        self.out=tk.Text(r,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.out.pack(fill="both",expand=True)
+        ttk.Label(self,text="Plugins are JSON command definitions stored under .git/gccc-plugins. Commands run directly without a shell. Review every plugin before execution.",padding=8).pack(fill="x")
+    def load(self):
+        import json
+        self.dir.mkdir(parents=True,exist_ok=True);self.plugins=[]
+        for p in sorted(self.dir.glob("*.json")):
+            try:
+                d=json.loads(p.read_text(encoding="utf-8"));d["_path"]=p;self.plugins.append(d)
+            except Exception:pass
+        self.list.delete(0,"end")
+        for p in self.plugins:self.list.insert("end",("[ON] " if p.get("enabled",True) else "[OFF] ")+p.get("name",p["_path"].stem))
+    def selected(self):
+        s=self.list.curselection();return self.plugins[s[0]] if s else None
+    def describe(self):
+        import json
+        p=self.selected()
+        if p:self.out.delete("1.0","end");self.out.insert("1.0",json.dumps({k:v for k,v in p.items() if k!="_path"},indent=2))
+    def create(self):
+        import json,re,shlex
+        name=simpledialog.askstring("Plugin","Display name:",parent=self);cmd=simpledialog.askstring("Plugin","Command line:",parent=self) if name else None
+        if not cmd:return
+        slug=re.sub(r"[^a-z0-9_-]+","-",name.lower()).strip("-") or "plugin"
+        d={"name":name,"description":"Local command plugin","command":shlex.split(cmd),"enabled":True}
+        (self.dir/f"{slug}.json").write_text(json.dumps(d,indent=2),encoding="utf-8");self.load()
+    def run(self):
+        p=self.selected()
+        if not p or not p.get("enabled",True):return
+        command=p.get("command")
+        if not isinstance(command,list) or not command:return messagebox.showerror("Plugin","Plugin command must be a JSON array.",parent=self)
+        if not messagebox.askyesno("Run plugin",f"Run {p.get('name')}?\n\n{' '.join(command)}",parent=self):return
+        try:r=subprocess.run(command,cwd=self.repo,text=True,capture_output=True,timeout=1800,encoding="utf-8",errors="replace");v=f"Exit code: {r.returncode}\n\n{r.stdout}\n{r.stderr}"
+        except Exception as e:v=str(e)
+        self.out.delete("1.0","end");self.out.insert("1.0",v)
+    def toggle(self):
+        import json
+        p=self.selected()
+        if p:p["enabled"]=not p.get("enabled",True);p["_path"].write_text(json.dumps({k:v for k,v in p.items() if k!="_path"},indent=2),encoding="utf-8");self.load()
+    def delete(self):
+        p=self.selected()
+        if p and messagebox.askyesno("Delete plugin",f"Delete {p.get('name')}?",parent=self):p["_path"].unlink();self.load()
+    def open_folder(self):
+        import os
+        os.startfile(self.dir) if hasattr(os,"startfile") else subprocess.Popen(["xdg-open",str(self.dir)])
+
+class BatchOperationsCenter(tk.Toplevel):
+    """Portfolio operations with dry-run and per-repository results."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.root=Path(repo).parent;self.title("Batch Operations Center");self.geometry("1180x760");self._build();self.scan()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x");self.path=tk.StringVar(value=str(self.root));ttk.Entry(top,textvariable=self.path).pack(side="left",fill="x",expand=True);ttk.Button(top,text="Browse",command=self.browse).pack(side="left",padx=3);ttk.Button(top,text="Scan",command=self.scan).pack(side="left")
+        self.op=tk.StringVar(value="Fetch/prune");ttk.Combobox(top,textvariable=self.op,values=["Fetch/prune","Status","Integrity check","Python compile","Pull FF-only"],state="readonly",width=18).pack(side="left",padx=5);ttk.Button(top,text="Run selected",command=self.run).pack(side="left")
+        self.tree=ttk.Treeview(self,columns=("repo","branch","state","result"),show="headings",selectmode="extended")
+        for c,t,w in [("repo","Repository",260),("branch","Branch",160),("state","State",100),("result","Last result",520)]:self.tree.heading(c,text=t);self.tree.column(c,width=w,anchor="w")
+        self.tree.pack(fill="both",expand=True,padx=8,pady=5)
+        ttk.Label(self,text="Pull FF-only is skipped for repositories with local changes. Batch operations run sequentially and never force changes.",padding=8).pack(fill="x")
+    def browse(self):
+        p=filedialog.askdirectory(parent=self)
+        if p:self.path.set(p);self.scan()
+    def scan(self):
+        root=Path(self.path.get());self.rows=[];self.tree.delete(*self.tree.get_children())
+        if not root.exists():return
+        candidates=[root] if (root/".git").exists() else [p for p in root.iterdir() if p.is_dir() and (p/".git").exists()]
+        for p in sorted(candidates):
+            try:b=git(p,"branch","--show-current");s=git(p,"status","--porcelain");state="Clean" if s=="Completed successfully." else "Changed";self.rows.append({"path":p,"branch":b,"state":state,"result":""});self.tree.insert("","end",iid=str(len(self.rows)-1),values=(p.name,b,state,""))
+            except Exception:pass
+    def run(self):
+        ids=self.tree.selection()
+        if not ids:return
+        op=self.op.get()
+        if not messagebox.askyesno("Batch operation",f"Run '{op}' on {len(ids)} selected repositories?",parent=self):return
+        for iid in ids:
+            r=self.rows[int(iid)];p=r["path"]
+            try:
+                if op=="Fetch/prune":out=git(p,"fetch","--all","--prune")
+                elif op=="Status":out=git(p,"status","--short","--branch")
+                elif op=="Integrity check":out=git(p,"fsck","--no-progress")
+                elif op=="Python compile":
+                    x=subprocess.run(["python","-m","compileall","-q","."],cwd=p,text=True,capture_output=True,timeout=900,encoding="utf-8",errors="replace");out=f"Exit {x.returncode}: {(x.stdout+x.stderr).strip()}"
+                elif r["state"]!="Clean":out="SKIPPED: local changes"
+                else:out=git(p,"pull","--ff-only")
+            except Exception as e:out="ERROR: "+str(e)
+            short=out.replace("\n"," | ")[:500];self.tree.set(iid,"result",short)
+
+class RepositoryDashboardCenter(tk.Toplevel):
+    """One-page operational dashboard for the selected repository."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Repository Operations Dashboard");self.geometry("1150x760");self._build();self.refresh()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x");ttk.Button(top,text="Refresh",command=self.refresh).pack(side="left");ttk.Button(top,text="Smart Sync",command=lambda:SyncCenter(self,self.repo)).pack(side="left",padx=3);ttk.Button(top,text="Review",command=lambda:ChangeReviewCenter(self,self.repo)).pack(side="left");ttk.Button(top,text="Release policy",command=lambda:ReleasePolicyCenter(self,self.repo)).pack(side="left",padx=3)
+        self.text=tk.Text(self,wrap="word",font=("Consolas",10),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
+    def safe(self,*a):
+        try:return git(self.repo,*a)
+        except Exception as e:return "Unavailable: "+str(e)
+    def refresh(self):
+        branch=self.safe("branch","--show-current");status=self.safe("status","--porcelain");clean=status=="Completed successfully."
+        try:up=self.safe("rev-parse","--abbrev-ref","--symbolic-full-name","@{u}");ahead=self.safe("rev-list","--count","@{u}..HEAD");behind=self.safe("rev-list","--count","HEAD..@{u}")
+        except:up=ahead=behind="-"
+        last=self.safe("log","-1","--date=short","--pretty=format:%h %ad %an %s");tags=self.safe("tag","--sort=-creatordate").splitlines()[:5];changes=0 if clean else len(status.splitlines())
+        health=[]
+        for f in ("README.md","CHANGELOG.md","LICENSE","SECURITY.md","CONTRIBUTING.md"):health.append((f,(Path(self.repo)/f).exists()))
+        report=f"REPOSITORY OPERATIONS DASHBOARD\n{'='*78}\nRepository: {self.repo}\nBranch: {branch}\nUpstream: {up}\nAhead / Behind: {ahead} / {behind}\nWorking tree: {'Clean' if clean else f'{changes} changed entries'}\nLast commit: {last}\n\nRECENT TAGS\n"+"\n".join(tags or ["None"])+"\n\nDOCUMENTATION CONTROLS\n"+"\n".join(f"[{'PASS' if ok else 'MISS'}] {f}" for f,ok in health)+"\n\nRECOMMENDED NEXT ACTION\n"
+        if not clean:report+="Review and commit or stash local changes."
+        elif str(behind)!="0" and str(ahead)=="0":report+="Run Smart Sync to fast-forward from upstream."
+        elif str(ahead)!="0" and str(behind)=="0":report+="Review and push local commits."
+        elif str(ahead)!="0" and str(behind)!="0":report+="Histories diverged. Use Compare before merge or rebase."
+        else:report+="Repository is synchronized and clean."
+        self.text.delete("1.0","end");self.text.insert("1.0",report)
+
+class DataExportCenter(tk.Toplevel):
+    """Export local repository metadata in JSON or CSV for analysis."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Repository Data Export");self.geometry("1000x680");self._build();self.preview()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x")
+        for t,c in [("Preview",self.preview),("Export JSON",self.json_export),("Export commits CSV",self.csv_export)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        self.text=tk.Text(self,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
+    def collect(self):
+        import json
+        def safe(*a):
+            try:return git(self.repo,*a)
+            except:return ""
+        commits=[]
+        raw=safe("log","-500","--date=iso-strict","--pretty=format:%H%x1f%h%x1f%ad%x1f%an%x1f%ae%x1f%s")
+        for line in raw.splitlines():
+            p=line.split("\x1f",5)
+            if len(p)==6:commits.append(dict(hash=p[0],short=p[1],date=p[2],author=p[3],email=p[4],subject=p[5]))
+        return {"repository":Path(self.repo).name,"path":self.repo,"branch":safe("branch","--show-current"),"remotes":safe("remote","-v").splitlines(),"tags":safe("tag","--sort=-creatordate").splitlines(),"commits":commits}
+    def preview(self):
+        import json
+        self.data=self.collect();self.text.delete("1.0","end");self.text.insert("1.0",json.dumps({**self.data,"commits":self.data["commits"][:10]},indent=2)+"\n\nPreview shows the latest 10 of up to 500 exported commits.")
+    def json_export(self):
+        import json
+        p=filedialog.asksaveasfilename(parent=self,defaultextension=".json",initialfile=Path(self.repo).name+"-repository-data.json")
+        if p:Path(p).write_text(json.dumps(self.collect(),indent=2),encoding="utf-8")
+    def csv_export(self):
+        import csv
+        p=filedialog.asksaveasfilename(parent=self,defaultextension=".csv",initialfile=Path(self.repo).name+"-commits.csv")
+        if p:
+            with open(p,"w",newline="",encoding="utf-8") as f:
+                w=csv.DictWriter(f,fieldnames=["hash","short","date","author","email","subject"]);w.writeheader();w.writerows(self.collect()["commits"])

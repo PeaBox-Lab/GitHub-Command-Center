@@ -1,3 +1,3 @@
-# GitHub Command Center 2.2.0 Release Notes
+# GitHub Command Center 3.0.0 Release Notes
 
-Version 2.2 is a bundled governance and observability release. It improves remote credential hygiene, introduces explicit release-policy gates with semantic-version suggestions, and provides private local repository metrics. All v0.1 through v2.1 capabilities remain included.
+Version 3.0 is an extensive platform release. It adds safe local command plugins, batch operations across repository portfolios, an operational status dashboard and structured repository-data exports. These additions make the application more extensible and more useful for managing multiple long-running products without removing any prior capability.

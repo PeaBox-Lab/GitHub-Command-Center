@@ -1,98 +1,16 @@
-# GitHub Command Center 1.0 User Guide
+# GitHub Command Center 3.0 User Guide
 
 ## Daily workflow
-1. Connect your GitHub account from Settings if you need account-level APIs.
-2. Open Local Git and select your repository.
-3. Review changed files and diffs.
-4. Stage selected files and commit.
-5. Fetch, then use FF-only Pull.
-6. Compare your branch with the target branch before opening a PR.
-7. Push and use Pull Requests to create or manage the PR.
-8. Check Actions for CI results.
+Use Operations Dashboard first. Follow its recommendation, then use Review before committing, Smart Sync before pulling/pushing, and Release Policy before Release Center.
 
-## Conflict workflow
-Open Resolve conflicts. Review OURS and THEIRS, edit MERGED RESULT, save and mark each file resolved. Commit after every conflict has been staged.
+## Plugin Manager
+Plugins are local JSON files containing a name, description, command array and enabled flag. Inspect every command before running it. The app does not use shell interpolation, but plugins can still execute local programs with your user permissions.
 
-## Release workflow
-Use Health and Security first. Open Compare for a pre-release review. Then use Release Center to run readiness checks, generate notes, create/push the tag, attach assets and publish. Create a bundle/checksum for recovery and verification.
+## Batch Operations
+Scan the parent workspace, select repositories and choose an operation. Pull FF-only skips changed repositories. Review each result in the final column.
 
-## Recovery workflow
-Before rebase/reset or other risky operations, create a Recovery checkpoint. Full `.bundle` files can recreate the repository offline.
+## Data Export
+Use JSON for broad repository metadata and CSV for commit-level analysis in Excel, Power BI, Python or another analytics tool.
 
-## Multi-repository workflow
-Use Repo Manager to scan a parent workspace, identify repositories with local changes or remote divergence, fetch selected repositories, then open an individual repository for detailed work.
-
-## Smart Sync workflow (v1.1)
-Open Smart Sync after making commits. Refresh/fetch first. If remote is ahead and local is not ahead, Safe Sync performs an FF-only pull. If both sides contain unique commits, Smart Sync stops and directs you to Compare so you can explicitly choose merge or rebase. Push always requires confirmation.
-
-## Repository search (v1.1)
-Open Search from Local Git. Use Search text for tracked source/config/document content, Search commits for historical commit messages, and Search files for tracked path names.
-
-## Pre-Commit Review (v1.2)
-Use Review before commits to stage only intended files, inspect staged and unstaged differences, run whitespace checks, and commit with a meaningful message.
-
-## Repository Notes (v1.2)
-Notes are stored under `.git/gccc-notes.md`, so normal Git commits do not include them.
-
-## Branch Cleanup (v1.3)
-Use Cleanup after merges. The app only enables normal deletion for branches Git reports as merged into your current branch. Current and active-worktree branches are protected.
-
-## Project Snapshot (v1.3)
-Use Snapshot before a long pause, release handover or major refactor. Export the generated Markdown to retain branch/status, recent commits, tags, remotes, key documentation and your local repository notes.
-
-## Patch Center (v1.4)
-Use Patches when sharing selected changes without pushing a branch. Validate received patches with Inspect Patch before Apply Patch. Use Create patch series and Apply mailbox for commit-preserving `format-patch` / `git am` workflows.
-
-## Regression Finder (v1.4)
-Open Bisect with a clean working tree. Enter a ref where the behavior was known good and a ref where it is bad. Test each revision Git checks out and choose Mark good, Mark bad, or Skip until Git identifies the first bad commit. Reset when finished.
-
-## Commit Inspector (v1.5)
-Use Inspector to review historical patches or enter a tracked relative file path and choose File history. Blame file shows line-level commit attribution and dates for that path.
-
-## Submodules (v1.5)
-Use Submodules to initialize/update cloned projects that contain submodules. Remote update can move the recorded submodule commit, so review the parent repository's working tree and diff before committing the pointer change.
-
-## Repository Tasks (v1.6)
-Use Tasks for private release, refactor or maintenance checklists. Items are stored under `.git/gccc-tasks.txt` and stay local to the clone.
-
-## Archive & Handover (v1.6)
-Use Archive for a clean source ZIP, a full-history Git bundle, a readable project snapshot, or a support pack for troubleshooting. Use the Git bundle when preserving recoverable history is important.
-
-# Version 2.0 Addendum
-
-## Command Palette
-Open Commands in Local Git. Type a feature or keyword such as `conflict`, `release`, `security`, `LFS`, or `hooks`, then press Enter.
-
-## Git Hooks
-Use Hooks from the Command Palette. Start from a safe template, review it, save/enable it, then test it. Hooks are local to the clone unless separately distributed.
-
-## Git LFS
-Install Git LFS and run `git lfs install` once. Track large binary patterns before adding those files. Commit `.gitattributes` after changing tracking patterns.
-
-## Automation Recipes
-Recipes execute local commands in the repository directory. Review commands before running them. Recipes are stored under `.git` and are not shared through normal commits.
-
-# Version 2.1 Addendum
-
-## Identity & Signing
-Configure repository-level identity before committing. Signing requires a working GPG or SSH signing configuration supported by your Git installation. Use Verify recent commits to inspect signature output.
-
-## Commit Message Studio
-Choose a Conventional Commit type, optional scope and concise subject. Add a body for rationale and a footer for issue references or breaking-change detail. Stage files first, then commit from the studio.
-
-## Changelog Studio
-Choose the prior release tag or leave it blank to use the latest tag. Review generated categories before prepending to CHANGELOG.md.
-
-## Remote Migration & Mirror
-Add a dedicated backup remote first. Mirror push is destructive to destination refs and therefore requires a non-origin remote, warning confirmation and an exact typed remote name.
-
-# Version 2.2 Addendum
-
-## Credential & Remote Hygiene
-Use this center to audit remote URL format and credential-helper configuration without exposing stored credentials. Convert GitHub origin between standard SSH and HTTPS forms if needed.
-
-## Release Policy
-Select the gates your release process requires, save the local policy, and evaluate before opening Release Center. Version suggestion uses Semantic Versioning signals from tags and Conventional Commit messages.
-
-## Repository Metrics
-Metrics are computed locally. Language figures are source-line heuristics based on common file extensions, not a semantic code-analysis count.
+## Existing workflows
+All earlier centers remain available through Commands, including conflicts, graph, releases, PRs, Actions, security, worktrees, recovery, hooks, LFS, signing, changelog generation and metrics.

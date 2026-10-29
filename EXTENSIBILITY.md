@@ -1,18 +1,28 @@
 # Extensibility Guide
 
-Advanced tools are implemented as independent `tk.Toplevel` centers in `github_command_center/local_git_gui.py`. Register a new center in `CommandPalette.commands` using a display name, launch callable and search keywords.
+## Built-in centers
+Advanced GUI tools are independent `tk.Toplevel` centers registered in `CommandPalette.commands` with display name, callable and search keywords.
 
-Repository-local private state belongs under `.git/gccc-*` so it does not enter normal commits. Shared project configuration should use normal tracked files such as `.gitattributes`, `.gitignore`, `.github/*` or a future documented project config.
+## JSON command plugins
+Plugin files live under `.git/gccc-plugins/*.json` and use this schema:
 
-New operations should:
-1. Use argument arrays rather than shell interpolation.
-2. Confirm destructive actions.
-3. Prefer safe defaults such as FF-only pull and non-force branch deletion.
-4. Display command output and errors.
-5. Preserve prior features and update cumulative documentation.
+```json
+{
+  "name": "Run project tests",
+  "description": "Local test command",
+  "command": ["python", "-m", "pytest", "-q"],
+  "enabled": true
+}
+```
 
-## v2.1 center registrations
-IdentitySigningCenter, CommitMessageStudio, ChangelogStudio and RemoteMigrationCenter are registered in CommandPalette with dedicated search keywords. New release-engineering centers should follow the same independent-window pattern and keep destructive remote operations behind explicit confirmations.
+Commands are executed directly as argument arrays with the repository as working directory. Shell strings are not evaluated. Users must still review plugins because they execute with the current user's permissions.
 
-## v2.2 center registrations
-CredentialAuditCenter, ReleasePolicyCenter and RepositoryMetricsCenter are registered in CommandPalette. Security-sensitive centers must avoid reading or displaying credential values; gates should report explicit PASS/BLOCKED outcomes; metrics should disclose when they are heuristic.
+## Engineering rules
+1. Confirm destructive actions.
+2. Never display stored secrets.
+3. Prefer FF-only pull and normal branch deletion.
+4. Keep private state under `.git/gccc-*`.
+5. Keep shared controls in tracked project files.
+6. Capture command output and exit code.
+7. Preserve prior features and cumulative documentation.
+8. Add new built-in centers to Command Palette with useful keywords.
