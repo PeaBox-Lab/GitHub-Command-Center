@@ -66,3 +66,14 @@ Test a path before relying on a new ignore or attribute pattern, then review and
 
 ## Advanced cloning
 Use depth or blob filtering to reduce initial transfer for very large repositories. Partial and shallow clones have history/content limitations, so use a full clone when complete offline history is required.
+
+# Version 3.7 Addendum
+
+## Worktree Safety
+Lock worktrees located on removable or intermittently mounted storage. Use Prune dry-run before removing stale worktree administration records.
+
+## Repository Doctor
+Run Doctor when a repository feels out of sync or an operation fails. Follow the specific recommended action rather than applying a generic reset.
+
+## Tag & Release Audit
+Use before releases to distinguish annotated/lightweight tags, confirm what exists on origin, and verify signatures before publishing missing tags.

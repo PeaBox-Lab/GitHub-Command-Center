@@ -1,21 +1,20 @@
 # Changelog
 
-## v3.6.0
-- Added rerere Recorded Conflict Resolution Center
-- Added Remote Branch Center with tracking, publish, rename and guarded remote deletion
-- Added unified .gitignore/.gitattributes editor and rule testers
-- Added Advanced Clone Wizard with shallow, single-branch, no-checkout, partial-clone and recursive-submodule options
-- Retained all v0.1-v3.5 functionality
+## v3.7.0
+- Added Worktree Safety Center with lock/unlock, open-folder and dry-run prune workflows
+- Added Repository Doctor with actionable local state, integrity, conflict and divergence diagnosis
+- Added Tag & Release Audit with tag-type, origin presence, signature verification and explicit push
+- Retained all v0.1-v3.6 functionality
 
+## v3.6.0
+- Added rerere, Remote Branch Center, Ignore & Attributes Studio and Advanced Clone Wizard
 ## v3.5.0
-- Added Sparse Checkout, Maintenance, Git Notes and Diff/Merge Tool centers
+- Added Sparse Checkout, Maintenance, Git Notes and Diff/Merge Tools
 ## v3.4.0
-- Added Interactive Rebase, Unified Ref Browser and Repository History Browser
+- Added Interactive Rebase, Unified Refs and Historical Repository Browser
 ## v3.3.0
 - Added Partial Staging and Reflog Recovery
 ## v3.2.0
-- Redesigned Local Git Workspace
-## v3.0-v3.1
-- Added extensibility, jobs, preferences, portfolio history and tests
-## v0.1-v2.2
-- Established the Git, GitHub, release, security and quality platform
+- Major Local Git UI redesign
+## v0.1-v3.1
+- Established the wider Git/GitHub productivity, security, release and extensibility platform

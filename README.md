@@ -1,35 +1,28 @@
-# GitHub Command Center v3.6.0
+# GitHub Command Center v3.7.0
 
-Version 3.6 bundles four practical Git capabilities focused on recurring conflicts, remote branches, repository rules and large-repository cloning.
+Version 3.7 keeps decimal progression within major version 3 and bundles operational safety, diagnosis and release-audit improvements.
 
-## Recorded Conflict Resolution (rerere)
-- Enable `rerere.enabled`
-- Optional `rerere.autoupdate`
-- Review rerere status and remaining conflicts
-- Re-run recorded resolution processing
-- Forget a saved resolution for selected paths
-- Clear the rerere cache with confirmation
+## Worktree Safety Center
+- Inventory all worktrees with branch, HEAD, lock and prunable state
+- Open a selected worktree folder
+- Lock/unlock worktrees
+- Dry-run stale-worktree prune
+- Confirmed actual prune
 
-## Remote Branch Center
-- Unified local/remote branch inventory with upstream and ahead/behind counts
-- Fetch/prune
-- Create a local tracking branch from a remote branch
-- Publish the current branch and set upstream
-- Rename local branches
-- Delete a server-side branch only after exact typed confirmation
+## Repository Doctor
+- Working tree, branch, upstream and origin checks
+- Full object-integrity check
+- Merge-conflict detection
+- Ahead/behind divergence test
+- Concrete recommended action for each attention item
+- Exportable diagnosis report
 
-## Ignore & Attributes Studio
-- Edit `.gitignore` and `.gitattributes` together
-- Test ignore rules using `git check-ignore -v --no-index`
-- Inspect attributes using `git check-attr -a`
-- Add Python ignore defaults and common binary/text attribute defaults
+## Tag & Release Audit
+- Inventory annotated and lightweight tags
+- Target commit/object and creation date
+- Check whether each tag exists on origin
+- Verify a selected signed tag
+- Explicitly push a selected tag
+- Jump directly to Release Center
 
-## Advanced Clone Wizard
-- Full or shallow clone with configurable depth
-- Optional branch and single-branch clone
-- No-checkout mode
-- Partial clone using `--filter=blob:none`
-- Recursive submodules
-- Destination-folder picker and command output
-
-All v0.1-v3.5 features remain included through the Command Palette. Versioning remains decimal within major version 3.
+All v0.1-v3.6 functionality remains included and searchable through Command Palette.
