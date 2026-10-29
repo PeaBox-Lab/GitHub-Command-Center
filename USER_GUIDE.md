@@ -114,3 +114,7 @@ Use Pull Strategy Advisor after fetching when local and upstream histories diffe
 # Version 3.16 Addendum
 
 Use Repository Rules Audit before publishing or handing over a repository. Commit Range Exporter is useful for moving a specific development slice as patches, a bundle, or a readable Markdown inventory. Local Branch Dashboard provides branch freshness, upstream divergence, switching, comparison, and a direct route to safe branch deletion.
+
+# Version 3.17 Addendum
+
+Use Repository Onboarding when converting a local project into a collaboration-ready repository. Audit Pack creates portable technical evidence for handover or troubleshooting. Safety Branch Manager provides conservative cleanup of old `gccc-backup/*` branches without force deletion.

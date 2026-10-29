@@ -1,18 +1,15 @@
 # Changelog
 
+## v3.17.0
+- Added Repository Onboarding Center
+- Added Repository Audit Pack Markdown export
+- Added Safety Branch Manager for gccc-backup lifecycle management
+- Retained all v0.1-v3.16 functionality
+
 ## v3.16.0
-- Added Repository Rules Audit
-- Added Commit Range Exporter
-- Added Local Branch Dashboard
-- Reconstructed directly from the complete v3.15 project export and retained the existing feature set
-
+- Added Repository Rules Audit, Commit Range Exporter and Local Branch Dashboard
 ## v3.15.0
-- Added Pull Strategy Advisor for explicit FF-only, rebase or merge decisions
-- Added protected pull-rebase safety branch
-- Added Detached HEAD Recovery Center
-- Added JSON/Markdown Repository State Export
-- Retained all v0.1-v3.14 functionality
-
+- Added Pull Strategy Advisor, Detached HEAD Recovery and Repository State Export
 ## v3.14.0
 - Added Signature Audit, Release Comparison and Safe Branch Delete
 ## v3.13.0
