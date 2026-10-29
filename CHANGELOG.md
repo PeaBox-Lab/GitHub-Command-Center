@@ -1,67 +1,41 @@
 # Changelog
 
-## v1.1.0
-- Added Smart Sync Center with branch/upstream/ahead/behind visibility
-- Added safe fast-forward synchronization and divergence detection
-- Added explicit push confirmation and pre-sync safety checkpoints
-- Added Repository Search Center for tracked text, commit messages and filenames
-
-## v1.0.0
-- Added Multi-Repository Manager and Diagnostics & Configuration Center
-
-## v0.9.0
-- Added Compare & Review Center and Backup & Recovery Center
-
-## v0.8.0
-- Added Repository Health Center, governance generators and Git Worktree Center
-
-## v0.7.0
-- Added Security & Dependency Center, security alerts, local audits and checksums
-
-## v0.6.0
-- Added Pull Request Center and GitHub Actions Center
-
-## v0.5.0
-- Added Release Center, publishing, bundle backup and ZIP export
-
-## v0.4.0
-- Added cherry-pick, safe rebase, revert, guarded resets and .gitignore editor
-
-## v0.3.0
-- Added visual commit graph and three-pane conflict resolver
-
-## v0.2.0
-- Added comprehensive local Git workspace
-
-## v0.1.0
-- Initial GitHub dashboard and repository tools
-
-## v1.2.0
-- Added Pre-Commit Review Center with staged and unstaged diff review.
-- Added `git diff --check` validation and changed-file size warnings.
-- Added guarded commit workflow.
-- Added private per-repository notes under `.git/gccc-notes.md`.
-
-## v1.3.0
-- Added safe Branch Cleanup Center with merged/current/worktree protection.
-- Added remote-prune workflow from branch cleanup.
-- Added Project Snapshot generator for handover and continuity.
-- Added Markdown export/copy of status, recent history, tags, remotes, documentation inventory and private notes.
-
-## v1.4.0
-- Added Patch Center for diff export, format-patch, validation, git apply and git am workflows.
-- Added Regression Finder using guided Git bisect.
-- Added clean-working-tree safety gate before starting bisect.
-- Retained all prior GitHub, Git, security, release, health, recovery, review and handover functionality.
-
-## v1.5.0
-- Added Commit Inspector with commit patch/stat views.
-- Added per-file history with `git log --follow` and line attribution with `git blame`.
-- Added Submodule Center with add, init/update, remote update and URL synchronization workflows.
-- Preserved all v0.1-v1.4 capabilities.
+## v2.0.0
+- Added searchable Command Palette and extensible feature-center registration model
+- Added Git Hooks Manager with templates, enable/disable and test workflows
+- Added Git LFS Center with tracking, inventory, pull and prune workflows
+- Added repository-local Automation Recipes with captured output and exit codes
+- Consolidated multiple major updates into one release while retaining all v0.1-v1.6 features
 
 ## v1.6.0
-- Added private Repository Task Center for local project/release checklists.
-- Added Archive & Handover Center consolidating clean ZIP, Git bundle, snapshot and diagnostic exports.
-- Added support-pack generation without GitHub token export.
-- Preserved all v0.1-v1.5 capabilities.
+- Added Repository Task Center and Archive & Handover Center
+## v1.5.0
+- Added Commit Inspector, file history, blame and Submodule Center
+## v1.4.0
+- Added Patch Center and Regression Finder
+## v1.3.0
+- Added Branch Cleanup Center and Project Snapshot
+## v1.2.0
+- Added Pre-Commit Review and Repository Notes
+## v1.1.0
+- Added Smart Sync and Repository Search
+## v1.0.0
+- Added Multi-Repository Manager and Diagnostics
+## v0.9.0
+- Added Compare & Review and Backup & Recovery
+## v0.8.0
+- Added Repository Health, governance generators and Worktrees
+## v0.7.0
+- Added Security & Dependency Center
+## v0.6.0
+- Added Pull Requests and Actions
+## v0.5.0
+- Added Release Center
+## v0.4.0
+- Added advanced history-changing workflows and .gitignore editor
+## v0.3.0
+- Added visual graph and conflict resolver
+## v0.2.0
+- Added comprehensive local Git workspace
+## v0.1.0
+- Initial GitHub dashboard

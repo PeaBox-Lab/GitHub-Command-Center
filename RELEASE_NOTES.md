@@ -1,5 +1,5 @@
-# GitHub Command Center 1.6.0 Release Notes
+# GitHub Command Center 2.0.0 Release Notes
 
-Version 1.6 improves development continuity and handover. Repository Task Center provides a private local checklist, while Archive & Handover Center consolidates clean source export, full-history Git bundles, project snapshots and troubleshooting support packs.
+Version 2.0 is a bundled extensibility release. It introduces a searchable Command Palette to keep the growing application usable, plus Git Hooks management, Git LFS workflows and repository-local automation recipes. The modular center pattern provides a cleaner base for future expansion.
 
-All functionality from v0.1 through v1.5 remains included.
+The complete v0.1 through v1.6 feature train remains included.

@@ -57,3 +57,17 @@ Use Tasks for private release, refactor or maintenance checklists. Items are sto
 
 ## Archive & Handover (v1.6)
 Use Archive for a clean source ZIP, a full-history Git bundle, a readable project snapshot, or a support pack for troubleshooting. Use the Git bundle when preserving recoverable history is important.
+
+# Version 2.0 Addendum
+
+## Command Palette
+Open Commands in Local Git. Type a feature or keyword such as `conflict`, `release`, `security`, `LFS`, or `hooks`, then press Enter.
+
+## Git Hooks
+Use Hooks from the Command Palette. Start from a safe template, review it, save/enable it, then test it. Hooks are local to the clone unless separately distributed.
+
+## Git LFS
+Install Git LFS and run `git lfs install` once. Track large binary patterns before adding those files. Commit `.gitattributes` after changing tracking patterns.
+
+## Automation Recipes
+Recipes execute local commands in the repository directory. Review commands before running them. Recipes are stored under `.git` and are not shared through normal commits.

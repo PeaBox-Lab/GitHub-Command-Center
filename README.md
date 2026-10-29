@@ -1,44 +1,35 @@
-# GitHub Command Center v1.1.0
+# GitHub Command Center v2.0.0
 
-Python desktop command center for GitHub and local Git workflows.
+An extensible Python desktop command center for GitHub and local Git, designed to replace routine TortoiseGit menus and frequent GitHub.com navigation.
 
-## New in v1.1: Smart Sync Center
-- Shows current branch, upstream, working-tree state, ahead count and behind count
-- Fetches all remotes with pruning
-- Recommends the safest next synchronization action
-- Fast-forward-only pull when the remote is ahead
-- Detects divergence and refuses to silently merge/rebase
-- Does not auto-push local commits without explicit confirmation
-- One-click timestamped pre-sync safety checkpoint
+## Why 2.0
+The application now contains a broad toolset. Version 2.0 introduces a searchable Command Palette so features remain discoverable without expanding the main toolbar indefinitely. New feature centers are modular top-level classes, making future centers easy to register in the palette.
 
-## New in v1.1: Repository Search Center
-- Search text across tracked files with `git grep`
-- Search commit messages across all refs
-- Search tracked filenames
-- Results stay inside the desktop app
+## Major bundled updates
+### Searchable Command Palette
+- Launch every advanced center by name or keyword
+- Includes visual history, conflicts, releases, PRs, Actions, security, health, worktrees, compare, recovery, diagnostics, sync, review, patches, bisect, submodules, tasks, archive and new v2.0 tools
+- Reduces toolbar clutter and provides an extensible registration pattern
 
-## Complete capability set
-Includes the v1.0 multi-repository manager and diagnostics, plus local Git operations, visual history, conflict resolution, compare/recovery, worktrees, repository health/governance, security, releases, pull requests, Actions, advanced rebase/cherry-pick/reset workflows, bundles and ZIP exports.
+### Git Hooks Manager
+- Edit repository-local pre-commit, commit-msg and pre-push hooks
+- Safe built-in templates for whitespace, Python syntax and commit-message length
+- Save and enable executable hooks, disable hooks, and test hooks
 
-## Windows quick start
-Extract and run `run_windows.bat`. Requires Python 3.10+ and Git. GitHub CLI is required for Releases, PRs, Actions and GitHub security APIs.
+### Git LFS Center
+- Inspect Git LFS environment, tracked patterns and LFS files
+- Track/untrack patterns such as `*.zip`
+- Pull LFS objects and safely prune old local LFS data
+- Explicitly notes that untracking does not rewrite existing history
 
-## v1.2 additions
-- Pre-Commit Review Center: stage/unstage, inspect staged and unstaged diffs, run whitespace checks, flag changed files above 5 MB, and commit from one screen.
-- Repository Notes: private local notes stored at `.git/gccc-notes.md` for decisions, follow-ups, current focus and release reminders.
+### Automation Recipes
+- Repository-local JSON recipes under `.git/gccc-recipes.json`
+- Built-in Python syntax, Git integrity and whitespace recipes
+- Add/delete/reset recipes and run commands with captured output and exit code
+- Local-only storage keeps personal automation outside repository history
 
-## v1.3 additions
-- **Branch Cleanup Center:** inventories local branches, merged state, last-commit date, upstream and worktree usage. It only permits normal `git branch -d` deletion for branches already merged into the current branch, while protecting the current branch and branches checked out in worktrees.
-- **Project Snapshot:** generates an exportable Markdown handover containing branch/status, recent commits, tags, remotes, detected project documentation and private repository notes.
+## Cumulative capabilities
+Includes every feature from v0.1 through v1.6: GitHub dashboard, local Git workspace, visual graph, conflict resolution, branches, tags, stash, remotes, rebase, cherry-pick, reset safety, releases, PRs, Actions, security, repository health, worktrees, compare, recovery, multi-repository management, diagnostics, smart sync, search, pre-commit review, notes, cleanup, snapshots, patches, bisect, commit inspection, submodules, tasks and archive/handover.
 
-## v1.4 additions
-- **Patch Center:** export working-tree or staged changes as `.patch`, generate a `git format-patch` commit series, inspect patch contents, run `git apply --check`, apply a validated patch, or apply email-style patch series using `git am`.
-- **Regression Finder:** guided `git bisect` UI with known good/bad refs, Good/Bad/Skip decisions and reset. It requires a clean working tree before starting.
-
-## v1.5 additions
-- **Commit Inspector & File History:** inspect up to 150 commits, view complete commit patches/statistics, follow the history of a specific file across renames, and run line-level `git blame` from the GUI.
-- **Submodule Center:** inventory recursive submodule states, add a submodule, initialize/update recursively, synchronize configured URLs, and explicitly update submodules from their configured remote branches.
-
-## v1.6 additions
-- **Repository Task Center:** local-only per-repository checklist stored under `.git/gccc-tasks.txt`, with add, complete/reopen, multi-delete and save workflows.
-- **Archive & Handover Center:** one place for clean HEAD ZIP export, full-history Git bundle creation, Project Snapshot handover, and a diagnostic support pack containing status, remotes, recent commits, configuration and `git fsck` results.
+## Windows
+Extract and run `run_windows.bat`. Requires Python 3.10+ and Git. GitHub CLI is required for Releases, PRs, Actions and GitHub security APIs. Git LFS is optional for LFS features.

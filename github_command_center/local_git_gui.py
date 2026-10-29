@@ -23,7 +23,7 @@ class LocalGitWindow(tk.Toplevel):
         left=ttk.Frame(pane);right=ttk.Frame(pane);pane.add(left,weight=3);pane.add(right,weight=2)
         self.files=ttk.Treeview(left,columns=("state","file"),show="headings",selectmode="extended");self.files.heading("state",text="State");self.files.heading("file",text="File");self.files.column("state",width=70);self.files.column("file",width=470);self.files.pack(fill="both",expand=True)
         foot=ttk.Frame(left);foot.pack(fill="x",pady=5)
-        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Release Center",lambda:ReleaseCenter(self,self.repo)),("Pull Requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Security",lambda:SecurityCenter(self,self.repo)),("Health",lambda:RepositoryHealthCenter(self,self.repo)),("Worktrees",lambda:WorktreeCenter(self,self.repo)),("Compare",lambda:RepositoryCompareCenter(self,self.repo)),("Recovery",lambda:BackupRestoreCenter(self,self.repo)),("Repo Manager",lambda:RepositoryManager(self,self.repo)),("Diagnostics",lambda:SettingsDiagnosticsCenter(self,self.repo)),("Smart Sync",lambda:SyncCenter(self,self.repo)),("Search",lambda:SearchCenter(self,self.repo)),("Review",lambda:ChangeReviewCenter(self,self.repo)),("Notes",lambda:RepositoryNotesCenter(self,self.repo)),("Cleanup",lambda:BranchCleanupCenter(self,self.repo)),("Snapshot",lambda:ProjectSnapshotCenter(self,self.repo)),("Patches",lambda:PatchCenter(self,self.repo)),("Bisect",lambda:BisectCenter(self,self.repo)),("Inspector",lambda:CommitInspector(self,self.repo)),("Submodules",lambda:SubmoduleCenter(self,self.repo)),("Tasks",lambda:TaskCenter(self,self.repo)),("Archive",lambda:ArchiveCenter(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
+        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Release Center",lambda:ReleaseCenter(self,self.repo)),("Pull Requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Security",lambda:SecurityCenter(self,self.repo)),("Health",lambda:RepositoryHealthCenter(self,self.repo)),("Worktrees",lambda:WorktreeCenter(self,self.repo)),("Compare",lambda:RepositoryCompareCenter(self,self.repo)),("Recovery",lambda:BackupRestoreCenter(self,self.repo)),("Repo Manager",lambda:RepositoryManager(self,self.repo)),("Diagnostics",lambda:SettingsDiagnosticsCenter(self,self.repo)),("Smart Sync",lambda:SyncCenter(self,self.repo)),("Search",lambda:SearchCenter(self,self.repo)),("Review",lambda:ChangeReviewCenter(self,self.repo)),("Notes",lambda:RepositoryNotesCenter(self,self.repo)),("Cleanup",lambda:BranchCleanupCenter(self,self.repo)),("Snapshot",lambda:ProjectSnapshotCenter(self,self.repo)),("Patches",lambda:PatchCenter(self,self.repo)),("Bisect",lambda:BisectCenter(self,self.repo)),("Inspector",lambda:CommitInspector(self,self.repo)),("Submodules",lambda:SubmoduleCenter(self,self.repo)),("Tasks",lambda:TaskCenter(self,self.repo)),("Archive",lambda:ArchiveCenter(self,self.repo)),("Commands",lambda:CommandPalette(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
         self.tabs=ttk.Notebook(right);self.tabs.pack(fill="both",expand=True)
         self.texts={}
         for n in ["History","Branches","Stash","Tags","Remotes","Conflicts"]:
@@ -1423,3 +1423,135 @@ class ArchiveCenter(tk.Toplevel):
             except Exception as e:return str(e)
         report=f"GitHub Command Center Support Pack\n{'='*72}\nRepository: {self.repo}\nPython: {sys.version}\nOS: {platform.platform()}\n\nSTATUS\n{safe('status','--short','--branch')}\n\nREMOTES\n{safe('remote','-v')}\n\nRECENT COMMITS\n{safe('log','-20','--oneline','--decorate')}\n\nCONFIG\n{safe('config','--list','--show-origin')}\n\nFSCK\n{safe('fsck','--no-progress')}\n"
         Path(p).write_text(report,encoding="utf-8");messagebox.showinfo("Support pack",f"Saved {p}",parent=self)
+
+class CommandPalette(tk.Toplevel):
+    """Searchable launcher that keeps the Local Git toolbar usable as features grow."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Command Palette");self.geometry("760x620");self.transient(parent)
+        self.q=tk.StringVar();e=ttk.Entry(self,textvariable=self.q,font=("Segoe UI",12));e.pack(fill="x",padx=10,pady=10);e.bind("<KeyRelease>",lambda x:self.render());e.bind("<Return>",lambda x:self.launch());e.focus_set()
+        self.list=tk.Listbox(self,font=("Segoe UI",10));self.list.pack(fill="both",expand=True,padx=10,pady=(0,10));self.list.bind("<Double-1>",lambda x:self.launch())
+        self.commands=[
+            ("Visual commit history",lambda:CommitGraphWindow(self,repo),"history graph branches"),("Resolve merge conflicts",lambda:ConflictResolver(self,repo),"merge conflicts ours theirs"),
+            ("Advanced Git operations",lambda:AdvancedGitWindow(self,repo),"rebase cherry-pick reset ignore"),("Release Center",lambda:ReleaseCenter(self,repo),"release tag assets bundle"),
+            ("Pull Request Center",lambda:PullRequestCenter(self,repo),"pull request pr review merge"),("GitHub Actions Center",lambda:ActionsCenter(self,repo),"workflow actions ci logs"),
+            ("Security Center",lambda:SecurityCenter(self,repo),"dependabot code secret scan checksums"),("Repository Health",lambda:RepositoryHealthCenter(self,repo),"quality docs governance score"),
+            ("Worktree Center",lambda:WorktreeCenter(self,repo),"parallel branches worktrees"),("Compare & Review",lambda:RepositoryCompareCenter(self,repo),"compare branch tag diff"),
+            ("Backup & Recovery",lambda:BackupRestoreCenter(self,repo),"bundle restore checkpoint"),("Repository Manager",lambda:RepositoryManager(self,repo),"multiple repositories portfolio"),
+            ("Diagnostics",lambda:SettingsDiagnosticsCenter(self,repo),"environment git python configuration"),("Smart Sync",lambda:SyncCenter(self,repo),"fetch pull push ahead behind"),
+            ("Repository Search",lambda:SearchCenter(self,repo),"grep commit file search"),("Pre-Commit Review",lambda:ChangeReviewCenter(self,repo),"stage checks diff commit"),
+            ("Repository Notes",lambda:RepositoryNotesCenter(self,repo),"private notes decisions"),("Branch Cleanup",lambda:BranchCleanupCenter(self,repo),"merged stale prune"),
+            ("Project Snapshot",lambda:ProjectSnapshotCenter(self,repo),"handover snapshot markdown"),("Patch Center",lambda:PatchCenter(self,repo),"patch apply format-patch"),
+            ("Regression Finder",lambda:BisectCenter(self,repo),"bisect regression"),("Commit Inspector",lambda:CommitInspector(self,repo),"blame file history commit"),
+            ("Submodule Center",lambda:SubmoduleCenter(self,repo),"submodule recursive"),("Repository Tasks",lambda:TaskCenter(self,repo),"checklist tasks"),
+            ("Archive & Handover",lambda:ArchiveCenter(self,repo),"zip bundle support pack"),("Git Hooks Manager",lambda:HooksCenter(self,repo),"hooks pre-commit commit-msg"),
+            ("Git LFS Center",lambda:LFSCenter(self,repo),"large files lfs track"),("Automation Recipes",lambda:AutomationCenter(self,repo),"automation recipes checks")]
+        self.render()
+    def render(self):
+        q=self.q.get().lower().strip();self.filtered=[c for c in self.commands if not q or q in (c[0]+" "+c[2]).lower()];self.list.delete(0,"end")
+        for name,_,tags in self.filtered:self.list.insert("end",f"{name}    [{tags}]")
+        if self.filtered:self.list.selection_set(0)
+    def launch(self):
+        s=self.list.curselection()
+        if s:self.filtered[s[0]][1]();self.destroy()
+
+class HooksCenter(tk.Toplevel):
+    """Manage repository-local Git hooks with templates and executable-bit handling."""
+    TEMPLATES={
+        "pre-commit":"#!/usr/bin/env sh\nset -e\ngit diff --cached --check\npython -m compileall -q .\n",
+        "commit-msg":"#!/usr/bin/env sh\nmsg=$(head -n 1 \"$1\")\n[ ${#msg} -ge 8 ] || { echo 'Commit message must be at least 8 characters.'; exit 1; }\n",
+        "pre-push":"#!/usr/bin/env sh\nset -e\npython -m compileall -q .\n",
+    }
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.dir=Path(repo)/".git"/"hooks";self.title("Git Hooks Manager");self.geometry("1050x720");self._build();self.refresh()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x");self.kind=tk.StringVar(value="pre-commit");ttk.Combobox(top,textvariable=self.kind,values=list(self.TEMPLATES),state="readonly",width=18).pack(side="left")
+        for t,c in [("Load",self.load),("Use safe template",self.template),("Save & enable",self.save),("Disable",self.disable),("Test hook",self.test)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        self.text=tk.Text(self,wrap="none",undo=True,font=("Consolas",9));self.text.pack(fill="both",expand=True,padx=8,pady=5)
+        self.status=tk.StringVar();ttk.Label(self,textvariable=self.status,padding=8).pack(fill="x")
+    def path(self):return self.dir/self.kind.get()
+    def refresh(self):self.status.set("Select a hook. Hooks are local to this clone and are not committed by default.");self.load()
+    def load(self):
+        p=self.path();self.text.delete("1.0","end")
+        if p.exists():self.text.insert("1.0",p.read_text(encoding="utf-8",errors="replace"));self.status.set(f"Loaded {p.name}")
+        else:self.status.set(f"{p.name} is not installed")
+    def template(self):self.text.delete("1.0","end");self.text.insert("1.0",self.TEMPLATES[self.kind.get()])
+    def save(self):
+        p=self.path();p.parent.mkdir(parents=True,exist_ok=True);p.write_text(self.text.get("1.0","end-1c")+"\n",encoding="utf-8");p.chmod(p.stat().st_mode|0o111);self.status.set(f"Saved and enabled {p.name}")
+    def disable(self):
+        p=self.path()
+        if p.exists():p.chmod(p.stat().st_mode&~0o111);self.status.set(f"Disabled {p.name}")
+    def test(self):
+        p=self.path()
+        if not p.exists():return messagebox.showwarning("Hook","Save the hook first.",parent=self)
+        try:
+            r=subprocess.run([str(p)],cwd=self.repo,text=True,capture_output=True,timeout=120,encoding="utf-8",errors="replace");messagebox.showinfo("Hook test",f"Exit code: {r.returncode}\n\n{r.stdout}\n{r.stderr}",parent=self)
+        except Exception as e:messagebox.showerror("Hook test",str(e),parent=self)
+
+class LFSCenter(tk.Toplevel):
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Git LFS Center");self.geometry("1050x700");self._build();self.refresh()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x");self.pattern=tk.StringVar(value="*.zip");ttk.Entry(top,textvariable=self.pattern,width=24).pack(side="left")
+        for t,c in [("Track pattern",self.track),("Untrack pattern",self.untrack),("Refresh",self.refresh),("Pull LFS objects",lambda:self.run("pull")),("Prune local LFS",self.prune)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        self.text=tk.Text(self,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
+    def lfs(self,*args):return git(self.repo,"lfs",*args)
+    def refresh(self):
+        try:v="GIT LFS ENVIRONMENT\n"+"="*72+"\n"+self.lfs("env")+"\n\nTRACKED PATTERNS\n"+"="*72+"\n"+self.lfs("track")+"\n\nLFS FILES\n"+"="*72+"\n"+self.lfs("ls-files")
+        except Exception as e:v="Git LFS is unavailable or not installed. Install Git LFS and run `git lfs install`.\n\n"+str(e)
+        self.text.delete("1.0","end");self.text.insert("1.0",v)
+    def track(self):
+        p=self.pattern.get().strip()
+        if p:
+            try:messagebox.showinfo("Git LFS",self.lfs("track",p),parent=self);self.refresh()
+            except Exception as e:messagebox.showerror("Git LFS",str(e),parent=self)
+    def untrack(self):
+        p=self.pattern.get().strip()
+        if p and messagebox.askyesno("Git LFS",f"Stop tracking {p} with LFS? Existing history is not rewritten.",parent=self):
+            try:messagebox.showinfo("Git LFS",self.lfs("untrack",p),parent=self);self.refresh()
+            except Exception as e:messagebox.showerror("Git LFS",str(e),parent=self)
+    def run(self,*args):
+        try:messagebox.showinfo("Git LFS",self.lfs(*args),parent=self);self.refresh()
+        except Exception as e:messagebox.showerror("Git LFS",str(e),parent=self)
+    def prune(self):
+        if messagebox.askyesno("Git LFS prune","Prune old local LFS objects that Git LFS considers safe to remove?",parent=self):self.run("prune")
+
+class AutomationCenter(tk.Toplevel):
+    """Extensible repository-local automation recipes stored as JSON."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.path=Path(repo)/".git"/"gccc-recipes.json";self.title("Automation Recipes");self.geometry("1100x720");self._build();self.load()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x")
+        for t,c in [("Run selected",self.run_selected),("Add recipe",self.add),("Delete",self.delete),("Reset defaults",self.defaults),("Save",self.save)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        pane=ttk.Panedwindow(self,orient="horizontal");pane.pack(fill="both",expand=True,padx=8,pady=5);l=ttk.Frame(pane);r=ttk.Frame(pane);pane.add(l,weight=2);pane.add(r,weight=3)
+        self.list=tk.Listbox(l,font=("Segoe UI",10));self.list.pack(fill="both",expand=True);self.list.bind("<<ListboxSelect>>",lambda e:self.describe())
+        self.out=tk.Text(r,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.out.pack(fill="both",expand=True)
+    def base(self):return [{"name":"Python syntax check","command":["python","-m","compileall","-q","."]},{"name":"Git integrity check","command":["git","fsck","--no-progress"]},{"name":"Whitespace check","command":["git","diff","--check"]}]
+    def load(self):
+        import json
+        try:self.recipes=json.loads(self.path.read_text(encoding="utf-8")) if self.path.exists() else self.base()
+        except:self.recipes=self.base()
+        self.render()
+    def render(self):self.list.delete(0,"end");[self.list.insert("end",r["name"]) for r in self.recipes]
+    def describe(self):
+        s=self.list.curselection()
+        if s:self.out.delete("1.0","end");self.out.insert("1.0","Command:\n"+" ".join(self.recipes[s[0]]["command"]))
+    def add(self):
+        import shlex
+        n=simpledialog.askstring("Recipe","Recipe name:",parent=self);c=simpledialog.askstring("Recipe","Command line:",parent=self) if n else None
+        if c:self.recipes.append({"name":n,"command":shlex.split(c)});self.render();self.save(False)
+    def delete(self):
+        s=self.list.curselection()
+        if s:del self.recipes[s[0]];self.render();self.save(False)
+    def defaults(self):self.recipes=self.base();self.render();self.save(False)
+    def save(self,notice=True):
+        import json
+        self.path.write_text(json.dumps(self.recipes,indent=2),encoding="utf-8")
+        if notice:messagebox.showinfo("Recipes","Saved under .git/gccc-recipes.json",parent=self)
+    def run_selected(self):
+        s=self.list.curselection()
+        if not s:return
+        r=self.recipes[s[0]]
+        try:
+            p=subprocess.run(r["command"],cwd=self.repo,text=True,capture_output=True,timeout=900,encoding="utf-8",errors="replace");v=f"Recipe: {r['name']}\nExit code: {p.returncode}\n\n{p.stdout}\n{p.stderr}"
+        except Exception as e:v=str(e)
+        self.out.delete("1.0","end");self.out.insert("1.0",v)
