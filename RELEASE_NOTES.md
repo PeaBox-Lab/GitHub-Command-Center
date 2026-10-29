@@ -1,3 +1,3 @@
-# GitHub Command Center 3.14.0 Release Notes
+# GitHub Command Center 3.15.0 Release Notes
 
-Version 3.14 improves release provenance and repository cleanup. Commit signatures can be audited in bulk, releases compared tag-to-tag, and branches removed only when conservative safety gates pass.
+Version 3.15 improves synchronization decisions and recovery. It makes pull strategy explicit, protects rebases, preserves detached work through branch creation, and adds machine-readable repository-state exports.

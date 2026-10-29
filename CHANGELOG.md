@@ -1,15 +1,18 @@
 # Changelog
 
-## v3.14.0
-- Added Commit Signature Audit Center
-- Added Release Comparison Center with Markdown export
-- Added Safe Branch Delete Wizard with merge/worktree/upstream gates
-- Retained all v0.1-v3.13 functionality
+## v3.15.0
+- Added Pull Strategy Advisor for explicit FF-only, rebase or merge decisions
+- Added protected pull-rebase safety branch
+- Added Detached HEAD Recovery Center
+- Added JSON/Markdown Repository State Export
+- Retained all v0.1-v3.14 functionality
 
+## v3.14.0
+- Added Signature Audit, Release Comparison and Safe Branch Delete
 ## v3.13.0
-- Added Cherry-Pick Queue, Release Asset Integrity and Local Release Archive
+- Added Cherry-Pick Queue, Asset Integrity and Local Release Archive
 ## v3.12.0
-- Added Merge Preview, protected Reset Planner and Git Configuration Center
+- Added Merge Preview, Reset Planner and Git Configuration
 ## v3.11.0
 - Added Commit Templates, Patch Queue and Hook Audit
 ## v3.10.0

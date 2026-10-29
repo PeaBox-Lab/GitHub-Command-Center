@@ -105,3 +105,7 @@ Use Cherry-Pick Queue when several non-contiguous commits must be applied in a d
 # Version 3.14 Addendum
 
 Use Signature Audit before a provenance-sensitive release. Use Release Comparison for the final tag-to-tag review. Safe Branch Delete is intentionally conservative and refuses current, worktree-active, unmerged or locally-ahead branches instead of offering force deletion.
+
+# Version 3.15 Addendum
+
+Use Pull Strategy Advisor after fetching when local and upstream histories differ. Rebase is protected by a backup branch; merge remains explicit. Use Detached HEAD Recovery before leaving an important detached commit. Repository State Export creates portable JSON or Markdown evidence of the current repository state.

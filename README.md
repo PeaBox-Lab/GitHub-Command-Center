@@ -1,27 +1,24 @@
-# GitHub Command Center v3.14.0
+# GitHub Command Center v3.15.0
 
-Version 3.14 continues decimal versioning within major version 3. This release adds stronger provenance, release comparison and guarded branch cleanup.
+Version 3.15 continues the decimal major-version-3 train with safer synchronization decisions, detached-HEAD recovery and auditable repository-state exports.
 
-## Signature Audit Center
-- Review the latest 10-1,000 commits
-- Git signature-status codes translated into readable states
-- Summary of good, bad, expired, unknown-trust and unsigned commits
-- Inspect full signature output for a selected commit
-- Export audit report
+## Pull Strategy Advisor
+- Fetch/prune and inspect ahead/behind state
+- Explain whether fast-forward, push, merge or rebase is appropriate
+- Fast-forward-only pull
+- Protected rebase with timestamped backup branch
+- Explicit upstream merge
+- Never selects a history-changing strategy silently
 
-## Release Comparison Center
-- Compare any two tags/refs
-- Commit count and short diff statistics
-- File-level status inventory
-- Commit inventory
-- Export review as Markdown
+## Detached HEAD Recovery
+- Detect detached HEAD
+- Show exact HEAD and commit metadata
+- Create and switch to a recovery branch at the current commit
+- Switch back to the origin default branch with confirmation
 
-## Safe Branch Delete Wizard
-- Checks current-branch state
-- Detects branch use by worktrees
-- Requires Git to report the branch as merged
-- Checks local commits ahead of configured upstream
-- Only normal `git branch -d`
-- Force deletion is intentionally unavailable
+## Repository State Export
+- JSON snapshot for automation/audit
+- Markdown handover snapshot
+- Branch, HEAD, upstream, changes, remotes, tags and recent commits
 
-All v0.1-v3.13 tools remain available through Command Palette.
+All v0.1-v3.14 features remain available through Command Palette.
