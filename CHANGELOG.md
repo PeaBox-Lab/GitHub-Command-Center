@@ -1,15 +1,17 @@
 # Changelog
 
+## v0.9.0
+- Added Compare & Review Center for branches, tags and refs
+- Added ahead/behind counts, changed-file/addition/deletion metrics, commit list and unified diff
+- Added exportable comparison reports
+- Added Backup & Recovery Center
+- Added manual safety checkpoints, bundle verification and GUI bundle restoration
+
 ## v0.8.0
-- Added 100-point Repository Health Center
-- Added governance/documentation/CI/test/tag health checks
-- Added generators for SECURITY, CONTRIBUTING, issue templates, PR template, CODEOWNERS and .gitattributes
-- Added repository file inventory and prioritized missing-control list
-- Added Git Worktree Center for parallel branch workspaces
-- Added create, remove and prune worktree workflows
+- Added Repository Health Center, governance generators and Git Worktree Center
 
 ## v0.7.0
-- Added Security & Dependency Center, GitHub security alerts, local audits, optional scanners and SHA-256 checksums
+- Added Security & Dependency Center, GitHub security alerts, local audits and checksums
 
 ## v0.6.0
 - Added Pull Request Center and GitHub Actions Center

@@ -1,30 +1,35 @@
-# GitHub Command Center v0.8.0
+# GitHub Command Center v0.9.0
 
 Python desktop command center for GitHub and local Git workflows.
 
-## New in v0.8.0: Repository Health Center
-- 100-point repository-health score
-- Checks README, LICENSE, CHANGELOG, SECURITY, CONTRIBUTING, issue/PR templates, CODEOWNERS, `.gitignore`, `.gitattributes`, CI workflows, tests, tags, and working-tree cleanliness
-- Repository governance-file inventory
-- Actionable list of missing quality controls
-- One-click generation of SECURITY.md, CONTRIBUTING.md, bug/feature issue templates, pull-request template, CODEOWNERS and `.gitattributes`
-- Existing files require confirmation before replacement
+## New: Compare & Review Center
+- Compare any local branch, remote-tracking branch, tag, or commit ref
+- Ahead/behind commit counts
+- Changed-file count, additions and deletions
+- Name/status inventory
+- Commit list unique to the compare ref
+- Unified diff viewer
+- Export a complete review report to text
 
-## New in v0.8.0: Git Worktree Center
-- View all linked worktrees, branch and HEAD
-- Create a worktree for an existing branch
-- Create a new branch and worktree together
-- Safely remove a secondary worktree
-- Prune obsolete worktree metadata
+This provides a visual pre-merge and pre-release review step without needing GitHub's compare page.
+
+## New: Backup & Recovery Center
+- Create timestamped `gccc-backup/*` checkpoint branches before risky work
+- Inventory existing safety branches and stashes
+- Create a full Git bundle with all refs
+- Verify an existing bundle
+- Restore a bundle into a new repository folder directly from the GUI
 
 ## Cumulative capabilities
 - GitHub dashboard, repositories, issues and account insights
-- Local Git workspace with status, staging, commit, fetch, FF-only pull, push and diff
-- Visual commit graph and three-pane merge conflict resolution
-- Branch, merge, stash, tag, remote, cherry-pick, rebase, revert and guarded reset workflows
-- Release Center, Pull Request Center and GitHub Actions Center
-- Security Center with Dependabot/code/secret scanning views, local audits and checksums
-- Git bundle and ZIP backup/export
+- Full local Git workspace and visual commit graph
+- Three-pane merge conflict resolution
+- Advanced branch, cherry-pick, rebase, revert and reset workflows
+- Release, Pull Request and GitHub Actions centers
+- Security & Dependency Center
+- Repository Health Center and governance-template generators
+- Git Worktree Center
+- ZIP and Git bundle export
 
 ## Requirements
 Python 3.10+, Git. Authenticated GitHub CLI is required for GitHub Releases, PRs, Actions and GitHub security APIs.
