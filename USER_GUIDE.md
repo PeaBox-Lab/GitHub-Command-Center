@@ -77,3 +77,7 @@ Run Doctor when a repository feels out of sync or an operation fails. Follow the
 
 ## Tag & Release Audit
 Use before releases to distinguish annotated/lightweight tags, confirm what exists on origin, and verify signatures before publishing missing tags.
+
+# Version 3.8 Addendum
+
+Use Stash Manager Pro to inspect a stash before applying it. Safe Clean always previews first; enabling ignored-file cleaning requires typed confirmation. Repository Size Explorer helps identify large current files before deciding whether Git LFS is appropriate.

@@ -1,28 +1,26 @@
-# GitHub Command Center v3.7.0
+# GitHub Command Center v3.8.0
 
-Version 3.7 keeps decimal progression within major version 3 and bundles operational safety, diagnosis and release-audit improvements.
+Version 3.8 continues decimal progression within major version 3 and focuses on day-to-day repository housekeeping and storage visibility.
 
-## Worktree Safety Center
-- Inventory all worktrees with branch, HEAD, lock and prunable state
-- Open a selected worktree folder
-- Lock/unlock worktrees
-- Dry-run stale-worktree prune
-- Confirmed actual prune
+## Stash Manager Pro
+- Named stash creation
+- Optionally include untracked files
+- Stash inventory and full patch preview
+- Apply, pop, drop and create-branch-from-stash workflows
 
-## Repository Doctor
-- Working tree, branch, upstream and origin checks
-- Full object-integrity check
-- Merge-conflict detection
-- Ahead/behind divergence test
-- Concrete recommended action for each attention item
-- Exportable diagnosis report
+## Safe Clean Center
+- Dry-run preview before every clean
+- Optional directory removal
+- Ignored files excluded by default
+- Including ignored files requires exact typed confirmation
+- No automated history modifications
 
-## Tag & Release Audit
-- Inventory annotated and lightweight tags
-- Target commit/object and creation date
-- Check whether each tag exists on origin
-- Verify a selected signed tag
-- Explicitly push a selected tag
-- Jump directly to Release Center
+## Repository Size Explorer
+- Working-tree and `.git` approximate sizes
+- Git object database statistics
+- Tracked-file count
+- 30 largest current tracked files
+- Guidance toward Git LFS for large current artifacts
+- Explicitly avoids automated history rewriting
 
-All v0.1-v3.6 functionality remains included and searchable through Command Palette.
+All existing v0.1-v3.7 functionality remains included through the Command Palette.
