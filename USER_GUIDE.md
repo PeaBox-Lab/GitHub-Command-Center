@@ -21,3 +21,9 @@ Before rebase/reset or other risky operations, create a Recovery checkpoint. Ful
 
 ## Multi-repository workflow
 Use Repo Manager to scan a parent workspace, identify repositories with local changes or remote divergence, fetch selected repositories, then open an individual repository for detailed work.
+
+## Smart Sync workflow (v1.1)
+Open Smart Sync after making commits. Refresh/fetch first. If remote is ahead and local is not ahead, Safe Sync performs an FF-only pull. If both sides contain unique commits, Smart Sync stops and directs you to Compare so you can explicitly choose merge or rebase. Push always requires confirmation.
+
+## Repository search (v1.1)
+Open Search from Local Git. Use Search text for tracked source/config/document content, Search commits for historical commit messages, and Search files for tracked path names.

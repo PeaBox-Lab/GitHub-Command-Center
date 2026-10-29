@@ -23,7 +23,7 @@ class LocalGitWindow(tk.Toplevel):
         left=ttk.Frame(pane);right=ttk.Frame(pane);pane.add(left,weight=3);pane.add(right,weight=2)
         self.files=ttk.Treeview(left,columns=("state","file"),show="headings",selectmode="extended");self.files.heading("state",text="State");self.files.heading("file",text="File");self.files.column("state",width=70);self.files.column("file",width=470);self.files.pack(fill="both",expand=True)
         foot=ttk.Frame(left);foot.pack(fill="x",pady=5)
-        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Release Center",lambda:ReleaseCenter(self,self.repo)),("Pull Requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Security",lambda:SecurityCenter(self,self.repo)),("Health",lambda:RepositoryHealthCenter(self,self.repo)),("Worktrees",lambda:WorktreeCenter(self,self.repo)),("Compare",lambda:RepositoryCompareCenter(self,self.repo)),("Recovery",lambda:BackupRestoreCenter(self,self.repo)),("Repo Manager",lambda:RepositoryManager(self,self.repo)),("Diagnostics",lambda:SettingsDiagnosticsCenter(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
+        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Release Center",lambda:ReleaseCenter(self,self.repo)),("Pull Requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Security",lambda:SecurityCenter(self,self.repo)),("Health",lambda:RepositoryHealthCenter(self,self.repo)),("Worktrees",lambda:WorktreeCenter(self,self.repo)),("Compare",lambda:RepositoryCompareCenter(self,self.repo)),("Recovery",lambda:BackupRestoreCenter(self,self.repo)),("Repo Manager",lambda:RepositoryManager(self,self.repo)),("Diagnostics",lambda:SettingsDiagnosticsCenter(self,self.repo)),("Smart Sync",lambda:SyncCenter(self,self.repo)),("Search",lambda:SearchCenter(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
         self.tabs=ttk.Notebook(right);self.tabs.pack(fill="both",expand=True)
         self.texts={}
         for n in ["History","Branches","Stash","Tags","Remotes","Conflicts"]:
@@ -1020,3 +1020,82 @@ class SettingsDiagnosticsCenter(tk.Toplevel):
         except Exception as e:lines.append("Repository diagnostics error: "+str(e))
         self.report="\n".join(lines);self.text.delete("1.0","end");self.text.insert("1.0",self.report)
     def copy(self):self.clipboard_clear();self.clipboard_append(getattr(self,"report",""));messagebox.showinfo("Diagnostics","Report copied to clipboard.",parent=self)
+
+class SyncCenter(tk.Toplevel):
+    """Safe, guided synchronization for a local repository."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Smart Sync Center");self.geometry("1050x700");self.minsize(900,600);self._build();self.refresh()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x")
+        for t,c in [("Refresh",self.refresh),("Fetch",self.fetch),("Safe sync",self.safe_sync),("Push",self.push_now),("Create checkpoint",self.checkpoint)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        self.text=tk.Text(self,wrap="word",font=("Consolas",10),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
+    def snapshot(self):
+        branch=git(self.repo,"branch","--show-current"); status=git(self.repo,"status","--porcelain")
+        try:upstream=git(self.repo,"rev-parse","--abbrev-ref","--symbolic-full-name","@{u}")
+        except:upstream=""
+        ahead=behind="-"
+        if upstream:
+            ahead=git(self.repo,"rev-list","--count","@{u}..HEAD");behind=git(self.repo,"rev-list","--count","HEAD..@{u}")
+        return branch,status,upstream,ahead,behind
+    def refresh(self):
+        try:
+            branch,status,upstream,ahead,behind=self.snapshot();clean=status=="Completed successfully."
+            rec="No action required."
+            if not upstream:rec="Set an upstream branch before synchronization."
+            elif not clean:rec="Commit or stash local changes before synchronization."
+            elif str(behind)!="0" and str(ahead)!="0":rec="Branch has diverged. Compare/review before rebasing or merging."
+            elif str(behind)!="0":rec="Remote is ahead. Safe sync can fast-forward pull."
+            elif str(ahead)!="0":rec="Local branch is ahead. Push when ready."
+            report=f"SMART SYNC\n{'='*72}\nRepository: {self.repo}\nBranch: {branch}\nUpstream: {upstream or 'Not configured'}\nWorking tree: {'Clean' if clean else 'Changed'}\nAhead: {ahead}\nBehind: {behind}\n\nRecommendation: {rec}\n"
+            self.text.delete("1.0","end");self.text.insert("1.0",report)
+        except Exception as e:messagebox.showerror("Smart Sync",str(e),parent=self)
+    def fetch(self):
+        try:messagebox.showinfo("Fetch",git(self.repo,"fetch","--all","--prune"),parent=self);self.refresh()
+        except Exception as e:messagebox.showerror("Fetch",str(e),parent=self)
+    def checkpoint(self):
+        import datetime
+        name=f"gccc-backup/pre-sync-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}"
+        try:git(self.repo,"branch",name);messagebox.showinfo("Checkpoint",f"Created {name}",parent=self);self.refresh()
+        except Exception as e:messagebox.showerror("Checkpoint",str(e),parent=self)
+    def safe_sync(self):
+        try:
+            git(self.repo,"fetch","--all","--prune")
+            branch,status,upstream,ahead,behind=self.snapshot()
+            if status!="Completed successfully.":raise GitError("Working tree has local changes. Commit or stash them before sync.")
+            if not upstream:raise GitError("No upstream is configured for the current branch.")
+            if str(ahead)!="0" and str(behind)!="0":raise GitError("Branch histories have diverged. Use Compare and choose a deliberate merge or rebase workflow.")
+            if str(behind)!="0":out=git(self.repo,"pull","--ff-only")
+            elif str(ahead)!="0":out="Local commits are ready to push. Safe Sync does not auto-push without confirmation."
+            else:out="Already synchronized."
+            messagebox.showinfo("Safe Sync",out,parent=self);self.refresh()
+        except Exception as e:messagebox.showerror("Safe Sync",str(e),parent=self)
+    def push_now(self):
+        if not messagebox.askyesno("Push","Push the current branch to its configured upstream?",parent=self):return
+        try:messagebox.showinfo("Push",git(self.repo,"push"),parent=self);self.refresh()
+        except Exception as e:messagebox.showerror("Push",str(e),parent=self)
+
+class SearchCenter(tk.Toplevel):
+    """Search commits, tracked files and repository text from one UI."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Repository Search Center");self.geometry("1100x720");self._build()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x");self.q=tk.StringVar();ttk.Entry(top,textvariable=self.q).pack(side="left",fill="x",expand=True)
+        for t,c in [("Search text",self.search_text),("Search commits",self.search_commits),("Search files",self.search_files)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        self.out=tk.Text(self,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.out.pack(fill="both",expand=True,padx=8,pady=5)
+    def put(self,title,value):self.out.delete("1.0","end");self.out.insert("1.0",title+"\n"+"="*72+"\n\n"+value)
+    def search_text(self):
+        q=self.q.get().strip()
+        if not q:return
+        try:self.put("TRACKED TEXT SEARCH",git(self.repo,"grep","-n","-I","--",q))
+        except Exception as e:self.put("TRACKED TEXT SEARCH",str(e))
+    def search_commits(self):
+        q=self.q.get().strip()
+        if not q:return
+        try:self.put("COMMIT MESSAGE SEARCH",git(self.repo,"log","--all","--date=short","--pretty=format:%h%x09%ad%x09%an%x09%s","--grep",q,"-i"))
+        except Exception as e:self.put("COMMIT MESSAGE SEARCH",str(e))
+    def search_files(self):
+        q=self.q.get().strip().lower()
+        if not q:return
+        try:
+            files=git(self.repo,"ls-files");matches=[x for x in files.splitlines() if q in x.lower()];self.put("FILE NAME SEARCH","\n".join(matches) if matches else "No tracked filenames matched.")
+        except Exception as e:self.put("FILE NAME SEARCH",str(e))
