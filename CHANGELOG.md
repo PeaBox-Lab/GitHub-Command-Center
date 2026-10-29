@@ -1,13 +1,15 @@
 # Changelog
 
-## v3.11.0
-- Added Commit Template Center
-- Added Patch Queue Center using guarded `git am --3way`
-- Added Hook Audit Center with executable-state and source preview
-- Retained all v0.1-v3.10 functionality
+## v3.12.0
+- Added non-mutating Merge Preview Center using merge-tree
+- Added protected Reset & Recovery Planner with automatic backup branches
+- Added Git Configuration Center with scope/origin visibility
+- Retained all v0.1-v3.11 functionality
 
+## v3.11.0
+- Added Commit Templates, Patch Queue and Hook Audit
 ## v3.10.0
-- Added Branch Protection Advisor, Repository Favorites and Preflight Quality Gates
+- Added Branch Protection Advisor, Favorites and Preflight Gates
 ## v3.9.0
 - Added Force-with-Lease Safety, Advanced History Search and Bundle Inspector
 ## v3.8.0

@@ -1,3 +1,3 @@
-# GitHub Command Center 3.11.0 Release Notes
+# GitHub Command Center 3.12.0 Release Notes
 
-Version 3.11 improves disciplined commit authoring, commit-preserving patch exchange and visibility into executable Git hooks. It retains the complete earlier v3 toolset and decimal version progression.
+Version 3.12 adds safer planning around merges and resets, plus transparent local/global Git configuration management. Destructive reset remains protected by a recovery branch and additional confirmation.

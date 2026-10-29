@@ -93,3 +93,7 @@ Use Branch Protection Advisor to identify governance gaps before changing reposi
 # Version 3.11 Addendum
 
 Use Commit Template Center when you want a consistent local commit structure without enforcing it on collaborators. Patch Queue is for `git format-patch` / `git am` workflows and requires a clean tree. Hook Audit lets you inspect exactly which clone-local hooks can execute before commit/push operations.
+
+# Version 3.12 Addendum
+
+Use Merge Preview before integrating a branch when you want to inspect the likely merge result without touching the working tree. Reset Planner always creates a recovery branch first; prefer soft or mixed reset unless discarding tracked changes is intentional. Git Configuration Center displays where each active value came from before you modify local or global settings.
