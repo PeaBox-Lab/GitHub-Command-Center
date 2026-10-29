@@ -12,3 +12,6 @@ Dashboard, statistics, repository search, activity, insights, repository and iss
 
 ## Windows
 Extract and double-click `run_windows.bat`. Requires Python 3.10+ and Git on PATH.
+
+## v0.3 visual tools
+Use **Visual history** in Local Git for a color-coded branch/merge topology graph covering up to 250 commits. Use **Resolve conflicts** for a three-pane ours/merged/theirs editor, one-click side selection, manual editing, staged resolution, and merge abort.
