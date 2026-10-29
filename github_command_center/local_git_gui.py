@@ -1444,7 +1444,7 @@ class CommandPalette(tk.Toplevel):
             ("Regression Finder",lambda:BisectCenter(self,repo),"bisect regression"),("Commit Inspector",lambda:CommitInspector(self,repo),"blame file history commit"),
             ("Submodule Center",lambda:SubmoduleCenter(self,repo),"submodule recursive"),("Repository Tasks",lambda:TaskCenter(self,repo),"checklist tasks"),
             ("Archive & Handover",lambda:ArchiveCenter(self,repo),"zip bundle support pack"),("Git Hooks Manager",lambda:HooksCenter(self,repo),"hooks pre-commit commit-msg"),
-            ("Git LFS Center",lambda:LFSCenter(self,repo),"large files lfs track"),("Automation Recipes",lambda:AutomationCenter(self,repo),"automation recipes checks"),("Identity & Signing",lambda:IdentitySigningCenter(self,repo),"identity email gpg sign verify"),("Commit Message Studio",lambda:CommitMessageStudio(self,repo),"conventional commits message"),("Changelog Studio",lambda:ChangelogStudio(self,repo),"changelog release notes commits"),("Remote Migration & Mirror",lambda:RemoteMigrationCenter(self,repo),"remote backup mirror migration")]
+            ("Git LFS Center",lambda:LFSCenter(self,repo),"large files lfs track"),("Automation Recipes",lambda:AutomationCenter(self,repo),"automation recipes checks"),("Identity & Signing",lambda:IdentitySigningCenter(self,repo),"identity email gpg sign verify"),("Commit Message Studio",lambda:CommitMessageStudio(self,repo),"conventional commits message"),("Changelog Studio",lambda:ChangelogStudio(self,repo),"changelog release notes commits"),("Remote Migration & Mirror",lambda:RemoteMigrationCenter(self,repo),"remote backup mirror migration"),("Credential & Remote Hygiene",lambda:CredentialAuditCenter(self,repo),"credentials helper url ssh https auth"),("Release Policy Center",lambda:ReleasePolicyCenter(self,repo),"release policy gates semver version"),("Repository Metrics",lambda:RepositoryMetricsCenter(self,repo),"metrics contributors languages commits activity")]
         self.render()
     def render(self):
         q=self.q.get().lower().strip();self.filtered=[c for c in self.commands if not q or q in (c[0]+" "+c[2]).lower()];self.list.delete(0,"end")
@@ -1697,3 +1697,120 @@ class RemoteMigrationCenter(tk.Toplevel):
             if confirm==n:
                 try:messagebox.showinfo("Mirror",git(self.repo,"push","--mirror",n),parent=self);self.refresh()
                 except Exception as e:messagebox.showerror("Mirror",str(e),parent=self)
+
+class CredentialAuditCenter(tk.Toplevel):
+    """Inspect credential helpers and remote URL hygiene without exposing secrets."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Credential & Remote Hygiene");self.geometry("1050x700");self._build();self.refresh()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x")
+        for t,c in [("Refresh audit",self.refresh),("Convert origin to SSH",self.to_ssh),("Convert origin to HTTPS",self.to_https),("Open GitHub auth status",self.gh_status)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        self.text=tk.Text(self,wrap="word",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
+    def safe(self,*args):
+        try:return git(self.repo,*args)
+        except Exception as e:return "Unavailable: "+str(e)
+    def refresh(self):
+        remote=self.safe("remote","-v");helpers=self.safe("config","--show-origin","--get-all","credential.helper")
+        findings=[]
+        for line in remote.splitlines():
+            if "@" in line and "https://" in line:findings.append("WARN: HTTPS remote appears to contain embedded credentials or user information. Replace it immediately.")
+            if "github.com" in line and not ("git@github.com:" in line or "https://github.com/" in line):findings.append("WARN: Non-standard GitHub remote format detected.")
+        if not findings:findings.append("PASS: No obvious embedded credential pattern detected in remote URLs.")
+        report="CREDENTIAL & REMOTE HYGIENE\n"+"="*72+"\n\nREMOTES\n"+remote+"\n\nCREDENTIAL HELPERS\n"+helpers+"\n\nFINDINGS\n"+"\n".join(findings)+"\n\nThis center never reads or displays stored passwords/tokens."
+        self.text.delete("1.0","end");self.text.insert("1.0",report)
+    def parse_origin(self):
+        u=git(self.repo,"remote","get-url","origin")
+        import re
+        m=re.search(r"github\.com[:/]([^/]+)/([^/]+?)(?:\.git)?$",u)
+        if not m:raise GitError("Origin is not a recognizable GitHub URL.")
+        return m.group(1),m.group(2)
+    def to_ssh(self):
+        try:
+            owner,name=self.parse_origin();u=f"git@github.com:{owner}/{name}.git"
+            if messagebox.askyesno("Remote URL",f"Set origin to SSH?\n{u}",parent=self):git(self.repo,"remote","set-url","origin",u);self.refresh()
+        except Exception as e:messagebox.showerror("Remote URL",str(e),parent=self)
+    def to_https(self):
+        try:
+            owner,name=self.parse_origin();u=f"https://github.com/{owner}/{name}.git"
+            if messagebox.askyesno("Remote URL",f"Set origin to HTTPS?\n{u}",parent=self):git(self.repo,"remote","set-url","origin",u);self.refresh()
+        except Exception as e:messagebox.showerror("Remote URL",str(e),parent=self)
+    def gh_status(self):
+        try:
+            r=subprocess.run(["gh","auth","status"],cwd=self.repo,text=True,capture_output=True,timeout=30,encoding="utf-8",errors="replace");messagebox.showinfo("GitHub authentication",(r.stdout+r.stderr).strip(),parent=self)
+        except Exception as e:messagebox.showerror("GitHub authentication",str(e),parent=self)
+
+class ReleasePolicyCenter(tk.Toplevel):
+    """Repository-local release gates and version policy."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.path=Path(repo)/".git"/"gccc-release-policy.json";self.title("Release Policy Center");self.geometry("1080x720");self._build();self.load()
+    def _build(self):
+        form=ttk.Frame(self,padding=8);form.pack(fill="x")
+        self.clean=tk.BooleanVar(value=True);self.upstream=tk.BooleanVar(value=True);self.changelog=tk.BooleanVar(value=True);self.security=tk.BooleanVar(value=True);self.prefix=tk.StringVar(value="v")
+        for text,var in [("Require clean working tree",self.clean),("Require configured upstream",self.upstream),("Require CHANGELOG.md",self.changelog),("Require SECURITY.md",self.security)]:ttk.Checkbutton(form,text=text,variable=var).pack(side="left",padx=5)
+        ttk.Label(form,text="Tag prefix").pack(side="left",padx=(15,2));ttk.Entry(form,textvariable=self.prefix,width=6).pack(side="left")
+        bar=ttk.Frame(self,padding=(8,0));bar.pack(fill="x")
+        for t,c in [("Evaluate",self.evaluate),("Save policy",self.save),("Suggest next version",self.suggest)]:ttk.Button(bar,text=t,command=c).pack(side="left",padx=2)
+        self.text=tk.Text(self,wrap="word",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
+    def load(self):
+        import json
+        if self.path.exists():
+            try:
+                p=json.loads(self.path.read_text(encoding="utf-8"));self.clean.set(p.get("clean",True));self.upstream.set(p.get("upstream",True));self.changelog.set(p.get("changelog",True));self.security.set(p.get("security",True));self.prefix.set(p.get("prefix","v"))
+            except:pass
+        self.evaluate()
+    def save(self):
+        import json
+        self.path.write_text(json.dumps({"clean":self.clean.get(),"upstream":self.upstream.get(),"changelog":self.changelog.get(),"security":self.security.get(),"prefix":self.prefix.get()},indent=2),encoding="utf-8");messagebox.showinfo("Release policy","Saved under .git/gccc-release-policy.json",parent=self)
+    def evaluate(self):
+        checks=[]
+        def add(name,ok,detail):checks.append((name,ok,detail))
+        status=git(self.repo,"status","--porcelain");add("Clean working tree",not self.clean.get() or status=="Completed successfully.","Clean" if status=="Completed successfully." else "Local changes found")
+        try:u=git(self.repo,"rev-parse","--abbrev-ref","--symbolic-full-name","@{u}");ok=True
+        except Exception as e:u=str(e);ok=False
+        add("Upstream configured",not self.upstream.get() or ok,u)
+        add("CHANGELOG.md",not self.changelog.get() or (Path(self.repo)/"CHANGELOG.md").exists(),"Present" if (Path(self.repo)/"CHANGELOG.md").exists() else "Missing")
+        add("SECURITY.md",not self.security.get() or (Path(self.repo)/"SECURITY.md").exists(),"Present" if (Path(self.repo)/"SECURITY.md").exists() else "Missing")
+        report="RELEASE POLICY EVALUATION\n"+"="*72+"\n\n"+"\n\n".join(f"[{'PASS' if ok else 'FAIL'}] {n}\n  {d}" for n,ok,d in checks)
+        report+=f"\n\nOVERALL: {'PASS' if all(x[1] for x in checks) else 'BLOCKED'}"
+        self.text.delete("1.0","end");self.text.insert("1.0",report)
+    def suggest(self):
+        import re
+        try:last=git(self.repo,"describe","--tags","--abbrev=0")
+        except:last=""
+        m=re.search(r"(\d+)\.(\d+)\.(\d+)",last)
+        if not m:return messagebox.showinfo("Version","No semantic-version tag found. Suggested first tag: v0.1.0",parent=self)
+        major,minor,patch=map(int,m.groups());raw=git(self.repo,"log","--pretty=format:%s",f"{last}..HEAD")
+        bump="patch"
+        if any("BREAKING CHANGE" in x or re.match(r"\w+(\([^)]*\))?!:",x) for x in raw.splitlines()):bump="major"
+        elif any(x.startswith("feat") for x in raw.splitlines()):bump="minor"
+        version=(major+1,0,0) if bump=="major" else (major,minor+1,0) if bump=="minor" else (major,minor,patch+1)
+        messagebox.showinfo("Suggested version",f"Latest tag: {last}\nSuggested bump: {bump}\nSuggested tag: {self.prefix.get()}{version[0]}.{version[1]}.{version[2]}",parent=self)
+
+class RepositoryMetricsCenter(tk.Toplevel):
+    """Local engineering metrics without external analytics services."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Repository Metrics Center");self.geometry("1100x740");self._build();self.refresh()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x");ttk.Button(top,text="Refresh metrics",command=self.refresh).pack(side="left");ttk.Button(top,text="Export report",command=self.export).pack(side="left",padx=3)
+        self.text=tk.Text(self,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
+    def safe(self,*args):
+        try:return git(self.repo,*args)
+        except:return ""
+    def refresh(self):
+        commits=self.safe("rev-list","--count","HEAD");contributors=self.safe("shortlog","-sne","HEAD");files=self.safe("ls-files").splitlines();languages={};total_lines=0
+        extmap={".py":"Python",".js":"JavaScript",".ts":"TypeScript",".tsx":"TypeScript",".java":"Java",".go":"Go",".rs":"Rust",".md":"Markdown",".html":"HTML",".css":"CSS",".sh":"Shell"}
+        for f in files:
+            p=Path(self.repo)/f;lang=extmap.get(p.suffix.lower())
+            if lang:
+                try:n=len(p.read_text(encoding="utf-8",errors="ignore").splitlines());languages[lang]=languages.get(lang,0)+n;total_lines+=n
+                except:pass
+        monthly=self.safe("log","--date=format:%Y-%m","--pretty=format:%ad");counts={}
+        for m in monthly.splitlines():counts[m]=counts.get(m,0)+1
+        report=f"REPOSITORY METRICS\n{'='*72}\nCommits: {commits}\nTracked files: {len(files)}\nCounted text lines: {total_lines}\n\nCONTRIBUTORS\n{contributors or 'Unavailable'}\n\nLANGUAGE LINES (heuristic)\n"
+        for k,v in sorted(languages.items(),key=lambda x:-x[1]):report+=f"{k:<18}{v:>10}\n"
+        report+="\nCOMMITS BY MONTH\n"
+        for k,v in sorted(counts.items(),reverse=True)[:24]:report+=f"{k}: {v}\n"
+        self.report=report;self.text.delete("1.0","end");self.text.insert("1.0",report)
+    def export(self):
+        p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile=Path(self.repo).name+"-metrics.txt")
+        if p:Path(p).write_text(self.report,encoding="utf-8")

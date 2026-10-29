@@ -13,3 +13,6 @@ New operations should:
 
 ## v2.1 center registrations
 IdentitySigningCenter, CommitMessageStudio, ChangelogStudio and RemoteMigrationCenter are registered in CommandPalette with dedicated search keywords. New release-engineering centers should follow the same independent-window pattern and keep destructive remote operations behind explicit confirmations.
+
+## v2.2 center registrations
+CredentialAuditCenter, ReleasePolicyCenter and RepositoryMetricsCenter are registered in CommandPalette. Security-sensitive centers must avoid reading or displaying credential values; gates should report explicit PASS/BLOCKED outcomes; metrics should disclose when they are heuristic.

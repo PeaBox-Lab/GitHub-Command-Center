@@ -85,3 +85,14 @@ Choose the prior release tag or leave it blank to use the latest tag. Review gen
 
 ## Remote Migration & Mirror
 Add a dedicated backup remote first. Mirror push is destructive to destination refs and therefore requires a non-origin remote, warning confirmation and an exact typed remote name.
+
+# Version 2.2 Addendum
+
+## Credential & Remote Hygiene
+Use this center to audit remote URL format and credential-helper configuration without exposing stored credentials. Convert GitHub origin between standard SSH and HTTPS forms if needed.
+
+## Release Policy
+Select the gates your release process requires, save the local policy, and evaluate before opening Release Center. Version suggestion uses Semantic Versioning signals from tags and Conventional Commit messages.
+
+## Repository Metrics
+Metrics are computed locally. Language figures are source-line heuristics based on common file extensions, not a semantic code-analysis count.
