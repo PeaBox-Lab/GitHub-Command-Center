@@ -101,3 +101,7 @@ Use Merge Preview before integrating a branch when you want to inspect the likel
 # Version 3.13 Addendum
 
 Use Cherry-Pick Queue when several non-contiguous commits must be applied in a deliberate order. The tool creates a recovery branch first. Use Asset Integrity before uploading releases, and Local Release Archive when you need a self-contained offline handover with source, full history, checksums and metadata.
+
+# Version 3.14 Addendum
+
+Use Signature Audit before a provenance-sensitive release. Use Release Comparison for the final tag-to-tag review. Safe Branch Delete is intentionally conservative and refuses current, worktree-active, unmerged or locally-ahead branches instead of offering force deletion.

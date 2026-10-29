@@ -1,30 +1,27 @@
-# GitHub Command Center v3.13.0
+# GitHub Command Center v3.14.0
 
-Version 3.13 continues decimal versioning within major version 3 and strengthens multi-commit integration and release-artifact integrity.
+Version 3.14 continues decimal versioning within major version 3. This release adds stronger provenance, release comparison and guarded branch cleanup.
 
-## Cherry-Pick Queue Center
-- Browse up to 250 commits
-- Build an ordered multi-commit queue
-- Reorder and remove queue items
-- Clean-tree gate
-- Automatic timestamped pre-cherry-pick backup branch
-- Apply the queue in order
-- Continue or abort after conflicts
+## Signature Audit Center
+- Review the latest 10-1,000 commits
+- Git signature-status codes translated into readable states
+- Summary of good, bad, expired, unknown-trust and unsigned commits
+- Inspect full signature output for a selected commit
+- Export audit report
 
-## Release Asset Integrity
-- Select multiple release artifacts
-- Generate SHA-256 checksums
-- Save `SHA256SUMS.txt`
-- Verify an existing checksum manifest against files in its folder
-- PASS, FAIL, MISSING and invalid-line results
+## Release Comparison Center
+- Compare any two tags/refs
+- Commit count and short diff statistics
+- File-level status inventory
+- Commit inventory
+- Export review as Markdown
 
-## Local Release Archive
-- Clean-tree gate
-- Create a versioned release folder
-- Clean source ZIP from HEAD
-- Full repository Git bundle
-- Copy release notes when present
-- SHA-256 manifest
-- JSON metadata with repository, version, timestamp, branch and HEAD
+## Safe Branch Delete Wizard
+- Checks current-branch state
+- Detects branch use by worktrees
+- Requires Git to report the branch as merged
+- Checks local commits ahead of configured upstream
+- Only normal `git branch -d`
+- Force deletion is intentionally unavailable
 
-All earlier v0.1-v3.12 capabilities remain included through Command Palette.
+All v0.1-v3.13 tools remain available through Command Palette.

@@ -1,11 +1,13 @@
 # Changelog
 
-## v3.13.0
-- Added ordered Cherry-Pick Queue with backup branch and conflict continuation
-- Added Release Asset Integrity generation and verification
-- Added structured Local Release Archive containing source ZIP, Git bundle, checksums, notes and metadata
-- Retained all v0.1-v3.12 functionality
+## v3.14.0
+- Added Commit Signature Audit Center
+- Added Release Comparison Center with Markdown export
+- Added Safe Branch Delete Wizard with merge/worktree/upstream gates
+- Retained all v0.1-v3.13 functionality
 
+## v3.13.0
+- Added Cherry-Pick Queue, Release Asset Integrity and Local Release Archive
 ## v3.12.0
 - Added Merge Preview, protected Reset Planner and Git Configuration Center
 ## v3.11.0
