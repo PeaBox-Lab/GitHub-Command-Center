@@ -41,3 +41,9 @@
 - Added `git diff --check` validation and changed-file size warnings.
 - Added guarded commit workflow.
 - Added private per-repository notes under `.git/gccc-notes.md`.
+
+## v1.3.0
+- Added safe Branch Cleanup Center with merged/current/worktree protection.
+- Added remote-prune workflow from branch cleanup.
+- Added Project Snapshot generator for handover and continuity.
+- Added Markdown export/copy of status, recent history, tags, remotes, documentation inventory and private notes.

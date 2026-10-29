@@ -26,3 +26,7 @@ Extract and run `run_windows.bat`. Requires Python 3.10+ and Git. GitHub CLI is 
 ## v1.2 additions
 - Pre-Commit Review Center: stage/unstage, inspect staged and unstaged diffs, run whitespace checks, flag changed files above 5 MB, and commit from one screen.
 - Repository Notes: private local notes stored at `.git/gccc-notes.md` for decisions, follow-ups, current focus and release reminders.
+
+## v1.3 additions
+- **Branch Cleanup Center:** inventories local branches, merged state, last-commit date, upstream and worktree usage. It only permits normal `git branch -d` deletion for branches already merged into the current branch, while protecting the current branch and branches checked out in worktrees.
+- **Project Snapshot:** generates an exportable Markdown handover containing branch/status, recent commits, tags, remotes, detected project documentation and private repository notes.

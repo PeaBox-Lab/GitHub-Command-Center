@@ -33,3 +33,9 @@ Use Review before commits to stage only intended files, inspect staged and unsta
 
 ## Repository Notes (v1.2)
 Notes are stored under `.git/gccc-notes.md`, so normal Git commits do not include them.
+
+## Branch Cleanup (v1.3)
+Use Cleanup after merges. The app only enables normal deletion for branches Git reports as merged into your current branch. Current and active-worktree branches are protected.
+
+## Project Snapshot (v1.3)
+Use Snapshot before a long pause, release handover or major refactor. Export the generated Markdown to retain branch/status, recent commits, tags, remotes, key documentation and your local repository notes.

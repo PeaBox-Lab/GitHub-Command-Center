@@ -23,7 +23,7 @@ class LocalGitWindow(tk.Toplevel):
         left=ttk.Frame(pane);right=ttk.Frame(pane);pane.add(left,weight=3);pane.add(right,weight=2)
         self.files=ttk.Treeview(left,columns=("state","file"),show="headings",selectmode="extended");self.files.heading("state",text="State");self.files.heading("file",text="File");self.files.column("state",width=70);self.files.column("file",width=470);self.files.pack(fill="both",expand=True)
         foot=ttk.Frame(left);foot.pack(fill="x",pady=5)
-        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Release Center",lambda:ReleaseCenter(self,self.repo)),("Pull Requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Security",lambda:SecurityCenter(self,self.repo)),("Health",lambda:RepositoryHealthCenter(self,self.repo)),("Worktrees",lambda:WorktreeCenter(self,self.repo)),("Compare",lambda:RepositoryCompareCenter(self,self.repo)),("Recovery",lambda:BackupRestoreCenter(self,self.repo)),("Repo Manager",lambda:RepositoryManager(self,self.repo)),("Diagnostics",lambda:SettingsDiagnosticsCenter(self,self.repo)),("Smart Sync",lambda:SyncCenter(self,self.repo)),("Search",lambda:SearchCenter(self,self.repo)),("Review",lambda:ChangeReviewCenter(self,self.repo)),("Notes",lambda:RepositoryNotesCenter(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
+        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Release Center",lambda:ReleaseCenter(self,self.repo)),("Pull Requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Security",lambda:SecurityCenter(self,self.repo)),("Health",lambda:RepositoryHealthCenter(self,self.repo)),("Worktrees",lambda:WorktreeCenter(self,self.repo)),("Compare",lambda:RepositoryCompareCenter(self,self.repo)),("Recovery",lambda:BackupRestoreCenter(self,self.repo)),("Repo Manager",lambda:RepositoryManager(self,self.repo)),("Diagnostics",lambda:SettingsDiagnosticsCenter(self,self.repo)),("Smart Sync",lambda:SyncCenter(self,self.repo)),("Search",lambda:SearchCenter(self,self.repo)),("Review",lambda:ChangeReviewCenter(self,self.repo)),("Notes",lambda:RepositoryNotesCenter(self,self.repo)),("Cleanup",lambda:BranchCleanupCenter(self,self.repo)),("Snapshot",lambda:ProjectSnapshotCenter(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
         self.tabs=ttk.Notebook(right);self.tabs.pack(fill="both",expand=True)
         self.texts={}
         for n in ["History","Branches","Stash","Tags","Remotes","Conflicts"]:
@@ -1158,3 +1158,64 @@ class RepositoryNotesCenter(tk.Toplevel):
         self.text.insert("1.0",self.path.read_text(encoding="utf-8",errors="replace") if self.path.exists() else "# Repository Notes\n\n## Current focus\n\n## Decisions\n\n## Follow-ups\n\n## Release reminders\n")
     def save(self):
         self.path.write_text(self.text.get("1.0","end-1c")+"\n",encoding="utf-8");messagebox.showinfo("Notes","Saved under .git/gccc-notes.md",parent=self)
+
+class BranchCleanupCenter(tk.Toplevel):
+    """Safe local branch cleanup with merged/stale awareness."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Branch Cleanup Center");self.geometry("1050x700");self.rows=[];self._build();self.refresh()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x")
+        for t,c in [("Refresh",self.refresh),("Delete selected merged",self.delete_selected),("Prune remotes",self.prune),("Open Worktrees",lambda:WorktreeCenter(self,self.repo))]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        self.tree=ttk.Treeview(self,columns=("branch","merged","age","upstream","worktree"),show="headings",selectmode="extended")
+        for c,t,w in [("branch","Branch",260),("merged","Merged",80),("age","Last commit",130),("upstream","Upstream",260),("worktree","Worktree",90)]:self.tree.heading(c,text=t);self.tree.column(c,width=w,anchor="w")
+        self.tree.pack(fill="both",expand=True,padx=8,pady=5)
+        ttk.Label(self,text="Only branches reported merged into the current branch can be deleted from this screen. The current branch and worktree branches are protected.",padding=8).pack(fill="x")
+    def refresh(self):
+        try:
+            current=git(self.repo,"branch","--show-current");merged=set(x.strip().lstrip("* ") for x in git(self.repo,"branch","--merged").splitlines())
+            wt=git(self.repo,"worktree","list","--porcelain");used=set()
+            for line in wt.splitlines():
+                if line.startswith("branch refs/heads/"):used.add(line.replace("branch refs/heads/","",1))
+            raw=git(self.repo,"for-each-ref","--format=%(refname:short)%09%(committerdate:short)%09%(upstream:short)","refs/heads/")
+            self.rows=[];self.tree.delete(*self.tree.get_children())
+            for line in raw.splitlines():
+                p=line.split("\t");b=p[0];row={"branch":b,"merged":b in merged,"date":p[1] if len(p)>1 else "","upstream":p[2] if len(p)>2 else "","used":b in used,"current":b==current};self.rows.append(row)
+                self.tree.insert("","end",iid=str(len(self.rows)-1),values=(b,"Yes" if row["merged"] else "No",row["date"],row["upstream"] or "-","Yes" if row["used"] else "No"))
+        except Exception as e:messagebox.showerror("Branch Cleanup",str(e),parent=self)
+    def delete_selected(self):
+        selected=[self.rows[int(i)] for i in self.tree.selection()]
+        eligible=[r for r in selected if r["merged"] and not r["current"] and not r["used"]]
+        if not eligible:return messagebox.showinfo("Branch Cleanup","No selected branches are safely eligible for deletion.",parent=self)
+        names="\n".join(r["branch"] for r in eligible)
+        if messagebox.askyesno("Delete merged branches",f"Delete these local merged branches?\n\n{names}",parent=self):
+            errors=[]
+            for r in eligible:
+                try:git(self.repo,"branch","-d",r["branch"])
+                except Exception as e:errors.append(f"{r['branch']}: {e}")
+            self.refresh();messagebox.showinfo("Branch Cleanup","Completed." if not errors else "Some branches were not deleted:\n"+"\n".join(errors),parent=self)
+    def prune(self):
+        try:messagebox.showinfo("Prune",git(self.repo,"fetch","--all","--prune"),parent=self);self.refresh()
+        except Exception as e:messagebox.showerror("Prune",str(e),parent=self)
+
+class ProjectSnapshotCenter(tk.Toplevel):
+    """Generate a compact local repository handover snapshot."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Project Snapshot");self.geometry("1050x720");self._build();self.generate()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x");ttk.Button(top,text="Regenerate",command=self.generate).pack(side="left");ttk.Button(top,text="Export Markdown",command=self.export).pack(side="left",padx=3);ttk.Button(top,text="Copy",command=self.copy).pack(side="left")
+        self.text=tk.Text(self,wrap="word",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
+    def safe(self,*args):
+        try:return git(self.repo,*args)
+        except Exception as e:return "Unavailable: "+str(e)
+    def generate(self):
+        branch=self.safe("branch","--show-current");status=self.safe("status","--short","--branch");recent=self.safe("log","-10","--date=short","--pretty=format:- %h %ad %an: %s");tags=self.safe("tag","--sort=-creatordate");remotes=self.safe("remote","-v")
+        notes=Path(self.repo)/".git"/"gccc-notes.md";note_text=notes.read_text(encoding="utf-8",errors="replace") if notes.exists() else "No private repository notes."
+        key=[]
+        for f in ("README.md","CHANGELOG.md","RELEASE_NOTES.md","USER_GUIDE.md","SECURITY.md","CONTRIBUTING.md"):
+            if (Path(self.repo)/f).exists():key.append(f)
+        self.snapshot=f"# Project Snapshot: {Path(self.repo).name}\n\n## Repository\n- Path: `{self.repo}`\n- Current branch: `{branch}`\n- Key docs: {', '.join(key) or 'None detected'}\n\n## Working tree\n```text\n{status}\n```\n\n## Recent commits\n{recent}\n\n## Recent tags\n```text\n{tags}\n```\n\n## Remotes\n```text\n{remotes}\n```\n\n## Private local notes\n{note_text}\n"
+        self.text.delete("1.0","end");self.text.insert("1.0",self.snapshot)
+    def export(self):
+        p=filedialog.asksaveasfilename(parent=self,defaultextension=".md",initialfile=f"{Path(self.repo).name}-snapshot.md")
+        if p:Path(p).write_text(self.snapshot,encoding="utf-8");messagebox.showinfo("Snapshot",f"Saved {p}",parent=self)
+    def copy(self):self.clipboard_clear();self.clipboard_append(self.snapshot);messagebox.showinfo("Snapshot","Copied to clipboard.",parent=self)
