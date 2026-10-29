@@ -23,7 +23,7 @@ class LocalGitWindow(tk.Toplevel):
         left=ttk.Frame(pane);right=ttk.Frame(pane);pane.add(left,weight=3);pane.add(right,weight=2)
         self.files=ttk.Treeview(left,columns=("state","file"),show="headings",selectmode="extended");self.files.heading("state",text="State");self.files.heading("file",text="File");self.files.column("state",width=70);self.files.column("file",width=470);self.files.pack(fill="both",expand=True)
         foot=ttk.Frame(left);foot.pack(fill="x",pady=5)
-        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Release Center",lambda:ReleaseCenter(self,self.repo)),("Pull Requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Security",lambda:SecurityCenter(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
+        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Release Center",lambda:ReleaseCenter(self,self.repo)),("Pull Requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Security",lambda:SecurityCenter(self,self.repo)),("Health",lambda:RepositoryHealthCenter(self,self.repo)),("Worktrees",lambda:WorktreeCenter(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
         self.tabs=ttk.Notebook(right);self.tabs.pack(fill="both",expand=True)
         self.texts={}
         for n in ["History","Branches","Stash","Tags","Remotes","Conflicts"]:
@@ -722,3 +722,132 @@ class SecurityCenter(tk.Toplevel):
             lines.append(f"{h.hexdigest()}  {Path(name).name}")
         target=filedialog.asksaveasfilename(title="Save checksums",defaultextension=".txt",initialfile="SHA256SUMS.txt",parent=self)
         if target:Path(target).write_text("\n".join(lines)+"\n",encoding="utf-8");messagebox.showinfo("Checksums",f"Saved {target}",parent=self)
+
+class RepositoryHealthCenter(tk.Toplevel):
+    """Repository hygiene, documentation quality and maintenance dashboard."""
+    def __init__(self, parent, repo):
+        super().__init__(parent); self.repo=repo
+        self.title("Repository Health Center"); self.geometry("1180x780"); self.minsize(950,650)
+        self._build(); self.refresh()
+
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x")
+        ttk.Label(top,text=self.repo,font=("Segoe UI Semibold",11)).pack(side="left",fill="x",expand=True)
+        ttk.Button(top,text="Refresh audit",command=self.refresh).pack(side="right")
+        self.tabs=ttk.Notebook(self);self.tabs.pack(fill="both",expand=True,padx=8,pady=(0,8))
+        self.score_tab=ttk.Frame(self.tabs,padding=10);self.files_tab=ttk.Frame(self.tabs,padding=10);self.templates_tab=ttk.Frame(self.tabs,padding=10)
+        self.tabs.add(self.score_tab,text="Health score");self.tabs.add(self.files_tab,text="Repository files");self.tabs.add(self.templates_tab,text="Templates")
+        self.score=tk.Text(self.score_tab,wrap="word",font=("Consolas",10),bg="#0f172a",fg="#e2e8f0");self.score.pack(fill="both",expand=True)
+        self.files=tk.Text(self.files_tab,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.files.pack(fill="both",expand=True)
+        row=ttk.Frame(self.templates_tab);row.pack(fill="x",pady=(0,8))
+        for title,fn in [("Create SECURITY.md",self.security_md),("Create CONTRIBUTING.md",self.contributing_md),("Create issue templates",self.issue_templates),("Create PR template",self.pr_template),("Create CODEOWNERS",self.codeowners),("Create .gitattributes",self.gitattributes)]:ttk.Button(row,text=title,command=fn).pack(side="left",padx=2,pady=2)
+        self.template_info=tk.Text(self.templates_tab,wrap="word",font=("Segoe UI",10));self.template_info.pack(fill="both",expand=True)
+        self.template_info.insert("1.0","Generate common repository-governance files directly into the working tree. Existing files are never overwritten without confirmation. Review and commit generated files through Local Git.")
+        self.template_info.config(state="disabled")
+
+    def present(self, rel): return (Path(self.repo)/rel).exists()
+    def age_days(self, rel):
+        p=Path(self.repo)/rel
+        if not p.exists():return None
+        import time
+        return int((time.time()-p.stat().st_mtime)/86400)
+    def refresh(self):
+        checks=[]
+        def add(label,points,maxp,detail):checks.append((label,points,maxp,detail))
+        add("README.md",10 if self.present("README.md") else 0,10,"Present" if self.present("README.md") else "Missing")
+        add("LICENSE",8 if self.present("LICENSE") else 0,8,"Present" if self.present("LICENSE") else "Missing")
+        add("CHANGELOG.md",8 if self.present("CHANGELOG.md") else 0,8,"Present" if self.present("CHANGELOG.md") else "Missing")
+        add("SECURITY.md",8 if self.present("SECURITY.md") else 0,8,"Present" if self.present("SECURITY.md") else "Missing")
+        add("CONTRIBUTING.md",6 if self.present("CONTRIBUTING.md") else 0,6,"Present" if self.present("CONTRIBUTING.md") else "Missing")
+        add("Pull request template",5 if self.present(".github/pull_request_template.md") else 0,5,"Present" if self.present(".github/pull_request_template.md") else "Missing")
+        issue_dir=Path(self.repo)/".github"/"ISSUE_TEMPLATE";add("Issue templates",5 if issue_dir.exists() else 0,5,"Present" if issue_dir.exists() else "Missing")
+        add("CODEOWNERS",5 if self.present(".github/CODEOWNERS") else 0,5,"Present" if self.present(".github/CODEOWNERS") else "Missing")
+        add(".gitignore",5 if self.present(".gitignore") else 0,5,"Present" if self.present(".gitignore") else "Missing")
+        add(".gitattributes",5 if self.present(".gitattributes") else 0,5,"Present" if self.present(".gitattributes") else "Missing")
+        workflows=Path(self.repo)/".github"/"workflows";add("CI workflows",10 if workflows.exists() and list(workflows.glob("*.y*ml")) else 0,10,"Present" if workflows.exists() and list(workflows.glob("*.y*ml")) else "Missing")
+        tests=any((Path(self.repo)/x).exists() for x in ("tests","test","pytest.ini","tox.ini"));add("Tests",10 if tests else 0,10,"Detected" if tests else "Not detected")
+        try:
+            tags=git(self.repo,"tag","--list");has_tag=tags!="Completed successfully.";add("Version tags",5 if has_tag else 0,5,"Present" if has_tag else "No tags")
+        except:add("Version tags",0,5,"Unable to inspect")
+        try:
+            status=git(self.repo,"status","--porcelain");clean=status=="Completed successfully.";add("Clean working tree",5 if clean else 0,5,"Clean" if clean else "Uncommitted changes")
+        except:add("Clean working tree",0,5,"Unable to inspect")
+        total=sum(x[1] for x in checks);maximum=sum(x[2] for x in checks);pct=round(total/maximum*100) if maximum else 0
+        rating="Excellent" if pct>=90 else "Good" if pct>=75 else "Needs attention" if pct>=55 else "High maintenance risk"
+        text=f"REPOSITORY HEALTH SCORE: {pct}/100 - {rating}\n"+"="*78+"\n\n"
+        for label,points,maxp,detail in checks:text+=f"[{points:>2}/{maxp:<2}] {label:<28} {detail}\n"
+        text+="\nRecommended next actions:\n"
+        for label,points,maxp,detail in checks:
+            if points<maxp:text+=f"- Improve {label}: {detail}\n"
+        self.score.delete("1.0","end");self.score.insert("1.0",text)
+        self.refresh_files()
+    def refresh_files(self):
+        roots=["README.md","CHANGELOG.md","LICENSE","SECURITY.md","CONTRIBUTING.md","CODE_OF_CONDUCT.md",".gitignore",".gitattributes","pyproject.toml","requirements.txt","package.json","Dockerfile",".github/CODEOWNERS",".github/pull_request_template.md"]
+        lines=[]
+        for rel in roots:
+            p=Path(self.repo)/rel
+            if p.exists():lines.append(f"PRESENT  {rel:<38} {p.stat().st_size:>10} bytes")
+            else:lines.append(f"MISSING  {rel}")
+        gh=Path(self.repo)/".github"
+        if gh.exists():
+            lines.append("\n.github inventory:")
+            for p in sorted(gh.rglob("*")):
+                if p.is_file():lines.append("  "+str(p.relative_to(self.repo)))
+        self.files.delete("1.0","end");self.files.insert("1.0","\n".join(lines))
+    def write_template(self,rel,content):
+        p=Path(self.repo)/rel;p.parent.mkdir(parents=True,exist_ok=True)
+        if p.exists() and not messagebox.askyesno("Replace file",f"{rel} already exists. Replace it?",parent=self):return
+        p.write_text(content,encoding="utf-8");messagebox.showinfo("Created",f"Created {rel}. Review and commit it when ready.",parent=self);self.refresh()
+    def security_md(self):self.write_template("SECURITY.md","# Security Policy\n\n## Reporting a vulnerability\n\nPlease report suspected vulnerabilities privately to the repository maintainers. Do not open a public issue for an unpatched vulnerability. Include affected versions, reproduction steps, impact, and any proposed remediation.\n\n## Supported versions\n\nThe latest stable release receives security fixes.\n")
+    def contributing_md(self):self.write_template("CONTRIBUTING.md","# Contributing\n\n1. Create or link an issue.\n2. Create a focused branch.\n3. Add or update tests and documentation.\n4. Run relevant checks locally.\n5. Open a pull request with a clear summary, validation evidence, and risk notes.\n\nKeep changes small and avoid unrelated formatting changes.\n")
+    def issue_templates(self):
+        self.write_template(".github/ISSUE_TEMPLATE/bug_report.md","---\nname: Bug report\nabout: Report a reproducible problem\ntitle: '[Bug] '\nlabels: bug\n---\n\n## Description\n\n## Steps to reproduce\n1.\n\n## Expected behavior\n\n## Actual behavior\n\n## Environment\n- OS:\n- Version:\n\n## Logs/screenshots\n")
+        self.write_template(".github/ISSUE_TEMPLATE/feature_request.md","---\nname: Feature request\nabout: Suggest an improvement\ntitle: '[Feature] '\nlabels: enhancement\n---\n\n## Problem\n\n## Proposed solution\n\n## Alternatives\n\n## Acceptance criteria\n- [ ]\n")
+    def pr_template(self):self.write_template(".github/pull_request_template.md","## Summary\n\n## Changes\n- \n\n## Validation\n- [ ] Tests passed\n- [ ] Documentation updated\n- [ ] Security/release impact reviewed\n\n## Risk and rollback\n\n")
+    def codeowners(self):
+        owner=simpledialog.askstring("CODEOWNERS","GitHub owner/team, for example @username or @org/team:",parent=self)
+        if owner:self.write_template(".github/CODEOWNERS",f"* {owner}\n")
+    def gitattributes(self):self.write_template(".gitattributes","* text=auto eol=lf\n*.bat text eol=crlf\n*.cmd text eol=crlf\n*.png binary\n*.jpg binary\n*.jpeg binary\n*.gif binary\n*.zip binary\n*.pdf binary\n")
+
+class WorktreeCenter(tk.Toplevel):
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Git Worktree Center");self.geometry("900x620");self._build();self.refresh()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x")
+        for t,c in [("Refresh",self.refresh),("Add worktree",self.add),("Remove selected",self.remove),("Prune",self.prune)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        self.tree=ttk.Treeview(self,columns=("path","head","branch"),show="headings");
+        for c,t,w in [("path","Path",450),("head","HEAD",120),("branch","Branch",220)]:self.tree.heading(c,text=t);self.tree.column(c,width=w,anchor="w")
+        self.tree.pack(fill="both",expand=True,padx=8,pady=5)
+    def refresh(self):
+        try:
+            raw=git(self.repo,"worktree","list","--porcelain");self.rows=[];cur={}
+            for line in raw.splitlines()+[""]:
+                if not line:
+                    if cur:self.rows.append(cur);cur={}
+                elif " " in line:
+                    k,v=line.split(" ",1);cur[k]=v
+            self.tree.delete(*self.tree.get_children())
+            for i,r in enumerate(self.rows):self.tree.insert("","end",iid=str(i),values=(r.get("worktree",""),r.get("HEAD","")[:10],r.get("branch","").replace("refs/heads/","")))
+        except Exception as e:messagebox.showerror("Worktrees",str(e),parent=self)
+    def add(self):
+        folder=filedialog.askdirectory(title="Choose parent folder for worktree",parent=self)
+        if not folder:return
+        branch=simpledialog.askstring("Worktree","Existing branch name, or new branch name:",parent=self)
+        if not branch:return
+        target=str(Path(folder)/branch.replace("/","-"))
+        exists=git(self.repo,"branch","--list",branch)
+        try:
+            out=git(self.repo,"worktree","add",target,branch) if exists!="Completed successfully." else git(self.repo,"worktree","add","-b",branch,target)
+            messagebox.showinfo("Worktree",out,parent=self);self.refresh()
+        except Exception as e:messagebox.showerror("Worktree",str(e),parent=self)
+    def remove(self):
+        s=self.tree.selection()
+        if not s:return
+        path=self.rows[int(s[0])].get("worktree","")
+        if path==str(Path(self.repo).resolve()):return messagebox.showwarning("Worktree","The main worktree cannot be removed here.",parent=self)
+        if messagebox.askyesno("Remove worktree",f"Remove worktree?\n{path}",parent=self):
+            try:messagebox.showinfo("Worktree",git(self.repo,"worktree","remove",path),parent=self);self.refresh()
+            except Exception as e:messagebox.showerror("Worktree",str(e),parent=self)
+    def prune(self):
+        try:messagebox.showinfo("Worktree",git(self.repo,"worktree","prune"),parent=self);self.refresh()
+        except Exception as e:messagebox.showerror("Worktree",str(e),parent=self)

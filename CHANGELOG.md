@@ -1,12 +1,15 @@
 # Changelog
 
+## v0.8.0
+- Added 100-point Repository Health Center
+- Added governance/documentation/CI/test/tag health checks
+- Added generators for SECURITY, CONTRIBUTING, issue templates, PR template, CODEOWNERS and .gitattributes
+- Added repository file inventory and prioritized missing-control list
+- Added Git Worktree Center for parallel branch workspaces
+- Added create, remove and prune worktree workflows
+
 ## v0.7.0
-- Added Security & Dependency Center
-- Added Dependabot, code-scanning and secret-scanning alert dashboards
-- Added local sensitive-filename, large tracked file and Git integrity checks
-- Added optional pip-audit and Bandit integrations
-- Added SHA-256 release-asset checksum generator
-- Added prioritized security summary and API permission warnings
+- Added Security & Dependency Center, GitHub security alerts, local audits, optional scanners and SHA-256 checksums
 
 ## v0.6.0
 - Added Pull Request Center and GitHub Actions Center
@@ -15,7 +18,7 @@
 - Added Release Center, readiness checks, publishing, bundle backup and ZIP export
 
 ## v0.4.0
-- Added cherry-pick, safe rebase, revert, guarded resets and `.gitignore` editor
+- Added cherry-pick, safe rebase, revert, guarded resets and .gitignore editor
 
 ## v0.3.0
 - Added visual commit graph and three-pane conflict resolver

@@ -1,27 +1,30 @@
-# GitHub Command Center v0.7.0
+# GitHub Command Center v0.8.0
 
-Python desktop command center replacing routine GitHub web and TortoiseGit workflows.
+Python desktop command center for GitHub and local Git workflows.
 
-## New Security & Dependency Center
-- Consolidated security summary for the selected GitHub repository
-- Open Dependabot alerts with severity, package and manifest
-- Code-scanning alerts with severity, rule and analysis tool
-- Secret-scanning alerts with secret type and location
-- Open a selected alert in GitHub for remediation details
-- Permission and feature warnings when a security API is unavailable
-- Local audit for suspicious tracked filenames, tracked files over 10 MB and `git fsck`
-- Optional `pip-audit` dependency scan
-- Optional Bandit Python static-security scan
-- SHA-256 checksum generation for release assets
-- Remediation priority: secrets first, then critical/high dependencies, then code-scanning findings
+## New in v0.8.0: Repository Health Center
+- 100-point repository-health score
+- Checks README, LICENSE, CHANGELOG, SECURITY, CONTRIBUTING, issue/PR templates, CODEOWNERS, `.gitignore`, `.gitattributes`, CI workflows, tests, tags, and working-tree cleanliness
+- Repository governance-file inventory
+- Actionable list of missing quality controls
+- One-click generation of SECURITY.md, CONTRIBUTING.md, bug/feature issue templates, pull-request template, CODEOWNERS and `.gitattributes`
+- Existing files require confirmation before replacement
 
-## Previous capabilities retained
-- GitHub dashboard, repositories, issues and statistics
-- Full local Git workspace, visual graph and three-pane conflict resolution
-- Advanced cherry-pick, rebase, revert, guarded reset and `.gitignore` tools
-- Release Center with tags, assets, GitHub releases, bundles and ZIP exports
-- Pull Request Center
-- GitHub Actions workflow dashboard and controls
+## New in v0.8.0: Git Worktree Center
+- View all linked worktrees, branch and HEAD
+- Create a worktree for an existing branch
+- Create a new branch and worktree together
+- Safely remove a secondary worktree
+- Prune obsolete worktree metadata
+
+## Cumulative capabilities
+- GitHub dashboard, repositories, issues and account insights
+- Local Git workspace with status, staging, commit, fetch, FF-only pull, push and diff
+- Visual commit graph and three-pane merge conflict resolution
+- Branch, merge, stash, tag, remote, cherry-pick, rebase, revert and guarded reset workflows
+- Release Center, Pull Request Center and GitHub Actions Center
+- Security Center with Dependabot/code/secret scanning views, local audits and checksums
+- Git bundle and ZIP backup/export
 
 ## Requirements
-Python 3.10+, Git, and authenticated GitHub CLI for GitHub security/PR/Actions/Release features. Optional local scanners: `python -m pip install pip-audit bandit`.
+Python 3.10+, Git. Authenticated GitHub CLI is required for GitHub Releases, PRs, Actions and GitHub security APIs.
