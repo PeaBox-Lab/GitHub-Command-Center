@@ -23,7 +23,7 @@ class LocalGitWindow(tk.Toplevel):
         left=ttk.Frame(pane);right=ttk.Frame(pane);pane.add(left,weight=3);pane.add(right,weight=2)
         self.files=ttk.Treeview(left,columns=("state","file"),show="headings",selectmode="extended");self.files.heading("state",text="State");self.files.heading("file",text="File");self.files.column("state",width=70);self.files.column("file",width=470);self.files.pack(fill="both",expand=True)
         foot=ttk.Frame(left);foot.pack(fill="x",pady=5)
-        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Release Center",lambda:ReleaseCenter(self,self.repo)),("Pull Requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Security",lambda:SecurityCenter(self,self.repo)),("Health",lambda:RepositoryHealthCenter(self,self.repo)),("Worktrees",lambda:WorktreeCenter(self,self.repo)),("Compare",lambda:RepositoryCompareCenter(self,self.repo)),("Recovery",lambda:BackupRestoreCenter(self,self.repo)),("Repo Manager",lambda:RepositoryManager(self,self.repo)),("Diagnostics",lambda:SettingsDiagnosticsCenter(self,self.repo)),("Smart Sync",lambda:SyncCenter(self,self.repo)),("Search",lambda:SearchCenter(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
+        for t,c in [("Diff",self.diff),("Visual history",lambda:CommitGraphWindow(self,self.repo)),("Resolve conflicts",lambda:ConflictResolver(self,self.repo)),("Advanced",lambda:AdvancedGitWindow(self,self.repo)),("Release Center",lambda:ReleaseCenter(self,self.repo)),("Pull Requests",lambda:PullRequestCenter(self,self.repo)),("Actions",lambda:ActionsCenter(self,self.repo)),("Security",lambda:SecurityCenter(self,self.repo)),("Health",lambda:RepositoryHealthCenter(self,self.repo)),("Worktrees",lambda:WorktreeCenter(self,self.repo)),("Compare",lambda:RepositoryCompareCenter(self,self.repo)),("Recovery",lambda:BackupRestoreCenter(self,self.repo)),("Repo Manager",lambda:RepositoryManager(self,self.repo)),("Diagnostics",lambda:SettingsDiagnosticsCenter(self,self.repo)),("Smart Sync",lambda:SyncCenter(self,self.repo)),("Search",lambda:SearchCenter(self,self.repo)),("Review",lambda:ChangeReviewCenter(self,self.repo)),("Notes",lambda:RepositoryNotesCenter(self,self.repo)),("Discard",self.discard),("Clean preview",self.clean),("Open folder",self.open_folder)]:ttk.Button(foot,text=t,command=c).pack(side="left",padx=2)
         self.tabs=ttk.Notebook(right);self.tabs.pack(fill="both",expand=True)
         self.texts={}
         for n in ["History","Branches","Stash","Tags","Remotes","Conflicts"]:
@@ -1099,3 +1099,62 @@ class SearchCenter(tk.Toplevel):
         try:
             files=git(self.repo,"ls-files");matches=[x for x in files.splitlines() if q in x.lower()];self.put("FILE NAME SEARCH","\n".join(matches) if matches else "No tracked filenames matched.")
         except Exception as e:self.put("FILE NAME SEARCH",str(e))
+
+class ChangeReviewCenter(tk.Toplevel):
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.repo=repo;self.title("Pre-Commit Review Center");self.geometry("1160x740");self._build();self.refresh()
+    def _build(self):
+        top=ttk.Frame(self,padding=8);top.pack(fill="x");self.msg=tk.StringVar()
+        for t,c in [("Refresh",self.refresh),("Stage selected",self.stage),("Unstage selected",self.unstage),("Commit",self.commit_now)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
+        ttk.Entry(top,textvariable=self.msg).pack(side="left",fill="x",expand=True,padx=8)
+        pane=ttk.Panedwindow(self,orient="horizontal");pane.pack(fill="both",expand=True,padx=8,pady=5);l=ttk.Frame(pane);r=ttk.Frame(pane);pane.add(l,weight=2);pane.add(r,weight=3)
+        self.tree=ttk.Treeview(l,columns=("state","file"),show="headings",selectmode="extended");self.tree.heading("state",text="State");self.tree.heading("file",text="File");self.tree.column("state",width=70);self.tree.pack(fill="both",expand=True);self.tree.bind("<<TreeviewSelect>>",lambda e:self.show_diff())
+        nb=ttk.Notebook(r);nb.pack(fill="both",expand=True);a=ttk.Frame(nb);b=ttk.Frame(nb);nb.add(a,text="Diff");nb.add(b,text="Checks")
+        self.diff=tk.Text(a,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.diff.pack(fill="both",expand=True);self.checks=tk.Text(b,wrap="word",font=("Consolas",9));self.checks.pack(fill="both",expand=True)
+    def refresh(self):
+        raw=git(self.repo,"status","--porcelain=v1");self.rows=[];self.tree.delete(*self.tree.get_children())
+        for line in raw.splitlines():
+            if len(line)>3:self.rows.append((line[:2],line[3:]));self.tree.insert("","end",iid=str(len(self.rows)-1),values=self.rows[-1])
+        def chk(*args):
+            try:o=git(self.repo,*args);return "PASS" if o=="Completed successfully." else o
+            except Exception as e:return str(e)
+        large=[]
+        for _,f in self.rows:
+            p=Path(self.repo)/f
+            try:
+                if p.is_file() and p.stat().st_size>5*1024*1024:large.append(f"{f} ({p.stat().st_size/1024/1024:.1f} MB)")
+            except OSError:pass
+        text="PRE-COMMIT CHECKS\n"+"="*70+"\nStaged whitespace: "+chk("diff","--cached","--check")+"\n\nUnstaged whitespace: "+chk("diff","--check")+"\n\nChanged files above 5 MB:\n"+("\n".join(large) or "None")
+        self.checks.delete("1.0","end");self.checks.insert("1.0",text)
+    def paths(self):return [self.rows[int(i)][1] for i in self.tree.selection()]
+    def stage(self):
+        p=self.paths()
+        if p:git(self.repo,"add","--",*p);self.refresh()
+    def unstage(self):
+        p=self.paths()
+        if p:git(self.repo,"restore","--staged","--",*p);self.refresh()
+    def show_diff(self):
+        p=self.paths()
+        if not p:return
+        def d(*args):
+            try:o=git(self.repo,*args);return "" if o=="Completed successfully." else o
+            except Exception as e:return str(e)
+        v="STAGED\n"+"="*60+"\n"+d("diff","--cached","--",p[0])+"\n\nUNSTAGED\n"+"="*60+"\n"+d("diff","--",p[0])
+        self.diff.delete("1.0","end");self.diff.insert("1.0",v)
+    def commit_now(self):
+        m=self.msg.get().strip()
+        if not m:return messagebox.showwarning("Commit","Enter a commit message.",parent=self)
+        try:
+            staged=git(self.repo,"diff","--cached","--name-only")
+            if staged=="Completed successfully.":raise GitError("Nothing is staged.")
+            if len(m)<8 and not messagebox.askyesno("Short message","Commit message is very short. Continue?",parent=self):return
+            messagebox.showinfo("Commit",git(self.repo,"commit","-m",m),parent=self);self.msg.set("");self.refresh()
+        except Exception as e:messagebox.showerror("Commit",str(e),parent=self)
+
+class RepositoryNotesCenter(tk.Toplevel):
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.path=Path(repo)/".git"/"gccc-notes.md";self.title("Repository Notes");self.geometry("850x620")
+        ttk.Label(self,text="Private local notes stored under .git and excluded from normal commits.",padding=8).pack(fill="x");self.text=tk.Text(self,wrap="word",undo=True);self.text.pack(fill="both",expand=True,padx=8);ttk.Button(self,text="Save",command=self.save).pack(anchor="e",padx=8,pady=8)
+        self.text.insert("1.0",self.path.read_text(encoding="utf-8",errors="replace") if self.path.exists() else "# Repository Notes\n\n## Current focus\n\n## Decisions\n\n## Follow-ups\n\n## Release reminders\n")
+    def save(self):
+        self.path.write_text(self.text.get("1.0","end-1c")+"\n",encoding="utf-8");messagebox.showinfo("Notes","Saved under .git/gccc-notes.md",parent=self)

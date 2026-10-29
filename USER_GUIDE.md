@@ -27,3 +27,9 @@ Open Smart Sync after making commits. Refresh/fetch first. If remote is ahead an
 
 ## Repository search (v1.1)
 Open Search from Local Git. Use Search text for tracked source/config/document content, Search commits for historical commit messages, and Search files for tracked path names.
+
+## Pre-Commit Review (v1.2)
+Use Review before commits to stage only intended files, inspect staged and unstaged differences, run whitespace checks, and commit with a meaningful message.
+
+## Repository Notes (v1.2)
+Notes are stored under `.git/gccc-notes.md`, so normal Git commits do not include them.

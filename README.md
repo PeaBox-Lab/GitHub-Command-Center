@@ -22,3 +22,7 @@ Includes the v1.0 multi-repository manager and diagnostics, plus local Git opera
 
 ## Windows quick start
 Extract and run `run_windows.bat`. Requires Python 3.10+ and Git. GitHub CLI is required for Releases, PRs, Actions and GitHub security APIs.
+
+## v1.2 additions
+- Pre-Commit Review Center: stage/unstage, inspect staged and unstaged diffs, run whitespace checks, flag changed files above 5 MB, and commit from one screen.
+- Repository Notes: private local notes stored at `.git/gccc-notes.md` for decisions, follow-ups, current focus and release reminders.

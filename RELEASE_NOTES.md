@@ -1,5 +1,3 @@
-# GitHub Command Center 1.1.0 Release Notes
+# GitHub Command Center 1.2.0 Release Notes
 
-Version 1.1 focuses on safer day-to-day synchronization and faster repository navigation. Smart Sync makes upstream state explicit and avoids hidden merge behavior, while Repository Search replaces several command-line lookup tasks with a single GUI.
-
-All 1.0 capabilities remain included, including repository portfolio management, diagnostics, visual Git history, conflict resolution, Pull Requests, Actions, Releases, Security, Health, Worktrees, Compare, and Recovery.
+Version 1.2 adds a consolidated Pre-Commit Review workflow and private Repository Notes while retaining the full v0.1 through v1.1 Git, GitHub, release, security, recovery and repository-management feature set.

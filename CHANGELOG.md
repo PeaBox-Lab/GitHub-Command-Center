@@ -35,3 +35,9 @@
 
 ## v0.1.0
 - Initial GitHub dashboard and repository tools
+
+## v1.2.0
+- Added Pre-Commit Review Center with staged and unstaged diff review.
+- Added `git diff --check` validation and changed-file size warnings.
+- Added guarded commit workflow.
+- Added private per-repository notes under `.git/gccc-notes.md`.
