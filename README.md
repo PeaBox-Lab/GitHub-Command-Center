@@ -1,28 +1,29 @@
-# GitHub Command Center v3.17.0
+# GitHub Command Center v3.18.0
 
-Version 3.17 continues the major-version-3 decimal release train and focuses on repository onboarding, technical audit evidence, and lifecycle management of the safety branches created by protected workflows.
+Version 3.18 continues the major-version-3 decimal release train with upstream diagnostics, consolidated release evidence, and recursive local repository discovery.
 
-## New in v3.17
+## New in v3.18
 
-### Repository Onboarding Center
-- Audit starter repository controls
-- Initialize Git when needed
-- Generate missing README, CHANGELOG, SECURITY, CONTRIBUTING, `.gitignore`, and `.gitattributes` starter files
-- Never overwrites existing starter files
+### Upstream Health Center
+- Fetch/prune before analysis
+- Local branch to upstream mapping
+- Detect missing/broken upstream refs
+- Ahead/behind counts and synchronized/ahead/behind/diverged assessment
+- Set/unset upstream
+- Publish a branch to origin
 
-### Repository Audit Pack
-- Exportable Markdown evidence pack
-- Working-tree/branch status
-- Remotes
-- Recent commits and tags
+### Release Evidence Center
+- Consolidated Markdown release evidence
+- Branch, HEAD, latest tag and working-tree cleanliness
+- Required-document checks
 - Git object integrity
-- Effective Git configuration origins
+- Recent signature status
+- Export for approval or handover
 
-### Safety Branch Manager
-- Inventory `gccc-backup/*` branches created by protected rebase/reset/sync/cherry-pick workflows
-- Date, hash and subject visibility
-- Inspect a safety branch
-- Conservative normal `git branch -d` cleanup only
-- Unmerged safety branches remain protected
+### Repository Locator
+- Recursively scan a workspace for Git repositories
+- Configurable search depth
+- Repository, path, branch and clean/changed state
+- Double-click to open any discovered repository in Local Git
 
-All earlier v0.1-v3.16 capabilities remain available through Command Palette.
+All earlier v0.1-v3.17 capabilities remain included through Command Palette.

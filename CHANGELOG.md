@@ -1,11 +1,13 @@
 # Changelog
 
-## v3.17.0
-- Added Repository Onboarding Center
-- Added Repository Audit Pack Markdown export
-- Added Safety Branch Manager for gccc-backup lifecycle management
-- Retained all v0.1-v3.16 functionality
+## v3.18.0
+- Added Upstream Health Center with broken-upstream detection and branch publishing
+- Added consolidated Release Evidence Center
+- Added recursive Repository Locator with configurable depth
+- Retained all v0.1-v3.17 functionality
 
+## v3.17.0
+- Added Repository Onboarding, Audit Pack and Safety Branch Manager
 ## v3.16.0
 - Added Repository Rules Audit, Commit Range Exporter and Local Branch Dashboard
 ## v3.15.0
