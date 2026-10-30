@@ -1,17 +1,19 @@
 # Changelog
 
-## v3.18.0
-- Added Upstream Health Center with broken-upstream detection and branch publishing
-- Added consolidated Release Evidence Center
-- Added recursive Repository Locator with configurable depth
-- Retained all v0.1-v3.17 functionality
+## v3.19.0
+- Added Blame Explorer with line-level commit attribution and commit inspection
+- Added Remote Prune Audit with dry-run previews
+- Added read-only Git Object Inspector using rev-parse, cat-file and ls-tree
+- Retained all v0.1-v3.18 functionality
 
+## v3.18.0
+- Added Upstream Health, Release Evidence and Repository Locator
 ## v3.17.0
 - Added Repository Onboarding, Audit Pack and Safety Branch Manager
 ## v3.16.0
 - Added Repository Rules Audit, Commit Range Exporter and Local Branch Dashboard
 ## v3.15.0
-- Added Pull Strategy Advisor, Detached HEAD Recovery and Repository State Export
+- Added Pull Strategy Advisor, Detached HEAD Recovery and State Export
 ## v3.14.0
 - Added Signature Audit, Release Comparison and Safe Branch Delete
 ## v3.13.0

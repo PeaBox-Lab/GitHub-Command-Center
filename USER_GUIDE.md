@@ -122,3 +122,7 @@ Use Repository Onboarding when converting a local project into a collaboration-r
 # Version 3.18 Addendum
 
 Use Upstream Health after branch renames, repository migrations, or remote pruning. Release Evidence produces one local approval artifact before publishing. Repository Locator is useful when your workspace contains many PeaLang, PeaBox, workbench, utility, or experimental repositories nested below a common parent.
+
+# Version 3.19 Addendum
+
+Use Blame Explorer to find which commit introduced a specific line and immediately inspect its patch. Remote Prune Audit previews stale remote-tracking references before removing them. Git Object Inspector is a read-only advanced view of commits, trees, blobs and tags for debugging repository internals.
