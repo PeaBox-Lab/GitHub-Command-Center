@@ -1,29 +1,29 @@
-# GitHub Command Center v3.18.0
+# GitHub Command Center v3.19.0
 
-Version 3.18 continues the major-version-3 decimal release train with upstream diagnostics, consolidated release evidence, and recursive local repository discovery.
+Version 3.19 continues decimal progression in major version 3 and adds deeper source attribution, safer remote-ref cleanup, and read-only Git object inspection.
 
-## New in v3.18
+## New in v3.19
 
-### Upstream Health Center
-- Fetch/prune before analysis
-- Local branch to upstream mapping
-- Detect missing/broken upstream refs
-- Ahead/behind counts and synchronized/ahead/behind/diverged assessment
-- Set/unset upstream
-- Publish a branch to origin
+### Blame Explorer
+- Line-by-line blame table
+- Commit, author, date and content
+- Inspect the commit responsible for a selected line
+- Supports a selected revision and tracked path
+- Handoff to existing Commit Inspector
 
-### Release Evidence Center
-- Consolidated Markdown release evidence
-- Branch, HEAD, latest tag and working-tree cleanliness
-- Required-document checks
-- Git object integrity
-- Recent signature status
-- Export for approval or handover
+### Remote Prune Audit
+- Inventory configured remotes
+- Dry-run stale-ref pruning for each remote
+- Explicit prune of a selected remote
+- Fetch all with prune
+- Does not delete local branches
 
-### Repository Locator
-- Recursively scan a workspace for Git repositories
-- Configurable search depth
-- Repository, path, branch and clean/changed state
-- Double-click to open any discovered repository in Local Git
+### Git Object Inspector
+- Resolve refs/object IDs
+- Object type and size
+- Pretty-print object content
+- Recursive tree listing
+- Verify an object/ref
+- Read-only plumbing workflow
 
-All earlier v0.1-v3.17 capabilities remain included through Command Palette.
+All v0.1-v3.18 functionality remains included through Command Palette.
