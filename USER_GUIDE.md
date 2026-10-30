@@ -118,3 +118,7 @@ Use Repository Rules Audit before publishing or handing over a repository. Commi
 # Version 3.17 Addendum
 
 Use Repository Onboarding when converting a local project into a collaboration-ready repository. Audit Pack creates portable technical evidence for handover or troubleshooting. Safety Branch Manager provides conservative cleanup of old `gccc-backup/*` branches without force deletion.
+
+# Version 3.18 Addendum
+
+Use Upstream Health after branch renames, repository migrations, or remote pruning. Release Evidence produces one local approval artifact before publishing. Repository Locator is useful when your workspace contains many PeaLang, PeaBox, workbench, utility, or experimental repositories nested below a common parent.
