@@ -214,3 +214,8 @@ Show-Branch Explorer gives a compact multi-tip topology view that complements th
 # Version 3.41 Addendum
 
 Ref Verification is useful before resets, tag operations, scripts, or recovery actions where an ambiguous ref would be risky. Ignore Rule Batch Tester explains exactly why each path is or is not ignored. Fetch Preview should be used when a remote/refspec may delete or force-update remote-tracking refs and you want to inspect Git's dry-run first.
+
+
+# Version 3.42 Addendum
+
+Existing tools remain available through the same workspace and Command Palette. Contributors should run `python -m unittest discover -s tests -v` and follow `ARCHITECTURE.md`.

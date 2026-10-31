@@ -1,16 +1,23 @@
+# Roadmap after v3.42
 
-# Roadmap after v3.1
+## v3.43: modular migration + CI
+- Move recovery, branch, and release centers into `centers/`
+- Reach at least 50 tests
+- Add GitHub Actions for unittest, compileall, Ruff, Bandit, and pip-audit
 
-## Next architecture milestone
-- Split `local_git_gui.py` into `centers/`, `services/`, `models/` and `ui/`
-- Centralize background-job execution and cancellation
-- Add automated unit tests for parsers, release policy, semantic-version selection and plugin validation
-- Add schema migrations for preferences and SQLite portfolio data
+## v3.44: responsive execution
+- Migrate long Git/GitHub operations to `JobService`
+- Shared progress, cancellation, timeout, and output UI
 
-## Product roadmap
-- Visual charts for portfolio history, repository metrics and Actions trends
-- Saved repository groups and favorites
-- Signed plugin manifests and executable allowlists
-- PyInstaller Windows packaging, upgrade channel and code-signing workflow
-- OAuth device-flow authentication through a local backend
-- GitLab and Azure DevOps provider adapters
+## v3.45: visual diff foundation
+- Reusable side-by-side, inline, and word-diff widgets
+- Improved hunk staging and first line-level staging workflow
+
+## v3.46: task-based UX
+- Home, Changes, History, Branches, Sync, Review, GitHub, Release, Recover, Advanced
+
+## v3.47: packaging
+- PyInstaller executable, portable ZIP, Windows installer, checksums, smoke tests
+
+## v3.48-v3.50
+- 100+ tests, plugin signing, accessibility, upgrade path, and public-release hardening

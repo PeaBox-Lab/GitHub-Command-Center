@@ -1,16 +1,21 @@
 
 import subprocess, tkinter as tk
 from pathlib import Path
+from .services import GitService
+from .ui import apply_modern_style
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
 class GitError(RuntimeError): pass
 
-def git(cwd,*args):
-    try:r=subprocess.run(["git",*args],cwd=cwd,text=True,capture_output=True,timeout=900,encoding="utf-8",errors="replace")
-    except FileNotFoundError:raise GitError("Git is not installed or not on PATH.")
-    out=(r.stdout+"\n"+r.stderr).strip()
-    if r.returncode:raise GitError(out or "Git command failed")
-    return out or "Completed successfully."
+def git(cwd, *args):
+    """Compatibility wrapper routed through the v3.42 GitService boundary."""
+    try:
+        return GitService(cwd).text(*map(str, args), timeout=900)
+    except FileNotFoundError:
+        raise GitError("Git is not installed or not on PATH.")
+    except Exception as exc:
+        raise GitError(str(exc)) from exc
+
 
 class LocalGitWindow(tk.Toplevel):
     def __init__(self,parent,start=""):
@@ -88,17 +93,7 @@ class LocalGitWindow(tk.Toplevel):
         if self.repo:self.refresh()
 
     def _apply_modern_style(self):
-        style=ttk.Style(self)
-        try:style.theme_use("clam")
-        except:pass
-        style.configure("TButton",font=("Segoe UI",9),padding=(10,7),background="#f8fafc")
-        style.map("TButton",background=[("active","#e5e7eb")])
-        style.configure("Accent.TButton",font=("Segoe UI Semibold",9),padding=(11,7),background="#4f46e5",foreground="white")
-        style.map("Accent.TButton",background=[("active","#4338ca")])
-        style.configure("Treeview",font=("Segoe UI",9),rowheight=29,background="white",fieldbackground="white",borderwidth=0)
-        style.configure("Treeview.Heading",font=("Segoe UI Semibold",9),padding=8,background="#f1f5f9",foreground="#334155")
-        style.map("Treeview",background=[("selected","#e0e7ff")],foreground=[("selected","#111827")])
-        style.configure("TNotebook",background="white",borderwidth=0);style.configure("TNotebook.Tab",font=("Segoe UI",9),padding=(10,7))
+        return apply_modern_style(self)
 
     def choose(self):
         p=filedialog.askdirectory(parent=self)

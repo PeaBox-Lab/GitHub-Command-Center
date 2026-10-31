@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.42.0
+- Introduced `models/`, `services/`, `ui/`, and `centers/` package boundaries
+- Added typed command and repository-state models
+- Added central `GitService` and routed the legacy Git helper through it
+- Added reusable cancellable `JobService`, atomic `PreferencesService`, and shared UI styles
+- Added initial automated tests and `ARCHITECTURE.md`
+- Retained all v0.1-v3.41 user-facing features
+
 ## v3.41.0
 - Added Ref Verification Center
 - Added Ignore Rule Batch Tester
