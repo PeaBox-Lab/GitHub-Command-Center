@@ -1,28 +1,29 @@
-# GitHub Command Center v3.46.0
+# GitHub Command Center v3.47.0
 
-Version 3.46 is the task-based navigation redesign release. It reduces feature-discovery friction without removing the Command Palette or any existing Git/GitHub capability.
+Version 3.47 is the Windows packaging release.
 
-## New navigation model
+## Distribution targets
 
-The product taxonomy is now organized around developer outcomes:
+- `GitHubCommandCenter.exe`: PyInstaller windowed executable
+- `GitHubCommandCenter-3.47.0-portable.zip`: portable package
+- `GitHubCommandCenterSetup-3.47.0.exe`: Inno Setup installer
+- `SHA256SUMS.txt`: SHA-256 integrity manifest
 
-1. **Home** – dashboard, Command Palette, Repository Doctor
-2. **Changes** – working tree, Visual Diff, partial staging, stash
-3. **History** – graph, historical browser, blame, history search
-4. **Branches** – branch dashboard, interactive rebase, cherry-pick, worktrees
-5. **Sync** – pull strategy, fetch preview, upstream health, async operations
-6. **Review** – preflight, conflicts, comparisons, signature audit
-7. **GitHub** – pull requests, Actions, security, branch protection
-8. **Release** – release publishing, comparisons, evidence, checksums
-9. **Recover** – reflog, lost-found, dangling objects, safety branches
-10. **Advanced** – refs, maintenance, config and plumbing tools
+## Build pipeline
 
-`Ctrl+K` remains the complete power-user discovery surface.
+`python scripts/build_release.py` runs tests, compiles Python, builds the PyInstaller executable, creates the portable ZIP, and writes checksums.
 
-## Navigation service
+GitHub Actions workflow `.github/workflows/windows-package.yml` additionally builds the Inno Setup installer on `windows-latest`, refreshes checksums, runs package smoke tests, and uploads all artifacts.
 
-`ui/navigation.py` provides typed task sections, labels, keywords, and search. This gives future workspaces a single navigation source instead of duplicating category definitions inside Tk windows.
+## Installer behavior
 
-## Compatibility
+- x64-compatible installation
+- Program Files default location
+- Start-menu shortcut
+- Optional desktop shortcut
+- Standard Windows uninstall entry
+- README/User Guide/Changelog included
 
-No major Git workflow has been removed. Existing center classes and the complete Command Palette remain available while the main navigation progressively adopts the task taxonomy.
+## Safety and provenance
+
+The package pipeline runs the existing test suite before producing binaries. Every release artifact is covered by SHA-256. Code-signing infrastructure is intentionally left as the next hardening step because it requires a real publisher certificate and secret-backed CI configuration.
