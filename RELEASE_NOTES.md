@@ -1,3 +1,3 @@
-# GitHub Command Center 3.38.0 Release Notes
+# GitHub Command Center 3.39.0 Release Notes
 
-Version 3.38 adds path-selective stashing, safe linked-worktree relocation, and effective Git-configuration snapshot comparison while preserving the complete cumulative v3 Git/GitHub toolset.
+Version 3.39 adds fixup/squash/amend workflows, local tracked-file index-flag management, and advanced revision-walk visualization while retaining the complete cumulative major-version-3 toolset.

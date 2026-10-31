@@ -202,3 +202,7 @@ Commit Message Audit is useful before release-note automation and when improving
 # Version 3.38 Addendum
 
 Selective Stash is useful when only certain files should be put aside while other work remains visible. Worktree Move relocates linked worktrees only after checking their cleanliness. Config Snapshot Compare helps investigate unexpected Git behavior after identity, includeIf, credential-helper, or workflow configuration changes; review the report before sharing because Git config can contain sensitive values.
+
+# Version 3.39 Addendum
+
+Use Fixup/Squash Commit Center when preparing staged corrections for an autosquash rebase. Tracked File Flags are clone-local index behavior and should not replace `.gitignore` or `.gitattributes`. Revision Walk Lab helps explain why particular commits appear in release, merge, and ancestry analyses.
