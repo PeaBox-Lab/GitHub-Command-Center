@@ -1,11 +1,13 @@
 # Changelog
 
-## v3.37.0
-- Added Commit Message Audit
-- Added Revision Manifest generation and verification
-- Added Branch Description Center
-- Retained all v0.1-v3.36 functionality
+## v3.38.0
+- Added Selective Stash Center
+- Added Worktree Move Center
+- Added Git Config Snapshot Compare
+- Retained all v0.1-v3.37 functionality
 
+## v3.37.0
+- Added Commit Message Audit, Revision Manifest and Branch Descriptions
 ## v3.36.0
 - Added Protocol Diagnostics, Object Alternates and EOL Normalization
 ## v3.35.0
