@@ -1,31 +1,26 @@
-# GitHub Command Center v3.39.0
+# GitHub Command Center v3.40.0
 
-Version 3.39 continues decimal progression within major version 3 with fixup/squash commit authoring, tracked-file index-flag management, and advanced revision-walk exploration.
+Version 3.40 continues decimal progression within major version 3 with multi-branch topology comparison, ref-relative object naming, and local object-database growth tracking.
 
-## New in v3.39
+## New in v3.40
 
-### Fixup & Squash Commit Center
-- Browse recent commits
-- Create `--fixup=<commit>` commits from staged changes
-- Create `--squash=<commit>` commits
-- Amend HEAD using staged changes and `--no-edit`
-- Automatic `gccc-backup/pre-amend-*` branch before amend
-- Direct handoff to Interactive Rebase for autosquash
+### Show-Branch Explorer
+- Compare multiple branch/ref tips with `git show-branch`
+- Use `--all` or explicit space-separated refs
+- Configure additional history depth
+- Export topology report
 
-### Tracked File Flags Center
-- Inspect `git ls-files -v` flags
-- Set/clear assume-unchanged
-- Set/clear skip-worktree
-- Multi-select paths
-- Explicit confirmation
-- Explains that these are local index hints, not ignore rules
+### Name-Rev Explorer
+- Convert object IDs/revisions into human-readable ref-relative names
+- Optional tag-only naming
+- `--always` fallback
+- Name all reachable revisions
 
-### Revision Walk Lab
-- Custom revision specification
-- Topological, date, or author-date order
-- First-parent walks
-- Ancestry-path filtering
-- Boundary commits
-- Graph/decorated one-line output
+### Object Growth Tracker
+- Capture `git count-objects -vH` snapshots
+- Store local history under `.git/gccc-object-trends.json`
+- Compare loose objects, packed objects, pack size, and garbage between snapshots
+- Export CSV
+- Direct access to Maintenance Center
 
-All v0.1-v3.38 capabilities remain included through Command Palette.
+All v0.1-v3.39 capabilities remain included through Command Palette.

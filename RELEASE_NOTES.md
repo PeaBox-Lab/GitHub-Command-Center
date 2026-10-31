@@ -1,3 +1,3 @@
-# GitHub Command Center 3.39.0 Release Notes
+# GitHub Command Center 3.40.0 Release Notes
 
-Version 3.39 adds fixup/squash/amend workflows, local tracked-file index-flag management, and advanced revision-walk visualization while retaining the complete cumulative major-version-3 toolset.
+Version 3.40 adds multi-branch topology comparison, human-readable object naming, and local object-database growth trending while retaining the complete cumulative major-version-3 Git/GitHub toolset.
