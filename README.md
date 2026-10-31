@@ -1,29 +1,28 @@
-# GitHub Command Center v3.19.0
+# GitHub Command Center v3.20.0
 
-Version 3.19 continues decimal progression in major version 3 and adds deeper source attribution, safer remote-ref cleanup, and read-only Git object inspection.
+Version 3.20 continues the decimal major-version-3 release train with automated regression hunting, flexible revision archives, and deeper commit metadata inspection.
 
-## New in v3.19
+## New in v3.20
 
-### Blame Explorer
-- Line-by-line blame table
-- Commit, author, date and content
-- Inspect the commit responsible for a selected line
-- Supports a selected revision and tracked path
-- Handoff to existing Commit Inspector
+### Automated Bisect Center
+- Known-good and known-bad refs
+- Configurable local test command
+- `git bisect run` automation
+- Clean-working-tree safety gate
+- Visible output and explicit bisect reset
 
-### Remote Prune Audit
-- Inventory configured remotes
-- Dry-run stale-ref pruning for each remote
-- Explicit prune of a selected remote
-- Fetch all with prune
-- Does not delete local branches
+### Revision Archive Center
+- Export HEAD, a branch, tag, or commit as ZIP
+- Optional historical subdirectory export
+- Optional top-level archive prefix
+- No checkout required
 
-### Git Object Inspector
-- Resolve refs/object IDs
-- Object type and size
-- Pretty-print object content
-- Recursive tree listing
-- Verify an object/ref
-- Read-only plumbing workflow
+### Commit Metadata Inspector
+- Raw commit metadata
+- Tree and parent IDs
+- Author vs committer identity and dates
+- Signature status, signer and key information
+- Full commit message
+- Copyable metadata report
 
-All v0.1-v3.18 functionality remains included through Command Palette.
+All v0.1-v3.19 capabilities remain included through Command Palette.

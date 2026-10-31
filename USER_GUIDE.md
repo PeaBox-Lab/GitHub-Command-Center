@@ -126,3 +126,7 @@ Use Upstream Health after branch renames, repository migrations, or remote pruni
 # Version 3.19 Addendum
 
 Use Blame Explorer to find which commit introduced a specific line and immediately inspect its patch. Remote Prune Audit previews stale remote-tracking references before removing them. Git Object Inspector is a read-only advanced view of commits, trees, blobs and tags for debugging repository internals.
+
+# Version 3.20 Addendum
+
+Automated Bisect repeatedly executes your supplied test command while Git narrows the first bad commit. Use a deterministic command whose exit status reliably indicates good/bad behavior. Revision Archive exports any ref without changing the working tree. Commit Metadata Inspector helps distinguish author and committer data and inspect signature provenance.

@@ -1,17 +1,19 @@
 # Changelog
 
-## v3.19.0
-- Added Blame Explorer with line-level commit attribution and commit inspection
-- Added Remote Prune Audit with dry-run previews
-- Added read-only Git Object Inspector using rev-parse, cat-file and ls-tree
-- Retained all v0.1-v3.18 functionality
+## v3.20.0
+- Added Automated Bisect Center powered by `git bisect run`
+- Added Revision Archive Center for arbitrary ref/subdirectory ZIP exports
+- Added Commit Metadata Inspector with author/committer/signature details
+- Retained all v0.1-v3.19 functionality
 
+## v3.19.0
+- Added Blame Explorer, Remote Prune Audit and Git Object Inspector
 ## v3.18.0
 - Added Upstream Health, Release Evidence and Repository Locator
 ## v3.17.0
-- Added Repository Onboarding, Audit Pack and Safety Branch Manager
+- Added Onboarding, Audit Pack and Safety Branch Manager
 ## v3.16.0
-- Added Repository Rules Audit, Commit Range Exporter and Local Branch Dashboard
+- Added Rules Audit, Commit Range Exporter and Local Branch Dashboard
 ## v3.15.0
 - Added Pull Strategy Advisor, Detached HEAD Recovery and State Export
 ## v3.14.0
