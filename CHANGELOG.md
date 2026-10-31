@@ -1,11 +1,13 @@
 # Changelog
 
-## v3.29.0
-- Added Git Subtree Center
-- Added non-executing History Rewrite Advisor for git-filter-repo planning
-- Added effective Attributes Audit for binary/LFS/text rules
-- Retained all v0.1-v3.28 functionality
+## v3.30.0
+- Added Range-Diff Center for patch-series/rebase comparison
+- Added Refspec Lab with fetch/push dry-run previews
+- Added Git Notes Merge Center with multiple merge strategies
+- Retained all v0.1-v3.29 functionality
 
+## v3.29.0
+- Added Git Subtree, History Rewrite Advisor and Attributes Audit
 ## v3.28.0
 - Added Merge Commit Revert, Commit Graph/Pack Index and Diff Algorithm Lab
 ## v3.27.0

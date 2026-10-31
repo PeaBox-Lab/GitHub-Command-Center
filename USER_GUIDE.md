@@ -166,3 +166,7 @@ Reverting a merge commit requires choosing the mainline parent that represents t
 # Version 3.29 Addendum
 
 Use Git Subtree when you want to vendor another repository without requiring submodule initialization. History Rewrite Advisor deliberately generates commands rather than running them; execute history rewrites only in a disposable backed-up clone and coordinate with collaborators. Attributes Audit helps verify that binary, text, diff, merge, EOL, and LFS rules are taking effect as intended.
+
+# Version 3.30 Addendum
+
+Use Range-Diff after an interactive rebase to validate that the rewritten patch series still represents the intended changes. Refspec Lab provides dry runs before you persist unusual fetch/push mappings. Notes Merge supports combining independent metadata refs without rewriting the underlying commits.

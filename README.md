@@ -1,28 +1,27 @@
-# GitHub Command Center v3.29.0
+# GitHub Command Center v3.30.0
 
-Version 3.29 continues decimal progression within major version 3 and adds subtree management, history-rewrite planning, and repository-attribute auditing.
+Version 3.30 continues decimal progression within major version 3 with patch-series comparison, refspec dry-run tooling, and Git-notes merge workflows.
 
-## New in v3.29
+## New in v3.30
 
-### Git Subtree Center
-- Add a repository as a subtree
-- Pull subtree updates
-- Push subtree changes upstream
-- Split a subtree into a local branch
-- Optional squash mode
-- Clean-working-tree safety gate
+### Range-Diff Center
+- Compare two commit ranges using `git range-diff`
+- Ideal for reviewing a patch series before/after rebase
+- Shows changed, reordered, added, removed, and equivalent patches
+- Export comparison report
 
-### History Rewrite Advisor
-- Analyze a path across repository history
-- Check for `git-filter-repo` availability
-- Generate, but never automatically execute, reviewed filter-repo commands
-- Remove a path from all history or generate a path-rename command
-- Required backup/coordination/verification checklist
+### Refspec Lab
+- Inspect configured remote fetch/push refspecs
+- Compose explicit source:destination mappings
+- Dry-run fetch with a candidate refspec
+- Dry-run push with a candidate refspec
+- Does not silently persist refspec configuration
 
-### Attributes Audit Center
-- Inspect effective `text`, `eol`, `diff`, `merge`, and `filter` attributes
-- Focus on binary files and LFS-filtered content
-- Export audit report
-- Direct access to Ignore & Attributes Studio
+### Git Notes Merge Center
+- Browse notes refs
+- Merge one notes ref into another
+- Strategies: manual, ours, theirs, union, cat_sort_uniq
+- Commit or abort a notes merge
+- Notes operations do not change commit IDs
 
-All v0.1-v3.28 capabilities remain included through Command Palette.
+All v0.1-v3.29 capabilities remain included through Command Palette.
