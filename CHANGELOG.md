@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.52.0
+- Added dedicated Windows validation workflow and JSON evidence
+- Added accessibility regression test suite
+- Added startup import performance profiler and CI budget
+- Added StartupProfiler service and WINDOWS_VALIDATION.md
+- Retained all v0.1-v3.51 features
+
 ## v3.51.0
 - Added Accessibility & Display Center
 - Added high-contrast and large-text preference support
