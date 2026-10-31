@@ -234,3 +234,8 @@ Use **Ctrl+K > Async Git Operations** for long-running fetch, fsck, maintenance,
 # Version 3.45 Addendum
 
 Open **Ctrl+K > Visual Diff Center**. Choose Working tree or Staged, select a file and hunk, review side-by-side/word-level changes, then stage or unstage the selected hunk.
+
+
+# Version 3.46 Addendum
+
+Navigation is now task-oriented. Start in Changes for daily commit work, Sync for network/upstream operations, Review before PRs, Release for publication, Recover for repair workflows, and Advanced for specialized Git plumbing. Ctrl+K still searches the entire toolset.

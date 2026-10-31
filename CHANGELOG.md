@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.46.0
+- Added task-based navigation taxonomy: Home, Changes, History, Branches, Sync, Review, GitHub, Release, Recover, Advanced
+- Added reusable `ui/navigation.py` source of truth with searchable keywords
+- Updated main navigation section terminology while preserving existing targets
+- Added navigation model/search tests
+- Retained the full Command Palette and all v0.1-v3.45 features
+
 ## v3.45.0
 - Added reusable typed DiffService and unified patch parser
 - Added side-by-side synchronized Visual Diff Center

@@ -1,25 +1,28 @@
-# GitHub Command Center v3.45.0
+# GitHub Command Center v3.46.0
 
-Version 3.45 introduces the reusable visual-diff foundation planned after the architecture audit.
+Version 3.46 is the task-based navigation redesign release. It reduces feature-discovery friction without removing the Command Palette or any existing Git/GitHub capability.
 
-## Visual Diff Center
+## New navigation model
 
-- Side-by-side synchronized diff panes
-- Original and modified line numbers
-- Myers, minimal, patience, and histogram algorithms
-- File-level additions/deletions summary
-- Hunk browser
-- Word-level highlighting within replacement lines
-- Working-tree and staged modes
-- Stage a selected hunk
-- Unstage a selected hunk
-- Binary-file detection
-- Optional path filter
+The product taxonomy is now organized around developer outcomes:
 
-## Reusable architecture
+1. **Home** – dashboard, Command Palette, Repository Doctor
+2. **Changes** – working tree, Visual Diff, partial staging, stash
+3. **History** – graph, historical browser, blame, history search
+4. **Branches** – branch dashboard, interactive rebase, cherry-pick, worktrees
+5. **Sync** – pull strategy, fetch preview, upstream health, async operations
+6. **Review** – preflight, conflicts, comparisons, signature audit
+7. **GitHub** – pull requests, Actions, security, branch protection
+8. **Release** – release publishing, comparisons, evidence, checksums
+9. **Recover** – reflog, lost-found, dangling objects, safety branches
+10. **Advanced** – refs, maintenance, config and plumbing tools
 
-- `services/diff_service.py`: typed file/hunk/line models, unified-patch parser, word-diff engine, Git diff and patch-apply boundary
-- `ui/diff_widgets.py`: reusable synchronized side-by-side renderer
-- `centers/visual_diff.py`: task-focused visual diff and hunk staging center
+`Ctrl+K` remains the complete power-user discovery surface.
 
-The implementation uses `git apply --cached` for selected hunk staging and reverse cached apply for unstaging. Existing partial-staging workflows remain available.
+## Navigation service
+
+`ui/navigation.py` provides typed task sections, labels, keywords, and search. This gives future workspaces a single navigation source instead of duplicating category definitions inside Tk windows.
+
+## Compatibility
+
+No major Git workflow has been removed. Existing center classes and the complete Command Palette remain available while the main navigation progressively adopts the task taxonomy.
