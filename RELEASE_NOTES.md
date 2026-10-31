@@ -1,3 +1,3 @@
-# GitHub Command Center 3.42.0 Release Notes
+# GitHub Command Center 3.43.0 Release Notes
 
-Version 3.42 begins the architecture repair: typed models, centralized Git execution, reusable background jobs, atomic preferences, shared styles, package boundaries, and the first automated tests, while retaining the complete v3.41 user-facing feature set.
+Version 3.43 adds cross-platform CI, quality/security gates, expanded automated testing, parser and safety-policy modules, and recovery/branch/release domain registries while retaining every v3.42 user-facing feature.

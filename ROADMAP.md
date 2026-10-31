@@ -1,9 +1,9 @@
 # Roadmap after v3.42
 
-## v3.43: modular migration + CI
-- Move recovery, branch, and release centers into `centers/`
-- Reach at least 50 tests
-- Add GitHub Actions for unittest, compileall, Ruff, Bandit, and pip-audit
+## v3.43: modular migration + CI (completed)
+- Added recovery, branch, and release domain registries; class-body migration continues in v3.44
+- Expanded the test suite; continue toward 50+ tests in v3.44
+- Added GitHub Actions for unittest, compileall, Ruff, Bandit, and pip-audit
 
 ## v3.44: responsive execution
 - Migrate long Git/GitHub operations to `JobService`
