@@ -279,3 +279,8 @@ Table cells now remain single-line, columns expand as needed, and wide tables ca
 # Version 3.54 Addendum
 
 Fetch Preview, Remote Prune Audit, and Repository Maintenance now open extracted async centers. Expensive operations stream output and can be cancelled without freezing the window.
+
+
+# Version 3.56 Addendum
+
+Use **Push & Pull Center** for guarded asynchronous network operations and **Git Bundle Center** for background bundle creation/verification. Both stream output and support cancellation.
