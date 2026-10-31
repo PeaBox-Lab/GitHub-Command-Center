@@ -1,3 +1,3 @@
-# GitHub Command Center 3.27.0 Release Notes
+# GitHub Command Center 3.28.0 Release Notes
 
-Version 3.27 adds a protected multi-commit revert queue, flexible history-query construction, and detailed Git index inspection while preserving the complete cumulative v3 toolset.
+Version 3.28 adds a protected merge-commit revert workflow, advanced Git acceleration-file maintenance, and diff-algorithm experimentation while preserving the complete cumulative v3 toolset.

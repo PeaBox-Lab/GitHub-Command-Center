@@ -1,11 +1,13 @@
 # Changelog
 
-## v3.27.0
-- Added protected ordered Revert Queue
-- Added Git Log Query Builder
-- Added Git Index Inspector with conflict stages and blob inspection
-- Retained all v0.1-v3.26 functionality
+## v3.28.0
+- Added protected Merge Commit Revert Center with mainline-parent selection
+- Added Commit Graph & Multi-Pack-Index maintenance/verification
+- Added Diff Algorithm Lab with word-diff support
+- Retained all v0.1-v3.27 functionality
 
+## v3.27.0
+- Added Revert Queue, Git Log Query Builder and Index Inspector
 ## v3.26.0
 - Added Git Replace, Merge Base and Commit Reachability tools
 ## v3.25.0
