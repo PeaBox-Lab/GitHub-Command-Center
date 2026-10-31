@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.45.0
+- Added reusable typed DiffService and unified patch parser
+- Added side-by-side synchronized Visual Diff Center
+- Added word-level replacement highlighting
+- Added hunk staging and unstaging through cached patch apply
+- Added diff unit and integration tests
+- Retained all v0.1-v3.44 features
+
 ## v3.44.0
 - Added Async Git Operations center powered by JobService
 - Added reusable JobPanel with streaming output and cancellation

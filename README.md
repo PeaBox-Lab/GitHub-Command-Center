@@ -1,43 +1,25 @@
-# GitHub Command Center v3.43.0
+# GitHub Command Center v3.45.0
 
-Version 3.43 continues the architecture repair with CI, expanded tests, parser/safety modules, and domain-based center registries.
+Version 3.45 introduces the reusable visual-diff foundation planned after the architecture audit.
 
-## GitHub Actions CI
+## Visual Diff Center
 
-`.github/workflows/ci.yml` runs on Windows and Ubuntu with Python 3.10 and 3.12:
+- Side-by-side synchronized diff panes
+- Original and modified line numbers
+- Myers, minimal, patience, and histogram algorithms
+- File-level additions/deletions summary
+- Hunk browser
+- Word-level highlighting within replacement lines
+- Working-tree and staged modes
+- Stage a selected hunk
+- Unstage a selected hunk
+- Binary-file detection
+- Optional path filter
 
-- `compileall`
-- standard-library unit tests
-- Ruff critical lint rules
-- Bandit security scan
-- pip-audit dependency scan
+## Reusable architecture
 
-A separate release-smoke workflow runs on `v3.*` tags and supports manual execution.
+- `services/diff_service.py`: typed file/hunk/line models, unified-patch parser, word-diff engine, Git diff and patch-apply boundary
+- `ui/diff_widgets.py`: reusable synchronized side-by-side renderer
+- `centers/visual_diff.py`: task-focused visual diff and hunk staging center
 
-## Expanded tests
-
-The suite now covers:
-
-- Git execution and repository state
-- Preferences and typed models
-- Background job completion/cancellation behavior
-- Porcelain status and ref parsing
-- NUL-separated paths
-- Branch-delete safety policy
-- History-rewrite safety policy
-- Center-domain registry integrity
-- Git service clean-tree/safety-branch helpers
-
-## Modular migration
-
-Added explicit domain registries:
-
-```text
-centers/
-├── recovery.py
-├── branches.py
-├── releases.py
-└── registry.py
-```
-
-The existing class implementations remain compatible while migration continues incrementally.
+The implementation uses `git apply --cached` for selected hunk staging and reverse cached apply for unstaging. Existing partial-staging workflows remain available.
