@@ -1,12 +1,15 @@
 {
-  "legacy_lines": 6031,
+  "legacy_lines": 6034,
   "legacy_classes": 165,
-  "center_modules": 16,
+  "center_modules": 22,
   "service_modules": 14,
   "legacy_sync_heavy_calls": 50,
-  "migrated_async_centers": [
+  "migrated_centers": [
     "AsyncFetchCenter",
     "AsyncRemotePruneCenter",
-    "AsyncMaintenanceCenter"
+    "AsyncMaintenanceCenter",
+    "BranchDashboardV2",
+    "RecoveryDashboardV2",
+    "ReleaseEvidenceV2"
   ]
 }

@@ -1,41 +1,22 @@
-# GitHub Command Center v3.54.0
+# GitHub Command Center v3.55.0
 
-Version 3.54 prioritizes architecture extraction and async migration.
+Version 3.55 is architecture phase 2.
 
-## Extracted sync domain
-
-New independent center package:
+## Extracted domains
 
 ```text
-centers/sync/
-├── base.py
-├── fetch_center.py
-├── remote_prune_center.py
-└── maintenance_center.py
+centers/branches/dashboard.py
+centers/recovery/dashboard.py
+centers/release/evidence.py
 ```
 
-The Command Palette now routes Fetch Preview, Remote Prune Audit, and Repository Maintenance to these extracted modules rather than the legacy compatibility implementations.
+The Command Palette now routes Branch Dashboard, Reflog Recovery, and Release Evidence to extracted domain modules using GitService and shared UI components.
 
-## Async migrations
+## Async progress
+- Release Evidence integrity (`git fsck --full`) now uses JobService/JobPanel.
+- Branch and recovery inventory remain lightweight GitService reads.
+- Recovery continues to preserve commits by creating a branch rather than resetting existing history.
 
-### Fetch
-- dry-run preview remains immediate
-- actual fetch runs through JobService
-- streamed output, exit code, cancellation
+## Current migration set
 
-### Remote prune
-- dry-run preview
-- selected remote prune in background
-- fetch-all/prune in background
-
-### Maintenance
-- auto/scheduled maintenance
-- full fsck
-- normal gc
-- commit graph write/verify
-- multi-pack-index write
-- all expensive actions use JobService
-
-## Architecture audit
-
-`scripts/architecture_audit.py` records legacy LOC/classes, center/service module counts, remaining synchronous heavy calls, and migrated async centers as JSON evidence.
+Six primary centers now route outside the legacy GUI: async fetch, remote prune, maintenance, branch dashboard, recovery dashboard, and release evidence.

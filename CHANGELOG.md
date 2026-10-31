@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.55.0
+- Extracted Branch Dashboard into `centers/branches/`
+- Extracted Reflog Recovery dashboard into `centers/recovery/`
+- Extracted Release Evidence into `centers/release/`
+- Migrated release integrity fsck to JobService
+- Rewired Command Palette targets to extracted phase-2 centers
+- Expanded architecture migration tests/evidence
+- Retained all v0.1-v3.54 features
+
 ## v3.54.0
 - Extracted fetch, remote prune, and maintenance centers into `centers/sync/`
 - Migrated real fetch/prune/fsck/gc/maintenance/commit-graph operations to JobService
