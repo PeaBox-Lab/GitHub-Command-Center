@@ -269,3 +269,8 @@ Open **Ctrl+K > Accessibility & Display** to enable high contrast, larger text/t
 # Version 3.52 Addendum
 
 Windows validation and startup profiling are automated in CI. Accessibility preferences remain under **Ctrl+K > Accessibility & Display** and now have regression tests guarding contrast, keyboard guidance, headless model imports, and documentation requirements.
+
+
+# Version 3.53 Addendum
+
+Table cells now remain single-line, columns expand as needed, and wide tables can horizontally scroll instead of allowing long messages to overlap or appear inside a neighboring column.

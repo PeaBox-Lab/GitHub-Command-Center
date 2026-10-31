@@ -19,7 +19,7 @@ def apply_modern_style(widget) -> ttk.Style:
         foreground="white",
     )
     style.map("Accent.TButton", background=[("active", "#4338ca")])
-    style.configure("Treeview", font=("Segoe UI", 9), rowheight=29, background="white", fieldbackground="white", borderwidth=0)
+    style.configure("Treeview", font=("Segoe UI", 9), rowheight=32, background="white", fieldbackground="white", borderwidth=0)
     style.configure("Treeview.Heading", font=("Segoe UI Semibold", 9), padding=8, background="#f1f5f9", foreground="#334155")
     style.map("Treeview", background=[("selected", "#e0e7ff")], foreground=[("selected", "#111827")])
     style.configure("TNotebook", background="white", borderwidth=0)
