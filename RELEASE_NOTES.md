@@ -1,3 +1,3 @@
-# GitHub Command Center 3.22.0 Release Notes
+# GitHub Command Center 3.23.0 Release Notes
 
-Version 3.22 adds redacted local credential-leak auditing, reference-consistency diagnostics, and a guarded release-branch planner while preserving the project's safety-first Git workflow philosophy.
+Version 3.23 adds clearer modern branch/file-restoration workflows, detailed visibility into paused rebases, and Git-native version-description utilities while retaining the complete cumulative Git/GitHub toolset.

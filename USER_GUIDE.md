@@ -138,3 +138,7 @@ Use Dangling Object Recovery only after ordinary Reflog Recovery cannot find the
 # Version 3.22 Addendum
 
 Credential Redaction Audit intentionally hides matching values in its report. Treat findings as review signals and rotate any credential confirmed to be exposed. Ref Consistency is useful after manual ref changes, repository restoration, or remote migration. Release Branch Planner provides a clean, explicit start point for release stabilization work.
+
+# Version 3.23 Addendum
+
+Use Switch & Restore when you want modern `git switch`/`git restore` semantics instead of legacy checkout behavior. Rebase State Inspector is useful whenever an interactive or normal rebase pauses and you need to understand exactly what Git expects next. Git Describe provides reproducible human-readable version strings for packaging and diagnostics.
