@@ -1,28 +1,28 @@
-# GitHub Command Center v3.25.0
+# GitHub Command Center v3.26.0
 
-Version 3.25 continues the decimal major-version-3 release train with deeper repository search, ref-to-ref tree comparison, and separate fetch/push remote URL management.
+Version 3.26 continues decimal progression within major version 3 and adds advanced ref/object interpretation and commit-reachability analysis tools.
 
-## New in v3.25
+## New in v3.26
 
-### Git Grep Studio
-- Fixed-string or extended-regex search
-- Optional case-insensitive matching
-- Working-tree/tracked-content search
-- Historical-tree search at a branch, tag, or commit
-- Optional pathspec filter
+### Git Replace Center
+- List local `refs/replace/*`
+- Create a local replace ref between two verified objects
+- Inspect original and replacement objects
+- Remove replace refs with confirmation
+- Does not rewrite underlying objects
 
-### Tree Comparison Center
-- Compare two refs with rename detection
-- File status inventory
-- Short diff statistics
-- Cumulative directory distribution (`--dirstat`)
-- Exportable report
+### Merge Base Explorer
+- Primary and all merge bases between refs
+- Ahead-side commit counts
+- `--is-ancestor` analysis
+- Fork-point analysis
+- Independent-tip calculation
 
-### Remote URL Audit
-- Inventory remote fetch URLs
-- Inventory remote push URLs independently
-- Configure different fetch and push URLs
-- Supports upstream/fork workflows
-- Explicit confirmation before update
+### Commit Reachability Explorer
+- Inspect any commit/ref
+- Local + remote branches containing a commit
+- Tags containing a commit
+- Branches not merged into a selected ref
+- Useful before cleanup, backport, release and branch-deletion decisions
 
-All v0.1-v3.24 capabilities remain available through Command Palette.
+All v0.1-v3.25 features remain available through Command Palette.
