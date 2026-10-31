@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.44.0
+- Added Async Git Operations center powered by JobService
+- Added reusable JobPanel with streaming output and cancellation
+- Hardened JobService lifecycle and fixed stdout stream cleanup
+- Added async center registry and tests
+- Retained all v0.1-v3.43 features
+
 ## v3.43.0
 - Added Windows/Linux GitHub Actions CI across Python 3.10 and 3.12
 - Added compile, unittest, Ruff, Bandit, and pip-audit gates
