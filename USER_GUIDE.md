@@ -150,3 +150,7 @@ Use Worktree Repair after moving a linked worktree folder or restoring repositor
 # Version 3.25 Addendum
 
 Git Grep Studio searches tracked repository content and can search an older tree without checking it out. Tree Comparison provides a compact structural view of changes between refs. Remote URL Audit is useful when fetching from an upstream repository while pushing to your fork under a different URL.
+
+# Version 3.26 Addendum
+
+Git Replace is an advanced local object-interpretation mechanism and should be used deliberately because other collaborators will not see replace refs automatically. Merge Base Explorer helps explain histories before merge/rebase decisions. Commit Reachability Explorer is useful when determining whether a fix is already included in release tags or long-lived branches.

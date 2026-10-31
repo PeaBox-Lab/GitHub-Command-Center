@@ -1,3 +1,3 @@
-# GitHub Command Center 3.25.0 Release Notes
+# GitHub Command Center 3.26.0 Release Notes
 
-Version 3.25 adds advanced repository-content search, structural ref comparison, and independent fetch/push remote URL administration while preserving all existing v3 Git and GitHub tooling.
+Version 3.26 adds advanced but read-oriented Git topology tooling: replace-ref management, merge-base/fork-point analysis, and commit reachability across branches and tags. The full cumulative v3 toolset remains included.
