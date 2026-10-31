@@ -229,3 +229,8 @@ CI workflows now validate Windows/Linux and Python 3.10/3.12. Contributors shoul
 # Version 3.44 Addendum
 
 Use **Ctrl+K > Async Git Operations** for long-running fetch, fsck, maintenance, gc, commit-graph, and tag-fetch jobs. Output streams live and active jobs can be cancelled.
+
+
+# Version 3.45 Addendum
+
+Open **Ctrl+K > Visual Diff Center**. Choose Working tree or Staged, select a file and hunk, review side-by-side/word-level changes, then stage or unstage the selected hunk.
