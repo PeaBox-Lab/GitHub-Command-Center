@@ -190,3 +190,7 @@ Sparse Index can reduce index overhead in very large sparse-checkout repositorie
 # Version 3.35 Addendum
 
 Selective Clean is safer than a broad repository clean because you choose exact previewed paths. File Evolution provides a focused historical view of one tracked file and supports historical export. Remote Details exposes Git's own remote/tracking assessment, with both live and cached modes.
+
+# Version 3.36 Addendum
+
+Protocol Diagnostics helps troubleshoot remote capability negotiation and Git protocol v2 behavior without changing refs. Object Alternates Inspector is useful for shared/reference clones; dissociation may require significant disk space. EOL Normalization should be done from a clean tree and committed separately from functional code changes.
