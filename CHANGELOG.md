@@ -1,13 +1,15 @@
 # Changelog
 
-## v3.26.0
-- Added Git Replace Center
-- Added Merge Base Explorer with fork-point and ancestry analysis
-- Added Commit Reachability Explorer for branches/tags containing a commit
-- Retained all v0.1-v3.25 functionality
+## v3.27.0
+- Added protected ordered Revert Queue
+- Added Git Log Query Builder
+- Added Git Index Inspector with conflict stages and blob inspection
+- Retained all v0.1-v3.26 functionality
 
+## v3.26.0
+- Added Git Replace, Merge Base and Commit Reachability tools
 ## v3.25.0
-- Added Git Grep Studio, Tree Comparison and Remote URL Audit
+- Added Git Grep, Tree Comparison and Remote URL Audit
 ## v3.24.0
 - Added Worktree Repair, Tag Manager Pro and Pathspec Explorer
 ## v3.23.0
