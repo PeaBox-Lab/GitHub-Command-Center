@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.51.0
+- Added Accessibility & Display Center
+- Added high-contrast and large-text preference support
+- Added reduced-motion and enhanced focus-indicator preferences
+- Added shared accessibility UI helpers and keyboard activation helper
+- Added ACCESSIBILITY.md design baseline and tests
+- Retained all v0.1-v3.50 features
+
 ## v3.50.0
 - Added Public Release Readiness Center with score and JSON evidence
 - Added public-release readiness service and update-policy service

@@ -259,3 +259,8 @@ Open **Ctrl+K > Plugin Security Center** before enabling a command plugin. Revie
 # Version 3.50 Addendum
 
 Before publishing a release, open **Ctrl+K > Public Release Readiness**. Resolve required FAIL items, export the JSON evidence, then continue through Preflight, Release Evidence, Asset Integrity, and Release Center.
+
+
+# Version 3.51 Addendum
+
+Open **Ctrl+K > Accessibility & Display** to enable high contrast, larger text/targets, reduced motion, or stronger focus indicators. Preferences persist locally.

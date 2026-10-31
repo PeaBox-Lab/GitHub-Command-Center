@@ -1,29 +1,26 @@
-# GitHub Command Center v3.50.0
+# GitHub Command Center v3.51.0
 
-Version 3.50 is the public-release hardening milestone for the major-version-3 line.
+Version 3.51 is the accessibility improvement release.
 
-## Public Release Readiness
+## Accessibility & Display Center
 
-A new readiness center evaluates:
+Open `Ctrl+K → Accessibility & Display` to configure:
 
-- clean working tree
-- attached branch
-- Git object integrity
-- README, CHANGELOG, RELEASE_NOTES, USER_GUIDE, SECURITY policy
-- automated-test presence
-- CI workflow
-- Windows package workflow
+- high contrast
+- larger text and larger list/table targets
+- reduced-motion preference
+- enhanced keyboard focus indicators
 
-It produces a readiness score, required-gate PASS/FAIL result, and exportable JSON evidence.
+Preferences persist through the existing local preference service.
 
-## Update policy
+## Keyboard-first operation
 
-A small update-policy service now enforces numeric `major.minor.patch` comparisons and blocks major-version jumps unless explicitly opted in. This matches the project's policy of continuing incremental work within major version 3.
+The release documents and reinforces keyboard navigation around `Ctrl+K`, Tab / Shift+Tab, Enter / Space, F5, and standard dialog behavior. The Command Palette remains the fastest route to the complete Git/GitHub toolset.
 
-## Security and contribution baseline
+## Shared accessibility layer
 
-Added repository-grade `SECURITY.md` and `CONTRIBUTING.md` covering private vulnerability reporting, command-execution safety, secret rotation, tests, destructive-operation controls, and documentation requirements.
+`ui/accessibility.py` provides reusable preferences, palette selection, accessible ttk styling, keyboard activation helpers, and text scaling. Future centers can consume one common accessibility contract instead of implementing accessibility independently.
 
-## Test milestone
+## Design baseline
 
-v3.50 expands automated coverage across release readiness, update policy, plugin-manifest edge cases, recovery, rebase, conflicts, packaging, diffs, jobs, parsers, and Git services.
+`ACCESSIBILITY.md` establishes rules for not relying on color alone, meaningful text labels, logical focus order, scalable text, and retaining keyboard access for destructive confirmations.
