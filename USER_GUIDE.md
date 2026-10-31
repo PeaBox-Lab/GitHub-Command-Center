@@ -158,3 +158,7 @@ Git Replace is an advanced local object-interpretation mechanism and should be u
 # Version 3.27 Addendum
 
 Use Revert Queue to undo multiple non-merge commits while retaining public history; it creates ordinary revert commits and a safety branch. Git Log Query Builder makes targeted audit/history reports easier. Index Inspector exposes the staging area's actual objects and conflict stages, which is especially useful during complex merges.
+
+# Version 3.28 Addendum
+
+Reverting a merge commit requires choosing the mainline parent that represents the history to retain; inspect and preview before execution. Commit Graph & Pack Index improves performance for large repositories without rewriting commits. Diff Algorithm Lab helps choose clearer output for refactors, moved blocks, or noisy diffs.
