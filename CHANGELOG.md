@@ -1,11 +1,13 @@
 # Changelog
 
-## v3.39.0
-- Added Fixup & Squash Commit Center with protected amend
-- Added Tracked File Flags Center
-- Added Revision Walk Lab
-- Retained all v0.1-v3.38 functionality
+## v3.40.0
+- Added Show-Branch Explorer
+- Added Name-Rev Explorer
+- Added Object Growth Tracker with CSV export
+- Retained all v0.1-v3.39 functionality
 
+## v3.39.0
+- Added Fixup/Squash Commits, Tracked File Flags and Revision Walk Lab
 ## v3.38.0
 - Added Selective Stash, Worktree Move and Config Snapshot Compare
 ## v3.37.0
