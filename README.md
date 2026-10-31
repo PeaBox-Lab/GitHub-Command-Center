@@ -1,27 +1,27 @@
-# GitHub Command Center v3.56.0
+# GitHub Command Center v3.57.0
 
-Version 3.56 continues architecture extraction and asynchronous network/backup migration.
+Version 3.57 extracts Changes and History, migrates GitHub network/API calls to JobService, and adds a Windows UI regression suite.
 
-## Extracted centers
+## Architecture phase 4
+- `centers/changes/changes_center.py`
+- `centers/history/history_center.py`
+- `centers/github/async_github_center.py`
 
-```text
-centers/sync/push_pull_center.py
-centers/backup/bundle_center.py
-```
+## Changes Center V2
+- status inventory, stage, unstage, discard, commit and diff
+- GitService boundary
+- responsive table layout
 
-### Async Push & Pull Center
-- remote/branch selection
-- ff-only, rebase, or merge pull strategies
-- normal, set-upstream, or force-with-lease push
-- clean-tree and detached-HEAD safeguards
-- background JobService execution with live output and cancellation
+## History Center V2
+- all-ref commit log, search, ref decorations and full patch inspection
+- GitService boundary
+- responsive table layout
 
-### Async Git Bundle Center
-- create complete `--all` bundles in the background
-- verify bundles in the background
-- list bundle heads through GitService
-- explicit destination selection and confirmation
+## Async GitHub Network Center
+- repository details, PRs, issues, Actions runs, releases
+- Dependabot, code-scanning and secret-scanning alerts
+- all calls use `gh` argument arrays through JobService
+- live output and cancellation
 
-## Migration status
-
-Eight primary centers now route outside the legacy GUI implementation. The next architecture phase should target submodules/LFS and GitHub network/release publishing operations.
+## Windows UI regression
+A dedicated matrix runs at 1366x768 and 1920x1080 with 100%, 125% and 150% scaling inputs. It checks table widths, multiline-cell spillover and emits `ui-regression.json` evidence.

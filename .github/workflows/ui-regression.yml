@@ -1,0 +1,32 @@
+name: Windows UI regression
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  ui-regression:
+    strategy:
+      matrix:
+        resolution: ['1366x768','1920x1080']
+        scaling: ['100','125','150']
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install runtime
+        run: python -m pip install -r requirements.txt
+      - name: UI structural regression
+        env:
+          GCCC_TEST_RESOLUTION: ${{ matrix.resolution }}
+          GCCC_TEST_SCALING: ${{ matrix.scaling }}
+        run: python scripts/ui_regression.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-regression-${{ matrix.resolution }}-${{ matrix.scaling }}
+          path: ui-regression.json
