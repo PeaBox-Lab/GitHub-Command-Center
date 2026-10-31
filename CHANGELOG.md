@@ -1,11 +1,13 @@
 # Changelog
 
-## v3.35.0
-- Added Selective Clean Center
-- Added File Evolution Center
-- Added Remote Details Center
-- Retained all v0.1-v3.34 functionality
+## v3.36.0
+- Added Git Protocol Diagnostics with protocol-v2 tracing
+- Added Object Alternates Inspector and guarded dissociation repack
+- Added EOL Normalization Center
+- Retained all v0.1-v3.35 functionality
 
+## v3.35.0
+- Added Selective Clean, File Evolution and Remote Details
 ## v3.34.0
 - Added Sparse Index, Maintenance Schedule and Format Inspector
 ## v3.33.0
