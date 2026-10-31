@@ -274,3 +274,8 @@ Windows validation and startup profiling are automated in CI. Accessibility pref
 # Version 3.53 Addendum
 
 Table cells now remain single-line, columns expand as needed, and wide tables can horizontally scroll instead of allowing long messages to overlap or appear inside a neighboring column.
+
+
+# Version 3.54 Addendum
+
+Fetch Preview, Remote Prune Audit, and Repository Maintenance now open extracted async centers. Expensive operations stream output and can be cancelled without freezing the window.

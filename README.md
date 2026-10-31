@@ -1,22 +1,41 @@
-# GitHub Command Center v3.53.0
+# GitHub Command Center v3.54.0
 
-Version 3.53 rebuilds the table/message layout correction after review of a real UI sample.
+Version 3.54 prioritizes architecture extraction and async migration.
 
-## Corrected globally
+## Extracted sync domain
 
-The screenshot showed a status value such as `Completed successfully.` being rendered as if it were separate table values, visually appearing as `Co` in the State column and `pleted successfully.` in the File column. v3.53 fixes the shared rendering layer rather than patching only Pre-Commit Review.
+New independent center package:
 
-### Treeview safeguards
-- all inserted cell values are normalized to one visual line
-- CR/LF and tab content cannot create accidental multiline table rows
-- column headings and cell values expand column widths when needed
-- widths are capped at 560 px to keep large messages usable
-- horizontal scrolling is attached when total columns outgrow the visible table
-- table row height increases to 32 px
-- the fix applies before existing screen classes create their Treeviews
+```text
+centers/sync/
+├── base.py
+├── fetch_center.py
+├── remote_prune_center.py
+└── maintenance_center.py
+```
 
-### Message-label safeguards
-- reusable wrapping helper keeps long status/help messages within their own label area
-- wrapping tracks the available label width
+The Command Palette now routes Fetch Preview, Remote Prune Audit, and Repository Maintenance to these extracted modules rather than the legacy compatibility implementations.
 
-The fix applies to Pre-Commit Review and the many history, branch, release, audit, security, repository and advanced-tool tables that reuse ttk.Treeview.
+## Async migrations
+
+### Fetch
+- dry-run preview remains immediate
+- actual fetch runs through JobService
+- streamed output, exit code, cancellation
+
+### Remote prune
+- dry-run preview
+- selected remote prune in background
+- fetch-all/prune in background
+
+### Maintenance
+- auto/scheduled maintenance
+- full fsck
+- normal gc
+- commit graph write/verify
+- multi-pack-index write
+- all expensive actions use JobService
+
+## Architecture audit
+
+`scripts/architecture_audit.py` records legacy LOC/classes, center/service module counts, remaining synchronous heavy calls, and migrated async centers as JSON evidence.

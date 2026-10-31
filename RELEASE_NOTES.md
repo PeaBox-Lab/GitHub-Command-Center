@@ -1,3 +1,3 @@
-# GitHub Command Center 3.53.0 Release Notes
+# GitHub Command Center 3.54.0 Release Notes
 
-Version 3.53 rebuilds the UI layout correction from the supplied Pre-Commit Review screenshot. It globally normalizes Treeview cell content, expands columns safely, adds horizontal overflow handling, increases row height, and adds reusable responsive message wrapping.
+Version 3.54 extracts the sync/maintenance domain from the legacy GUI and migrates fetch, remote-prune, fsck, gc, maintenance, commit-graph, and multi-pack-index workflows to cancellable JobService execution.
