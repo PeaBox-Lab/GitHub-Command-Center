@@ -1,27 +1,27 @@
-# GitHub Command Center v3.22.0
+# GitHub Command Center v3.23.0
 
-Version 3.22 continues decimal progression within major version 3 and adds local credential-leak review, ref-consistency diagnostics, and a guarded release-branch workflow.
+Version 3.23 continues decimal progression within major version 3 and adds guided modern switch/restore operations, live rebase-state inspection, and Git describe/version utilities.
 
-## New in v3.22
+## New in v3.23
 
-### Credential Redaction Audit
-- Scan tracked text files up to 2 MB
-- GitHub-token, AWS-key, private-key and generic-secret assignment patterns
-- Redacted UI/report output rather than printing the suspected secret
-- Exportable audit evidence
-- Handoff to Security Center
+### Switch & Restore Center
+- Switch existing branches
+- Create + switch branches
+- Restore one path from HEAD or another ref
+- Restore working tree only or staged + working state
+- Diff preview and confirmation before destructive restore
 
-### Ref Consistency Center
-- Inspect HEAD symbolic ref
-- Inspect origin default-branch symbolic ref
-- Show local refs including dereferenced annotated tags
-- Connectivity-only fsck
-- Fetch/prune and refresh
+### Rebase State Inspector
+- Detect active `rebase-merge` or `rebase-apply` state
+- Show head-name, onto, original HEAD, completed actions, remaining todo, stopped commit and message
+- Display unresolved files
+- Continue, skip or abort
+- Edit/save interactive rebase todo when available
 
-### Release Branch Planner
-- Choose a deliberate base ref
-- Preview base commit/history
-- Clean-tree and ref-validation gates
-- Create and switch to a named release branch
+### Git Describe & Version Center
+- Nearest tag/commit description
+- Long form with distance, abbreviated hash and dirty state
+- Exact-tag detection
+- Copy generated version string for release/build workflows
 
-All prior v0.1-v3.21 features remain included through Command Palette.
+All v0.1-v3.22 tools remain included through Command Palette.

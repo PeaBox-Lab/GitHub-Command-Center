@@ -1,23 +1,25 @@
 # Changelog
 
-## v3.22.0
-- Added redacted credential/secret-pattern audit for tracked text
-- Added Ref Consistency Center
-- Added guarded Release Branch Planner
-- Retained all v0.1-v3.21 functionality
+## v3.23.0
+- Added modern Switch & Restore Center
+- Added Rebase State Inspector with todo visibility/editing
+- Added Git Describe & Version Center
+- Retained all v0.1-v3.22 functionality
 
+## v3.22.0
+- Added Credential Redaction Audit, Ref Consistency and Release Branch Planner
 ## v3.21.0
-- Added Dangling Object Recovery, Contributor Mailmap and Patch Identity Comparator
+- Added Dangling Object Recovery, Mailmap and Patch Identity tools
 ## v3.20.0
-- Added Automated Bisect, Revision Archive and Commit Metadata Inspector
+- Added Automated Bisect, Revision Archive and Commit Metadata
 ## v3.19.0
-- Added Blame Explorer, Remote Prune Audit and Git Object Inspector
+- Added Blame Explorer, Remote Prune Audit and Object Inspector
 ## v3.18.0
 - Added Upstream Health, Release Evidence and Repository Locator
 ## v3.17.0
 - Added Onboarding, Audit Pack and Safety Branch Manager
 ## v3.16.0
-- Added Rules Audit, Commit Range Exporter and Local Branch Dashboard
+- Added Rules Audit, Commit Range Exporter and Branch Dashboard
 ## v3.15.0
 - Added Pull Strategy Advisor, Detached HEAD Recovery and State Export
 ## v3.14.0
