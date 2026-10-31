@@ -1,11 +1,13 @@
 # Changelog
 
-## v3.24.0
-- Added Worktree Repair Center
-- Added Tag Manager Pro with signing, verification, push and guarded remote deletion
-- Added read-only Pathspec Explorer
-- Retained all v0.1-v3.23 functionality
+## v3.25.0
+- Added Git Grep Studio with historical ref and pathspec support
+- Added Tree Comparison Center with rename-aware file and directory statistics
+- Added Remote URL Audit for independent fetch/push URLs
+- Retained all v0.1-v3.24 functionality
 
+## v3.24.0
+- Added Worktree Repair, Tag Manager Pro and Pathspec Explorer
 ## v3.23.0
 - Added Switch & Restore, Rebase State Inspector and Git Describe
 ## v3.22.0
