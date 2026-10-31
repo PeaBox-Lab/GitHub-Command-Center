@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.56.0
+- Extracted guarded Push & Pull Center into the sync domain
+- Migrated pull/push/force-with-lease operations to JobService
+- Extracted Git Bundle Center into the backup domain
+- Migrated bundle create/verify to JobService
+- Added phase-3 architecture tests and evidence
+- Retained all v0.1-v3.55 features
+
 ## v3.55.0
 - Extracted Branch Dashboard into `centers/branches/`
 - Extracted Reflog Recovery dashboard into `centers/recovery/`

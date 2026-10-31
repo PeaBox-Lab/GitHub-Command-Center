@@ -1,22 +1,27 @@
-# GitHub Command Center v3.55.0
+# GitHub Command Center v3.56.0
 
-Version 3.55 is architecture phase 2.
+Version 3.56 continues architecture extraction and asynchronous network/backup migration.
 
-## Extracted domains
+## Extracted centers
 
 ```text
-centers/branches/dashboard.py
-centers/recovery/dashboard.py
-centers/release/evidence.py
+centers/sync/push_pull_center.py
+centers/backup/bundle_center.py
 ```
 
-The Command Palette now routes Branch Dashboard, Reflog Recovery, and Release Evidence to extracted domain modules using GitService and shared UI components.
+### Async Push & Pull Center
+- remote/branch selection
+- ff-only, rebase, or merge pull strategies
+- normal, set-upstream, or force-with-lease push
+- clean-tree and detached-HEAD safeguards
+- background JobService execution with live output and cancellation
 
-## Async progress
-- Release Evidence integrity (`git fsck --full`) now uses JobService/JobPanel.
-- Branch and recovery inventory remain lightweight GitService reads.
-- Recovery continues to preserve commits by creating a branch rather than resetting existing history.
+### Async Git Bundle Center
+- create complete `--all` bundles in the background
+- verify bundles in the background
+- list bundle heads through GitService
+- explicit destination selection and confirmation
 
-## Current migration set
+## Migration status
 
-Six primary centers now route outside the legacy GUI: async fetch, remote prune, maintenance, branch dashboard, recovery dashboard, and release evidence.
+Eight primary centers now route outside the legacy GUI implementation. The next architecture phase should target submodules/LFS and GitHub network/release publishing operations.
