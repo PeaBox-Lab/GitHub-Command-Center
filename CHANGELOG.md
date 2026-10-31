@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.54.0
+- Extracted fetch, remote prune, and maintenance centers into `centers/sync/`
+- Migrated real fetch/prune/fsck/gc/maintenance/commit-graph operations to JobService
+- Rewired Command Palette targets to extracted async centers
+- Added shared AsyncGitCenter base
+- Added architecture-audit evidence script and async migration tests
+- Retained all v0.1-v3.53 features
+
 ## v3.53.0
 - Rebuilt table layout fix from supplied Pre-Commit Review screenshot
 - Added global Treeview cell normalization for newline/tab spillover

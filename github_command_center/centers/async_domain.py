@@ -1,1 +1,7 @@
-ASYNC_CENTERS=("AsyncOperationsCenter","BackgroundJobsCenter")
+ASYNC_CENTERS=(
+    "AsyncOperationsCenter",
+    "BackgroundJobsCenter",
+    "AsyncFetchCenter",
+    "AsyncRemotePruneCenter",
+    "AsyncMaintenanceCenter",
+)

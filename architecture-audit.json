@@ -1,0 +1,12 @@
+{
+  "legacy_lines": 6031,
+  "legacy_classes": 165,
+  "center_modules": 16,
+  "service_modules": 14,
+  "legacy_sync_heavy_calls": 50,
+  "migrated_async_centers": [
+    "AsyncFetchCenter",
+    "AsyncRemotePruneCenter",
+    "AsyncMaintenanceCenter"
+  ]
+}
