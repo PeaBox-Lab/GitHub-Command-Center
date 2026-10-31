@@ -20,4 +20,4 @@
 - PyInstaller executable, portable ZIP, Windows installer, checksums, smoke tests
 
 ## v3.48-v3.50
-- 100+ tests, plugin signing, accessibility, upgrade path, and public-release hardening
+- Expanded real-Git integration coverage; continue toward 100+ tests in v3.49/v3.50, plugin signing, accessibility, upgrade path, and public-release hardening

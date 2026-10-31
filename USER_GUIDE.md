@@ -244,3 +244,8 @@ Navigation is now task-oriented. Start in Changes for daily commit work, Sync fo
 # Version 3.47 Addendum
 
 Windows distributions can now be produced as a standalone EXE, portable ZIP, or installer. Verify `SHA256SUMS.txt` before deployment. Source launchers remain available for development.
+
+
+# Version 3.48 Addendum
+
+No major workflow was removed. Reliability work strengthens recovery, rebase, conflict, release, archive and bundle behavior through real Git repositories created during tests. CI also records reliability evidence for each platform/Python combination.

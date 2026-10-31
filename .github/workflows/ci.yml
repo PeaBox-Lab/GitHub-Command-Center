@@ -29,6 +29,13 @@ jobs:
         run: python -m compileall -q .
       - name: Unit tests
         run: python -m unittest discover -s tests -v
+      - name: Reliability report
+        run: python scripts/reliability_report.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reliability-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: reliability-report.json
       - name: Ruff
         run: ruff check github_command_center tests
       - name: Bandit
