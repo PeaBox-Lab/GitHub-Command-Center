@@ -186,3 +186,7 @@ Use Lost & Found Center after refs and reflogs no longer expose a desired commit
 # Version 3.34 Addendum
 
 Sparse Index can reduce index overhead in very large sparse-checkout repositories, but should be enabled only with a compatible Git version and a clean tree. Maintenance Schedule controls Git's registered background maintenance. Repository Format Inspector is read-only because changing object/ref formats can break compatibility with older Git clients and tooling.
+
+# Version 3.35 Addendum
+
+Selective Clean is safer than a broad repository clean because you choose exact previewed paths. File Evolution provides a focused historical view of one tracked file and supports historical export. Remote Details exposes Git's own remote/tracking assessment, with both live and cached modes.

@@ -1,32 +1,27 @@
-# GitHub Command Center v3.34.0
+# GitHub Command Center v3.35.0
 
-Version 3.34 continues decimal progression within major version 3 with sparse-index controls, scheduled-maintenance administration, and repository-format compatibility inspection.
+Version 3.35 continues decimal progression within major version 3 with selective cleaning, file-evolution analysis, and detailed remote tracking reports.
 
-## New in v3.34
+## New in v3.35
 
-### Sparse Index Center
-- Inspect sparse-checkout state and configured paths
-- Inspect `index.sparse`
-- Enable sparse index using `sparse-checkout reapply --sparse-index`
-- Disable sparse index using `--no-sparse-index`
-- Clean-working-tree safety gate
-- Open existing Sparse Checkout Center
+### Selective Clean Center
+- Preview untracked paths
+- Select only the paths to delete
+- Optional ignored-file inclusion
+- Typed confirmation when ignored paths are included
+- Uses path-limited `git clean`
 
-### Maintenance Schedule Center
-- Inspect globally registered maintenance repositories
-- Register/unregister the current repository
-- Set incremental or geometric maintenance strategy
-- Run scheduled maintenance tasks immediately
-- Show repository object status
+### File Evolution Center
+- Rename-aware file history
+- Commit/date/author inventory
+- Per-commit change statistics
+- Historical file content view when available
+- Binary-safe historical export
 
-### Repository Format Inspector
-- Git version
-- Repository format version
-- Object format such as SHA-1/SHA-256
-- Ref storage format when supported by installed Git
-- Bare/shallow state
-- Common and worktree Git directories
-- Repository extension configuration
-- Read-only exportable compatibility report
+### Remote Details Center
+- Inventory remotes
+- Live `git remote show` query
+- Cached/no-network `git remote show -n`
+- Tracking branch, push configuration, HEAD branch, and stale-ref details
 
-All v0.1-v3.33 tools remain included through Command Palette.
+All v0.1-v3.34 tools remain included through Command Palette.

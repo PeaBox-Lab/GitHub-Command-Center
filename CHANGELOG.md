@@ -1,11 +1,13 @@
 # Changelog
 
-## v3.34.0
-- Added Sparse Index Center
-- Added Maintenance Schedule Center
-- Added Repository Format Inspector
-- Retained all v0.1-v3.33 functionality
+## v3.35.0
+- Added Selective Clean Center
+- Added File Evolution Center
+- Added Remote Details Center
+- Retained all v0.1-v3.34 functionality
 
+## v3.34.0
+- Added Sparse Index, Maintenance Schedule and Format Inspector
 ## v3.33.0
 - Added Lost & Found, Shallow Repository and Status Porcelain Explorer
 ## v3.32.0
