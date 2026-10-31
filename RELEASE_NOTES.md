@@ -1,3 +1,3 @@
-# GitHub Command Center 3.49.0 Release Notes
+# GitHub Command Center 3.50.0 Release Notes
 
-Version 3.49 hardens plugins and extensions with manifest validation, explicit permissions, executable allowlists, publisher trust, signature policy, package hashes, audit UI, CI checks, and expanded automated tests.
+Version 3.50 is the public-release hardening milestone. It adds formal readiness gates/evidence, update-version policy, security/contribution policies, broader automated coverage, and retains the complete cumulative v3 feature set.

@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.50.0
+- Added Public Release Readiness Center with score and JSON evidence
+- Added public-release readiness service and update-policy service
+- Added repository-grade SECURITY.md and CONTRIBUTING.md
+- Expanded release/readiness/update/plugin test coverage
+- Retained all v0.1-v3.49 features and major-version-3 decimal policy
+
 ## v3.49.0
 - Added versioned plugin manifest model and validation
 - Added explicit plugin permissions and executable allowlist

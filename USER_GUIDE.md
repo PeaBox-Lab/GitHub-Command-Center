@@ -254,3 +254,8 @@ No major workflow was removed. Reliability work strengthens recovery, rebase, co
 # Version 3.49 Addendum
 
 Open **Ctrl+K > Plugin Security Center** before enabling a command plugin. Review the executable, permissions, publisher, signature policy, and SHA-256 result. Auditing never runs the plugin.
+
+
+# Version 3.50 Addendum
+
+Before publishing a release, open **Ctrl+K > Public Release Readiness**. Resolve required FAIL items, export the JSON evidence, then continue through Preflight, Release Evidence, Asset Integrity, and Release Center.
