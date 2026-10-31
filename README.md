@@ -1,29 +1,29 @@
-# GitHub Command Center v3.36.0
+# GitHub Command Center v3.37.0
 
-Version 3.36 continues decimal progression within major version 3 with Git wire-protocol diagnostics, shared-object storage inspection, and guarded line-ending normalization.
+Version 3.37 continues decimal progression within major version 3 with commit-message quality auditing, revision manifests, and local branch-purpose documentation.
 
-## New in v3.36
+## New in v3.37
 
-### Git Protocol Diagnostics
-- Inspect configured protocol version
-- List remote refs and symbolic HEAD
-- Cached remote details
-- Protocol-v2 packet trace for `ls-remote`
-- Redact obvious URL userinfo before display
-- Read-only remote diagnostics
+### Commit Message Audit
+- Audit any commit range
+- Conventional Commit coverage
+- Minimum subject-length checks
+- Generic subject detection
+- Merge commit counts
+- Per-commit assessment and exportable summary
 
-### Object Alternates Inspector
-- Inspect `.git/objects/info/alternates`
-- Inspect `GIT_ALTERNATE_OBJECT_DIRECTORIES`
-- Show local object statistics
-- Export report
-- Optional confirmed `git repack -a -d` to copy reachable objects locally and dissociate from shared storage
+### Revision Manifest Center
+- Generate a manifest of mode, object type, blob/tree ID, and path for any revision
+- Record the resolved commit ID
+- Export manifest
+- Verify a manifest against another selected revision
+- Report added, missing, and changed blobs without checkout
 
-### EOL Normalization Center
-- Inspect `core.autocrlf`, `core.eol`, and `core.safecrlf`
-- Review `.gitattributes`
-- Check effective text/EOL/encoding attributes
-- Preview renormalization
-- Stage `git add --renormalize` only from a clean working tree
+### Branch Description Center
+- Inventory local branches and descriptions
+- Edit `branch.<name>.description`
+- Clear descriptions
+- Store branch purpose/notes as local Git config metadata
+- Does not alter commits or push descriptions remotely
 
-All v0.1-v3.35 capabilities remain included through Command Palette.
+All v0.1-v3.36 tools remain included through Command Palette.
