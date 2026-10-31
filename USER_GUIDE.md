@@ -146,3 +146,7 @@ Use Switch & Restore when you want modern `git switch`/`git restore` semantics i
 # Version 3.24 Addendum
 
 Use Worktree Repair after moving a linked worktree folder or restoring repository metadata. Tag Manager Pro centralizes annotated/signed tag lifecycle operations and keeps remote deletion behind typed confirmation. Pathspec Explorer is a safe way to test complex Git file-selection expressions before using them in staging, status, diff, or automation workflows.
+
+# Version 3.25 Addendum
+
+Git Grep Studio searches tracked repository content and can search an older tree without checking it out. Tree Comparison provides a compact structural view of changes between refs. Remote URL Audit is useful when fetching from an upstream repository while pushing to your fork under a different URL.

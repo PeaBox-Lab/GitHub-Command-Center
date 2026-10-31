@@ -1,3 +1,3 @@
-# GitHub Command Center 3.24.0 Release Notes
+# GitHub Command Center 3.25.0 Release Notes
 
-Version 3.24 adds worktree metadata repair, a fuller signed/remote tag lifecycle, and read-only pathspec exploration. The release preserves the complete v3 Git and GitHub command-center feature train.
+Version 3.25 adds advanced repository-content search, structural ref comparison, and independent fetch/push remote URL administration while preserving all existing v3 Git and GitHub tooling.

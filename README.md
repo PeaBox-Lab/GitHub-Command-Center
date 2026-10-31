@@ -1,29 +1,28 @@
-# GitHub Command Center v3.24.0
+# GitHub Command Center v3.25.0
 
-Version 3.24 continues the major-version-3 decimal train with worktree repair, expanded tag management, and a safe pathspec exploration tool.
+Version 3.25 continues the decimal major-version-3 release train with deeper repository search, ref-to-ref tree comparison, and separate fetch/push remote URL management.
 
-## New in v3.24
+## New in v3.25
 
-### Worktree Repair Center
-- Inspect worktree porcelain state
-- Run `git worktree repair`
-- Prune dry-run with verbose output
-- Confirmed stale-worktree metadata pruning
+### Git Grep Studio
+- Fixed-string or extended-regex search
+- Optional case-insensitive matching
+- Working-tree/tracked-content search
+- Historical-tree search at a branch, tag, or commit
+- Optional pathspec filter
 
-### Tag Manager Pro
-- Annotated tags
-- Signed tags
-- Select an explicit target ref
-- Inspect tags
-- Verify signed tags
-- Push individual tags
-- Delete local tags
-- Delete remote tags only after exact typed confirmation
+### Tree Comparison Center
+- Compare two refs with rename detection
+- File status inventory
+- Short diff statistics
+- Cumulative directory distribution (`--dirstat`)
+- Exportable report
 
-### Pathspec Explorer
-- Safely preview Git pathspecs against tracked files
-- Preview changed files matching a pathspec
-- Supports normal patterns and Git pathspec magic such as `:(glob)` and `:(exclude)`
-- Read-only exploration before using a complex pathspec elsewhere
+### Remote URL Audit
+- Inventory remote fetch URLs
+- Inventory remote push URLs independently
+- Configure different fetch and push URLs
+- Supports upstream/fork workflows
+- Explicit confirmation before update
 
-All v0.1-v3.23 capabilities remain available through Command Palette.
+All v0.1-v3.24 capabilities remain available through Command Palette.
