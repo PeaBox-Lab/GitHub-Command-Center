@@ -1,27 +1,27 @@
-# GitHub Command Center v3.30.0
+# GitHub Command Center v3.31.0
 
-Version 3.30 continues decimal progression within major version 3 with patch-series comparison, refspec dry-run tooling, and Git-notes merge workflows.
+Version 3.31 continues decimal progression within major version 3 with merge-strategy experimentation, Git configuration include-chain visibility, and packed-object inventory analysis.
 
-## New in v3.30
+## New in v3.31
 
-### Range-Diff Center
-- Compare two commit ranges using `git range-diff`
-- Ideal for reviewing a patch series before/after rebase
-- Shows changed, reordered, added, removed, and equivalent patches
-- Export comparison report
+### Merge Strategy Lab
+- Preview a target ref using merge-base and merge-tree
+- Strategies: ort, recursive, resolve, octopus, ours, subtree
+- Strategy options such as ours, theirs, patience, histogram, ignore-space-change, and renormalize
+- Actual merge starts with `--no-commit --no-ff`
+- Explicit abort control and clean-tree gate
 
-### Refspec Lab
-- Inspect configured remote fetch/push refspecs
-- Compose explicit source:destination mappings
-- Dry-run fetch with a candidate refspec
-- Dry-run push with a candidate refspec
-- Does not silently persist refspec configuration
+### Config Include Inspector
+- Inspect `include.path` and conditional `includeIf.*.path` rules
+- Show scope and origin
+- Display the effective configuration with includes resolved
+- Export the report
 
-### Git Notes Merge Center
-- Browse notes refs
-- Merge one notes ref into another
-- Strategies: manual, ours, theirs, union, cat_sort_uniq
-- Commit or abort a notes merge
-- Notes operations do not change commit IDs
+### Pack Inventory Center
+- Pack-index inventory
+- Git object database statistics
+- Read-only `verify-pack` analysis
+- Largest packed blobs with best-effort path mapping
+- Exportable report and handoff to Maintenance Center
 
-All v0.1-v3.29 capabilities remain included through Command Palette.
+All v0.1-v3.30 tools remain included through Command Palette.

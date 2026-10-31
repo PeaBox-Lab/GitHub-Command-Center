@@ -170,3 +170,7 @@ Use Git Subtree when you want to vendor another repository without requiring sub
 # Version 3.30 Addendum
 
 Use Range-Diff after an interactive rebase to validate that the rewritten patch series still represents the intended changes. Refspec Lab provides dry runs before you persist unusual fetch/push mappings. Notes Merge supports combining independent metadata refs without rewriting the underlying commits.
+
+# Version 3.31 Addendum
+
+Use Merge Strategy Lab when the default merge result needs comparison against another strategy or strategy option. Config Include Inspector helps troubleshoot unexpected Git behavior caused by conditional user/worktree configuration. Pack Inventory is read-only and helps identify historical storage hotspots before using the separate History Rewrite Advisor.

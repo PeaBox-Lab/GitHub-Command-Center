@@ -1,11 +1,13 @@
 # Changelog
 
-## v3.30.0
-- Added Range-Diff Center for patch-series/rebase comparison
-- Added Refspec Lab with fetch/push dry-run previews
-- Added Git Notes Merge Center with multiple merge strategies
-- Retained all v0.1-v3.29 functionality
+## v3.31.0
+- Added Merge Strategy Lab with no-commit execution
+- Added Config Include Inspector for include/includeIf chains
+- Added read-only Pack Inventory and large packed-blob analysis
+- Retained all v0.1-v3.30 functionality
 
+## v3.30.0
+- Added Range-Diff, Refspec Lab and Git Notes Merge
 ## v3.29.0
 - Added Git Subtree, History Rewrite Advisor and Attributes Audit
 ## v3.28.0
@@ -13,7 +15,7 @@
 ## v3.27.0
 - Added Revert Queue, Git Log Query Builder and Index Inspector
 ## v3.26.0
-- Added Git Replace, Merge Base and Commit Reachability tools
+- Added Git Replace, Merge Base and Commit Reachability
 ## v3.25.0
 - Added Git Grep, Tree Comparison and Remote URL Audit
 ## v3.24.0
