@@ -198,3 +198,7 @@ Protocol Diagnostics helps troubleshoot remote capability negotiation and Git pr
 # Version 3.37 Addendum
 
 Commit Message Audit is useful before release-note automation and when improving Conventional Commit consistency. Revision Manifest provides a source-tree integrity record independent of ZIP timestamps. Branch descriptions are clone-local notes for branch purpose and are not a substitute for shared documentation or pull-request context.
+
+# Version 3.38 Addendum
+
+Selective Stash is useful when only certain files should be put aside while other work remains visible. Worktree Move relocates linked worktrees only after checking their cleanliness. Config Snapshot Compare helps investigate unexpected Git behavior after identity, includeIf, credential-helper, or workflow configuration changes; review the report before sharing because Git config can contain sensitive values.

@@ -1,29 +1,30 @@
-# GitHub Command Center v3.37.0
+# GitHub Command Center v3.38.0
 
-Version 3.37 continues decimal progression within major version 3 with commit-message quality auditing, revision manifests, and local branch-purpose documentation.
+Version 3.38 continues decimal progression within major version 3 with path-selective stashing, linked-worktree relocation, and effective Git-configuration snapshot comparison.
 
-## New in v3.37
+## New in v3.38
 
-### Commit Message Audit
-- Audit any commit range
-- Conventional Commit coverage
-- Minimum subject-length checks
-- Generic subject detection
-- Merge commit counts
-- Per-commit assessment and exportable summary
+### Selective Stash Center
+- Inventory changed paths
+- Multi-select exact paths to stash
+- Named stash message
+- Optional `--keep-index`
+- Optional `--include-untracked`
+- Uses explicit pathspec after `--`
 
-### Revision Manifest Center
-- Generate a manifest of mode, object type, blob/tree ID, and path for any revision
-- Record the resolved commit ID
-- Export manifest
-- Verify a manifest against another selected revision
-- Report added, missing, and changed blobs without checkout
+### Worktree Move Center
+- Inventory linked worktrees
+- Choose destination folder
+- Clean-worktree gate on the selected linked worktree
+- Move with `git worktree move`
+- Prevent moving the primary worktree through this workflow
+- Repair all worktree metadata
 
-### Branch Description Center
-- Inventory local branches and descriptions
-- Edit `branch.<name>.description`
-- Clear descriptions
-- Store branch purpose/notes as local Git config metadata
-- Does not alter commits or push descriptions remotely
+### Git Config Snapshot Compare
+- Capture effective configuration baseline
+- Includes scope, origin, and resolved include files
+- Compare current effective config using unified diff
+- Export comparison report
+- Direct access to Git Configuration Center
 
-All v0.1-v3.36 tools remain included through Command Palette.
+All v0.1-v3.37 capabilities remain included through Command Palette.

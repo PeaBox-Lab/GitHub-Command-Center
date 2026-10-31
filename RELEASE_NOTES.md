@@ -1,3 +1,3 @@
-# GitHub Command Center 3.37.0 Release Notes
+# GitHub Command Center 3.38.0 Release Notes
 
-Version 3.37 adds commit-message quality analysis, revision tree manifests with verification, and local branch-description management while preserving the complete cumulative v3 Git/GitHub toolset.
+Version 3.38 adds path-selective stashing, safe linked-worktree relocation, and effective Git-configuration snapshot comparison while preserving the complete cumulative v3 Git/GitHub toolset.
