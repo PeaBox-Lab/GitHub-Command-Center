@@ -1,31 +1,28 @@
-# GitHub Command Center v3.32.0
+# GitHub Command Center v3.33.0
 
-Version 3.32 continues decimal progression within major version 3 with change-volume analytics, index-stage conflict exploration, and a guarded branch-rename workflow.
+Version 3.33 continues decimal progression within major version 3 with explicit lost-object preservation, shallow-clone history controls, and porcelain-v2 status analysis.
 
-## New in v3.32
+## New in v3.33
 
-### Change Statistics Center
-- Analyze any revision range
-- Commit, file, addition, deletion, and total-churn counts
-- Contributor shortlog
-- Churn grouped by file extension
-- Highest-churn file inventory
-- Exportable report
+### Lost & Found Center
+- Run `git fsck --lost-found`
+- Inventory `.git/lost-found/commit` and `.git/lost-found/other`
+- Inspect recovered commit patches or raw objects
+- Preserve a recovered commit by creating a local recovery branch
+- Export inventory
+- No object deletion
 
-### Conflict Stage Explorer
-- List unresolved paths
-- View stage 1 merge-base content
-- View stage 2 ours content
-- View stage 3 theirs content
-- View current working-file content
-- Use complete ours/theirs side with confirmation
-- Stage a resolved path
+### Shallow Repository Center
+- Detect shallow clones
+- Show reachable commit count and boundary view
+- Deepen history by a selected number of commits
+- Fetch tags
+- Fetch complete history with confirmation
 
-### Branch Rename Planner
-- Preview current branch/upstream
-- Rename a local branch
-- Optionally publish the new remote branch and set upstream
-- Delete the old remote branch only after exact typed confirmation
-- Clean-working-tree gate
+### Status Porcelain Explorer
+- Parse `git status --porcelain=v2 --branch`
+- Show record type, XY state, submodule state, path, and raw details
+- Branch headers and raw output
+- Copy/export for automation diagnostics
 
-All v0.1-v3.31 tools remain included through Command Palette.
+All v0.1-v3.32 tools remain included through Command Palette.

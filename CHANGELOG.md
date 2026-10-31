@@ -1,11 +1,13 @@
 # Changelog
 
-## v3.32.0
-- Added Change Statistics Center
-- Added Conflict Stage Explorer for stage 1/2/3 inspection
-- Added protected Branch Rename Planner
-- Retained all v0.1-v3.31 functionality
+## v3.33.0
+- Added Lost & Found Center backed by git fsck --lost-found
+- Added Shallow Repository Center with deepen/unshallow controls
+- Added Status Porcelain v2 Explorer
+- Retained all v0.1-v3.32 functionality
 
+## v3.32.0
+- Added Change Statistics, Conflict Stage Explorer and Branch Rename Planner
 ## v3.31.0
 - Added Merge Strategy Lab, Config Include Inspector and Pack Inventory
 ## v3.30.0
