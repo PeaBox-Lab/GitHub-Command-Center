@@ -239,3 +239,8 @@ Open **Ctrl+K > Visual Diff Center**. Choose Working tree or Staged, select a fi
 # Version 3.46 Addendum
 
 Navigation is now task-oriented. Start in Changes for daily commit work, Sync for network/upstream operations, Review before PRs, Release for publication, Recover for repair workflows, and Advanced for specialized Git plumbing. Ctrl+K still searches the entire toolset.
+
+
+# Version 3.47 Addendum
+
+Windows distributions can now be produced as a standalone EXE, portable ZIP, or installer. Verify `SHA256SUMS.txt` before deployment. Source launchers remain available for development.

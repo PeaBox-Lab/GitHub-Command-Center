@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.47.0
+- Added PyInstaller Windows executable specification
+- Added portable Windows ZIP builder
+- Added Inno Setup installer definition
+- Added SHA-256 release manifest generation and verification
+- Added packaged-artifact smoke tests
+- Added GitHub Actions Windows package workflow and artifact upload
+- Retained all v0.1-v3.46 features
+
 ## v3.46.0
 - Added task-based navigation taxonomy: Home, Changes, History, Branches, Sync, Review, GitHub, Release, Recover, Advanced
 - Added reusable `ui/navigation.py` source of truth with searchable keywords
