@@ -284,3 +284,8 @@ Fetch Preview, Remote Prune Audit, and Repository Maintenance now open extracted
 # Version 3.56 Addendum
 
 Use **Push & Pull Center** for guarded asynchronous network operations and **Git Bundle Center** for background bundle creation/verification. Both stream output and support cancellation.
+
+
+# Version 3.58 Addendum
+
+Use **Review Center V2** for preflight quality gates, **Release Publish Center V2** for tag/release publication, and **GitHub Workflow Center** for PR checks/merge, workflow dispatch, issue creation and failed-run reruns. Network/quality operations stream asynchronously and can be cancelled.

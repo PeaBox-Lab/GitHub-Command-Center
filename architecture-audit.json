@@ -1,7 +1,7 @@
 {
-  "legacy_lines": 6038,
+  "legacy_lines": 6039,
   "legacy_classes": 165,
-  "center_modules": 31,
+  "center_modules": 35,
   "service_modules": 14,
   "legacy_sync_heavy_calls": 50,
   "migrated_centers": [
@@ -15,6 +15,9 @@
     "AsyncBundleCenter",
     "ChangesCenterV2",
     "HistoryCenterV2",
-    "AsyncGitHubCenter"
+    "AsyncGitHubCenter",
+    "ReviewCenterV2",
+    "ReleasePublishCenterV2",
+    "AsyncGitHubWorkflowCenter"
   ]
 }

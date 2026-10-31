@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.58.0
+- Extracted Review and Release Publish centers
+- Migrated remaining PR checks/merge, workflow dispatch, issue creation and rerun workflows to JobService
+- Rewired legacy Review, Release, Pull Request and Actions targets to extracted async centers
+- Expanded Windows UI regression to instantiate real Changes, History, Review and Release Evidence screens
+- Consolidated the v3.50-v3.60 hardening roadmap
+- Retained all v0.1-v3.57 features
+
 ## v3.57.0
 - Extracted Changes and History centers
 - Added Async GitHub Network Center for gh/API operations
