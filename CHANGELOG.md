@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.57.0
+- Extracted Changes and History centers
+- Added Async GitHub Network Center for gh/API operations
+- Migrated GitHub repository, PR, issue, Actions, release and security queries to JobService center
+- Added Windows UI regression matrix and JSON evidence
+- Added architecture phase-4 tests/evidence
+- Retained all v0.1-v3.56 features
+
 ## v3.56.0
 - Extracted guarded Push & Pull Center into the sync domain
 - Migrated pull/push/force-with-lease operations to JobService

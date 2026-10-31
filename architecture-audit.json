@@ -1,7 +1,7 @@
 {
-  "legacy_lines": 6035,
+  "legacy_lines": 6038,
   "legacy_classes": 165,
-  "center_modules": 25,
+  "center_modules": 31,
   "service_modules": 14,
   "legacy_sync_heavy_calls": 50,
   "migrated_centers": [
@@ -12,6 +12,9 @@
     "RecoveryDashboardV2",
     "ReleaseEvidenceV2",
     "AsyncPushPullCenter",
-    "AsyncBundleCenter"
+    "AsyncBundleCenter",
+    "ChangesCenterV2",
+    "HistoryCenterV2",
+    "AsyncGitHubCenter"
   ]
 }
