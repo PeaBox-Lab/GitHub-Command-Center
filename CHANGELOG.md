@@ -1,5 +1,15 @@
 # Changelog
 
+## v3.49.0
+- Added versioned plugin manifest model and validation
+- Added explicit plugin permissions and executable allowlist
+- Added local trusted-publisher/signature policy store
+- Added SHA-256 plugin package verification
+- Added canonical manifest payload and HMAC verification for local/test use
+- Added Plugin Security Center and example manifest
+- Added CI plugin-manifest audit and plugin security tests
+- Retained all v0.1-v3.48 features
+
 ## v3.48.0
 - Added recovery/reflog/reset integration tests
 - Added rebase success/conflict-abort integration tests

@@ -36,6 +36,8 @@ jobs:
         with:
           name: reliability-${{ matrix.os }}-py${{ matrix.python-version }}
           path: reliability-report.json
+      - name: Plugin manifest audit
+        run: python -c "from github_command_center.services.plugin_security import PluginSecurityService; m=PluginSecurityService().load('examples/plugins/safe-status.plugin.json'); r=PluginSecurityService().assess(m); print(r); raise SystemExit(0 if r.allowed else 1)"
       - name: Ruff
         run: ruff check github_command_center tests
       - name: Bandit
