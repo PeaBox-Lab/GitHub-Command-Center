@@ -1,5 +1,15 @@
 # Changelog
 
+## v3.53.0
+- Rebuilt table layout fix from supplied Pre-Commit Review screenshot
+- Added global Treeview cell normalization for newline/tab spillover
+- Added content-aware heading/cell width growth with width cap
+- Added automatic horizontal overflow scrollbar handling
+- Increased shared table row height
+- Added responsive message-label wrapping helper
+- Added regression tests for the shared layout contract
+- Retained all v0.1-v3.52 features
+
 ## v3.52.0
 - Added dedicated Windows validation workflow and JSON evidence
 - Added accessibility regression test suite

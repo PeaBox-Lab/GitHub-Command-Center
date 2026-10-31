@@ -8,6 +8,7 @@ from .centers.plugin_security_center import PluginSecurityCenter
 from .centers.readiness_center import PublicReleaseReadinessCenter
 from .centers.accessibility_center import AccessibilityCenter
 from .ui import apply_modern_style
+from .ui.table_layout import install_treeview_layout_guard
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
 class GitError(RuntimeError): pass
