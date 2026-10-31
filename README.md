@@ -1,46 +1,29 @@
-# GitHub Command Center v3.49.0
+# GitHub Command Center v3.50.0
 
-Version 3.49 is the plugin and extensibility security-hardening release.
+Version 3.50 is the public-release hardening milestone for the major-version-3 line.
 
-## Plugin Security Center
+## Public Release Readiness
 
-- Manifest schema/version validation
-- Semantic-version validation
-- Argument-array command requirement
-- Executable allowlist
-- Explicit permission model
-- Trusted-publisher store
-- Optional local signature-required policy
-- SHA-256 package/executable verification
-- Canonical payload generation
-- HMAC signing/verification for deterministic local/test workflows
-- Audit never executes the plugin
+A new readiness center evaluates:
 
-## Permission model
+- clean working tree
+- attached branch
+- Git object integrity
+- README, CHANGELOG, RELEASE_NOTES, USER_GUIDE, SECURITY policy
+- automated-test presence
+- CI workflow
+- Windows package workflow
 
-```text
-repository.read
-repository.write
-git.read
-git.write
-network.github
-filesystem.read
-filesystem.write
-process.execute
-```
+It produces a readiness score, required-gate PASS/FAIL result, and exportable JSON evidence.
 
-Unknown permissions or non-allowlisted executables block execution eligibility. Unsigned manifests and undeclared hashes warn by default; local policy can require signatures.
+## Update policy
 
-## Trust storage
+A small update-policy service now enforces numeric `major.minor.patch` comparisons and blocks major-version jumps unless explicitly opted in. This matches the project's policy of continuing incremental work within major version 3.
 
-Trusted publishers and signature policy are stored in:
+## Security and contribution baseline
 
-```text
-~/.gccc-plugin-trust.json
-```
+Added repository-grade `SECURITY.md` and `CONTRIBUTING.md` covering private vulnerability reporting, command-execution safety, secret rotation, tests, destructive-operation controls, and documentation requirements.
 
-Trust is explicit and local. It is never inferred from a plugin name or download location.
+## Test milestone
 
-## Important limitation
-
-The v3.49 HMAC option is appropriate for local deterministic verification and automated tests. Public plugin distribution still requires certificate-backed signatures, publisher identity, revocation, and transparency infrastructure in a future release.
+v3.50 expands automated coverage across release readiness, update policy, plugin-manifest edge cases, recovery, rebase, conflicts, packaging, diffs, jobs, parsers, and Git services.
