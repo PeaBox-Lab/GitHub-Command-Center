@@ -1,0 +1,12 @@
+{
+  "manifest_version": 1,
+  "id": "com.example.safe-status",
+  "name": "Safe Repository Status",
+  "version": "1.0.0",
+  "publisher": "Example Publisher",
+  "description": "Read-only repository status plugin.",
+  "command": ["git", "status", "--short", "--branch"],
+  "permissions": ["process.execute", "repository.read", "git.read"],
+  "sha256": "",
+  "signature": ""
+}

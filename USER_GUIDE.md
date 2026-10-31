@@ -249,3 +249,8 @@ Windows distributions can now be produced as a standalone EXE, portable ZIP, or 
 # Version 3.48 Addendum
 
 No major workflow was removed. Reliability work strengthens recovery, rebase, conflict, release, archive and bundle behavior through real Git repositories created during tests. CI also records reliability evidence for each platform/Python combination.
+
+
+# Version 3.49 Addendum
+
+Open **Ctrl+K > Plugin Security Center** before enabling a command plugin. Review the executable, permissions, publisher, signature policy, and SHA-256 result. Auditing never runs the plugin.

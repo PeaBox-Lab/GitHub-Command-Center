@@ -1,49 +1,46 @@
-# GitHub Command Center v3.48.0
+# GitHub Command Center v3.49.0
 
-Version 3.48 is the reliability milestone begun after the v3.41 audit.
+Version 3.49 is the plugin and extensibility security-hardening release.
 
-## Reliability coverage
+## Plugin Security Center
 
-New real-Git integration tests cover:
+- Manifest schema/version validation
+- Semantic-version validation
+- Argument-array command requirement
+- Executable allowlist
+- Explicit permission model
+- Trusted-publisher store
+- Optional local signature-required policy
+- SHA-256 package/executable verification
+- Canonical payload generation
+- HMAC signing/verification for deterministic local/test workflows
+- Audit never executes the plugin
 
-- safety-branch preservation
-- reflog recovery after hard reset
-- branch-based commit recovery
-- clean rebase
-- conflict rebase abort and state restoration
-- merge-conflict index stages 1/2/3
-- merge abort
-- resolving/staging ours
-- annotated release tags
-- source ZIP archive generation
-- Git bundle creation/verification
-- recovery-policy decisions
-- repository performance probes
+## Permission model
 
-The suite now combines unit, parser, policy, service, packaging, and real temporary-repository tests.
+```text
+repository.read
+repository.write
+git.read
+git.write
+network.github
+filesystem.read
+filesystem.write
+process.execute
+```
 
-## ReliabilityService
+Unknown permissions or non-allowlisted executables block execution eligibility. Unsigned manifests and undeclared hashes warn by default; local policy can require signatures.
 
-`services/reliability.py` adds repeatable timings for:
+## Trust storage
 
-- repository status
-- 100-commit log
-- refs
-- object counts
+Trusted publishers and signature policy are stored in:
 
-Results can be persisted as JSON for future trend comparison.
+```text
+~/.gccc-plugin-trust.json
+```
 
-## Recovery policy
+Trust is explicit and local. It is never inferred from a plugin name or download location.
 
-`services/recovery_policy.py` centralizes a non-destructive recovery preference:
+## Important limitation
 
-1. reflog branch
-2. direct branch from known commit
-3. fsck/unreachable branch
-4. verified bundle/backup
-
-The policy never chooses reset as the first preservation action.
-
-## CI evidence
-
-CI now runs `scripts/reliability_report.py` and uploads `reliability-report.json` for each OS/Python matrix entry, alongside the existing compile, test, Ruff, Bandit, and pip-audit gates.
+The v3.49 HMAC option is appropriate for local deterministic verification and automated tests. Public plugin distribution still requires certificate-backed signatures, publisher identity, revocation, and transparency infrastructure in a future release.
