@@ -178,3 +178,7 @@ Use Merge Strategy Lab when the default merge result needs comparison against an
 # Version 3.32 Addendum
 
 Change Statistics helps quantify the review surface of a release or branch range. Conflict Stage Explorer exposes the index's true base/ours/theirs blobs for difficult merges. Branch Rename Planner coordinates local rename, new upstream publication, and optional old remote deletion with explicit safeguards.
+
+# Version 3.33 Addendum
+
+Use Lost & Found Center after refs and reflogs no longer expose a desired commit; create a branch immediately to protect a recovered commit from future garbage collection. Shallow Repository Center controls how much history a shallow clone has locally. Status Porcelain Explorer helps troubleshoot automation by exposing Git's stable v2 status records.
