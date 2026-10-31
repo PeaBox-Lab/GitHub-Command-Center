@@ -1,3 +1,3 @@
-# GitHub Command Center 3.23.0 Release Notes
+# GitHub Command Center 3.24.0 Release Notes
 
-Version 3.23 adds clearer modern branch/file-restoration workflows, detailed visibility into paused rebases, and Git-native version-description utilities while retaining the complete cumulative Git/GitHub toolset.
+Version 3.24 adds worktree metadata repair, a fuller signed/remote tag lifecycle, and read-only pathspec exploration. The release preserves the complete v3 Git and GitHub command-center feature train.

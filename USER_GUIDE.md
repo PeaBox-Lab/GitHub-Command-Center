@@ -142,3 +142,7 @@ Credential Redaction Audit intentionally hides matching values in its report. Tr
 # Version 3.23 Addendum
 
 Use Switch & Restore when you want modern `git switch`/`git restore` semantics instead of legacy checkout behavior. Rebase State Inspector is useful whenever an interactive or normal rebase pauses and you need to understand exactly what Git expects next. Git Describe provides reproducible human-readable version strings for packaging and diagnostics.
+
+# Version 3.24 Addendum
+
+Use Worktree Repair after moving a linked worktree folder or restoring repository metadata. Tag Manager Pro centralizes annotated/signed tag lifecycle operations and keeps remote deletion behind typed confirmation. Pathspec Explorer is a safe way to test complex Git file-selection expressions before using them in staging, status, diff, or automation workflows.

@@ -1,15 +1,17 @@
 # Changelog
 
-## v3.23.0
-- Added modern Switch & Restore Center
-- Added Rebase State Inspector with todo visibility/editing
-- Added Git Describe & Version Center
-- Retained all v0.1-v3.22 functionality
+## v3.24.0
+- Added Worktree Repair Center
+- Added Tag Manager Pro with signing, verification, push and guarded remote deletion
+- Added read-only Pathspec Explorer
+- Retained all v0.1-v3.23 functionality
 
+## v3.23.0
+- Added Switch & Restore, Rebase State Inspector and Git Describe
 ## v3.22.0
 - Added Credential Redaction Audit, Ref Consistency and Release Branch Planner
 ## v3.21.0
-- Added Dangling Object Recovery, Mailmap and Patch Identity tools
+- Added Dangling Object Recovery, Mailmap and Patch Identity
 ## v3.20.0
 - Added Automated Bisect, Revision Archive and Commit Metadata
 ## v3.19.0
