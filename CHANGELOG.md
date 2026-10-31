@@ -1,11 +1,13 @@
 # Changelog
 
-## v3.31.0
-- Added Merge Strategy Lab with no-commit execution
-- Added Config Include Inspector for include/includeIf chains
-- Added read-only Pack Inventory and large packed-blob analysis
-- Retained all v0.1-v3.30 functionality
+## v3.32.0
+- Added Change Statistics Center
+- Added Conflict Stage Explorer for stage 1/2/3 inspection
+- Added protected Branch Rename Planner
+- Retained all v0.1-v3.31 functionality
 
+## v3.31.0
+- Added Merge Strategy Lab, Config Include Inspector and Pack Inventory
 ## v3.30.0
 - Added Range-Diff, Refspec Lab and Git Notes Merge
 ## v3.29.0
