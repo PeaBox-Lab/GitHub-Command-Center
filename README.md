@@ -1,32 +1,28 @@
-# GitHub Command Center v3.28.0
+# GitHub Command Center v3.29.0
 
-Version 3.28 continues decimal progression within major version 3 and adds guarded merge-commit reverts, repository acceleration maintenance, and configurable diff-algorithm analysis.
+Version 3.29 continues decimal progression within major version 3 and adds subtree management, history-rewrite planning, and repository-attribute auditing.
 
-## New in v3.28
+## New in v3.29
 
-### Merge Commit Revert Center
-- Browse merge commits and their parents
-- Inspect each parent before choosing mainline
-- Preview the merge-side change to be inverted
-- Validate selected mainline parent
-- Automatic `gccc-backup/pre-merge-revert-*` safety branch
-- Continue or abort after conflicts
+### Git Subtree Center
+- Add a repository as a subtree
+- Pull subtree updates
+- Push subtree changes upstream
+- Split a subtree into a local branch
+- Optional squash mode
+- Clean-working-tree safety gate
 
-### Commit Graph & Pack Index Center
-- Detect commit-graph and multi-pack-index files
-- Write and verify commit graph with changed-path Bloom filters
-- Write bitmap-enabled multi-pack-index
-- Verify multi-pack-index
-- Confirmed expiration of redundant packs
-- Object database statistics
+### History Rewrite Advisor
+- Analyze a path across repository history
+- Check for `git-filter-repo` availability
+- Generate, but never automatically execute, reviewed filter-repo commands
+- Remove a path from all history or generate a path-rename command
+- Required backup/coordination/verification checklist
 
-### Diff Algorithm Lab
-- Myers
-- Minimal
-- Patience
-- Histogram
-- Optional word-diff output
-- Compare working changes or two refs
-- Optional path filter
+### Attributes Audit Center
+- Inspect effective `text`, `eol`, `diff`, `merge`, and `filter` attributes
+- Focus on binary files and LFS-filtered content
+- Export audit report
+- Direct access to Ignore & Attributes Studio
 
-All v0.1-v3.27 capabilities remain included through Command Palette.
+All v0.1-v3.28 capabilities remain included through Command Palette.

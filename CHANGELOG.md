@@ -1,11 +1,13 @@
 # Changelog
 
-## v3.28.0
-- Added protected Merge Commit Revert Center with mainline-parent selection
-- Added Commit Graph & Multi-Pack-Index maintenance/verification
-- Added Diff Algorithm Lab with word-diff support
-- Retained all v0.1-v3.27 functionality
+## v3.29.0
+- Added Git Subtree Center
+- Added non-executing History Rewrite Advisor for git-filter-repo planning
+- Added effective Attributes Audit for binary/LFS/text rules
+- Retained all v0.1-v3.28 functionality
 
+## v3.28.0
+- Added Merge Commit Revert, Commit Graph/Pack Index and Diff Algorithm Lab
 ## v3.27.0
 - Added Revert Queue, Git Log Query Builder and Index Inspector
 ## v3.26.0
