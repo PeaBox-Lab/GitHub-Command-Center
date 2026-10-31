@@ -1,27 +1,29 @@
-# GitHub Command Center v3.23.0
+# GitHub Command Center v3.24.0
 
-Version 3.23 continues decimal progression within major version 3 and adds guided modern switch/restore operations, live rebase-state inspection, and Git describe/version utilities.
+Version 3.24 continues the major-version-3 decimal train with worktree repair, expanded tag management, and a safe pathspec exploration tool.
 
-## New in v3.23
+## New in v3.24
 
-### Switch & Restore Center
-- Switch existing branches
-- Create + switch branches
-- Restore one path from HEAD or another ref
-- Restore working tree only or staged + working state
-- Diff preview and confirmation before destructive restore
+### Worktree Repair Center
+- Inspect worktree porcelain state
+- Run `git worktree repair`
+- Prune dry-run with verbose output
+- Confirmed stale-worktree metadata pruning
 
-### Rebase State Inspector
-- Detect active `rebase-merge` or `rebase-apply` state
-- Show head-name, onto, original HEAD, completed actions, remaining todo, stopped commit and message
-- Display unresolved files
-- Continue, skip or abort
-- Edit/save interactive rebase todo when available
+### Tag Manager Pro
+- Annotated tags
+- Signed tags
+- Select an explicit target ref
+- Inspect tags
+- Verify signed tags
+- Push individual tags
+- Delete local tags
+- Delete remote tags only after exact typed confirmation
 
-### Git Describe & Version Center
-- Nearest tag/commit description
-- Long form with distance, abbreviated hash and dirty state
-- Exact-tag detection
-- Copy generated version string for release/build workflows
+### Pathspec Explorer
+- Safely preview Git pathspecs against tracked files
+- Preview changed files matching a pathspec
+- Supports normal patterns and Git pathspec magic such as `:(glob)` and `:(exclude)`
+- Read-only exploration before using a complex pathspec elsewhere
 
-All v0.1-v3.22 tools remain included through Command Palette.
+All v0.1-v3.23 capabilities remain available through Command Palette.
