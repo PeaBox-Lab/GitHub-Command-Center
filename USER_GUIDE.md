@@ -154,3 +154,7 @@ Git Grep Studio searches tracked repository content and can search an older tree
 # Version 3.26 Addendum
 
 Git Replace is an advanced local object-interpretation mechanism and should be used deliberately because other collaborators will not see replace refs automatically. Merge Base Explorer helps explain histories before merge/rebase decisions. Commit Reachability Explorer is useful when determining whether a fix is already included in release tags or long-lived branches.
+
+# Version 3.27 Addendum
+
+Use Revert Queue to undo multiple non-merge commits while retaining public history; it creates ordinary revert commits and a safety branch. Git Log Query Builder makes targeted audit/history reports easier. Index Inspector exposes the staging area's actual objects and conflict stages, which is especially useful during complex merges.

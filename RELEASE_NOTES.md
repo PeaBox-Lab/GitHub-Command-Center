@@ -1,3 +1,3 @@
-# GitHub Command Center 3.26.0 Release Notes
+# GitHub Command Center 3.27.0 Release Notes
 
-Version 3.26 adds advanced but read-oriented Git topology tooling: replace-ref management, merge-base/fork-point analysis, and commit reachability across branches and tags. The full cumulative v3 toolset remains included.
+Version 3.27 adds a protected multi-commit revert queue, flexible history-query construction, and detailed Git index inspection while preserving the complete cumulative v3 toolset.
