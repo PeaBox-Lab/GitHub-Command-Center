@@ -134,3 +134,7 @@ Automated Bisect repeatedly executes your supplied test command while Git narrow
 # Version 3.21 Addendum
 
 Use Dangling Object Recovery only after ordinary Reflog Recovery cannot find the desired commit. Creating a recovery branch is non-destructive and prevents the selected unreachable commit from later garbage collection. Commit `.mailmap` when canonical contributor identities should be shared. Patch Identity Comparator is useful when determining whether a rebased or cherry-picked commit already contains the same logical change.
+
+# Version 3.22 Addendum
+
+Credential Redaction Audit intentionally hides matching values in its report. Treat findings as review signals and rotate any credential confirmed to be exposed. Ref Consistency is useful after manual ref changes, repository restoration, or remote migration. Release Branch Planner provides a clean, explicit start point for release stabilization work.
