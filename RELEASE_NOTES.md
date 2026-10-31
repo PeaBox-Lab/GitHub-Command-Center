@@ -1,3 +1,3 @@
-# GitHub Command Center 3.45.0 Release Notes
+# GitHub Command Center 3.46.0 Release Notes
 
-Version 3.45 adds the visual diff foundation: reusable typed parsing, side-by-side synchronized panes, word highlighting, multiple diff algorithms, and selected-hunk stage/unstage workflows.
+Version 3.46 introduces task-based navigation centered on Changes, History, Branches, Sync, Review, GitHub, Release, Recover, and Advanced workflows while retaining Ctrl+K access to the complete feature set.
