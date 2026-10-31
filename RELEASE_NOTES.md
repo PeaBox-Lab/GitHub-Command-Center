@@ -1,3 +1,3 @@
-# GitHub Command Center 3.36.0 Release Notes
+# GitHub Command Center 3.37.0 Release Notes
 
-Version 3.36 adds wire-protocol diagnostics, shared-object storage inspection/dissociation, and safe EOL normalization workflows while preserving the complete cumulative v3 Git/GitHub toolset.
+Version 3.37 adds commit-message quality analysis, revision tree manifests with verification, and local branch-description management while preserving the complete cumulative v3 Git/GitHub toolset.

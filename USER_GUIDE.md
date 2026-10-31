@@ -194,3 +194,7 @@ Selective Clean is safer than a broad repository clean because you choose exact 
 # Version 3.36 Addendum
 
 Protocol Diagnostics helps troubleshoot remote capability negotiation and Git protocol v2 behavior without changing refs. Object Alternates Inspector is useful for shared/reference clones; dissociation may require significant disk space. EOL Normalization should be done from a clean tree and committed separately from functional code changes.
+
+# Version 3.37 Addendum
+
+Commit Message Audit is useful before release-note automation and when improving Conventional Commit consistency. Revision Manifest provides a source-tree integrity record independent of ZIP timestamps. Branch descriptions are clone-local notes for branch purpose and are not a substitute for shared documentation or pull-request context.
