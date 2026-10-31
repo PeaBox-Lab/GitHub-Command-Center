@@ -162,3 +162,7 @@ Use Revert Queue to undo multiple non-merge commits while retaining public histo
 # Version 3.28 Addendum
 
 Reverting a merge commit requires choosing the mainline parent that represents the history to retain; inspect and preview before execution. Commit Graph & Pack Index improves performance for large repositories without rewriting commits. Diff Algorithm Lab helps choose clearer output for refactors, moved blocks, or noisy diffs.
+
+# Version 3.29 Addendum
+
+Use Git Subtree when you want to vendor another repository without requiring submodule initialization. History Rewrite Advisor deliberately generates commands rather than running them; execute history rewrites only in a disposable backed-up clone and coordinate with collaborators. Attributes Audit helps verify that binary, text, diff, merge, EOL, and LFS rules are taking effect as intended.
