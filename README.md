@@ -1,29 +1,49 @@
-# GitHub Command Center v3.47.0
+# GitHub Command Center v3.48.0
 
-Version 3.47 is the Windows packaging release.
+Version 3.48 is the reliability milestone begun after the v3.41 audit.
 
-## Distribution targets
+## Reliability coverage
 
-- `GitHubCommandCenter.exe`: PyInstaller windowed executable
-- `GitHubCommandCenter-3.47.0-portable.zip`: portable package
-- `GitHubCommandCenterSetup-3.47.0.exe`: Inno Setup installer
-- `SHA256SUMS.txt`: SHA-256 integrity manifest
+New real-Git integration tests cover:
 
-## Build pipeline
+- safety-branch preservation
+- reflog recovery after hard reset
+- branch-based commit recovery
+- clean rebase
+- conflict rebase abort and state restoration
+- merge-conflict index stages 1/2/3
+- merge abort
+- resolving/staging ours
+- annotated release tags
+- source ZIP archive generation
+- Git bundle creation/verification
+- recovery-policy decisions
+- repository performance probes
 
-`python scripts/build_release.py` runs tests, compiles Python, builds the PyInstaller executable, creates the portable ZIP, and writes checksums.
+The suite now combines unit, parser, policy, service, packaging, and real temporary-repository tests.
 
-GitHub Actions workflow `.github/workflows/windows-package.yml` additionally builds the Inno Setup installer on `windows-latest`, refreshes checksums, runs package smoke tests, and uploads all artifacts.
+## ReliabilityService
 
-## Installer behavior
+`services/reliability.py` adds repeatable timings for:
 
-- x64-compatible installation
-- Program Files default location
-- Start-menu shortcut
-- Optional desktop shortcut
-- Standard Windows uninstall entry
-- README/User Guide/Changelog included
+- repository status
+- 100-commit log
+- refs
+- object counts
 
-## Safety and provenance
+Results can be persisted as JSON for future trend comparison.
 
-The package pipeline runs the existing test suite before producing binaries. Every release artifact is covered by SHA-256. Code-signing infrastructure is intentionally left as the next hardening step because it requires a real publisher certificate and secret-backed CI configuration.
+## Recovery policy
+
+`services/recovery_policy.py` centralizes a non-destructive recovery preference:
+
+1. reflog branch
+2. direct branch from known commit
+3. fsck/unreachable branch
+4. verified bundle/backup
+
+The policy never chooses reset as the first preservation action.
+
+## CI evidence
+
+CI now runs `scripts/reliability_report.py` and uploads `reliability-report.json` for each OS/Python matrix entry, alongside the existing compile, test, Ruff, Bandit, and pip-audit gates.

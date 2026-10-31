@@ -1,0 +1,34 @@
+{
+  "python": "3.12.15 (main, Oct 25 2026, 23:53:29) [GCC 13.2.0]",
+  "platform": "Linux-6.1.158.2-microsoft-standard-x86_64-with-glibc2.38",
+  "checks": [
+    {
+      "args": [
+        "/opt/pyvenv/bin/python",
+        "-m",
+        "compileall",
+        "-q",
+        "."
+      ],
+      "returncode": 0,
+      "seconds": 6.5956,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/opt/pyvenv/bin/python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "returncode": 0,
+      "seconds": 14.0214,
+      "stdout": "",
+      "stderr": "sts.test_repository_state_changed) ... ok\ntest_repository_state_clean (test_git_service.GitServiceTests.test_repository_state_clean) ... ok\ntest_verify_ref (test_git_service.GitServiceTests.test_verify_ref) ... ok\ntest_clean_guard (test_git_service_extended.ExtendedGitServiceTests.test_clean_guard) ... ok\ntest_dirty_guard (test_git_service_extended.ExtendedGitServiceTests.test_dirty_guard) ... ok\ntest_lines (test_git_service_extended.ExtendedGitServiceTests.test_lines) ... ok\ntest_nonchecking_result (test_git_service_extended.ExtendedGitServiceTests.test_nonchecking_result) ... ok\ntest_safety_branch (test_git_service_extended.ExtendedGitServiceTests.test_safety_branch) ... ok\ntest_cancel_missing_job (test_job_service.JobServiceTests.test_cancel_missing_job) ... ok\ntest_job_completes_and_streams (test_job_service.JobServiceTests.test_job_completes_and_streams) ... ok\ntest_cancel (test_job_service_extended.JobServiceExtendedTests.test_cancel) ... ok\ntest_events (test_job_service_extended.JobServiceExtendedTests.test_events) ... ok\ntest_failure (test_job_service_extended.JobServiceExtendedTests.test_failure) ... ok\ntest_result (test_models.ModelTests.test_result) ... ok\ntest_state (test_models.ModelTests.test_state) ... ok\ntest_every_section_has_items (test_navigation.NavigationTests.test_every_section_has_items) ... ok\ntest_expected_task_sections (test_navigation.NavigationTests.test_expected_task_sections) ... ok\ntest_search (test_navigation.NavigationTests.test_search) ... ok\ntest_unique_sections (test_navigation.NavigationTests.test_unique_sections) ... ok\ntest_build_script_parses (test_packaging.PackagingTests.test_build_script_parses) ... ok\ntest_installer_exists (test_packaging.PackagingTests.test_installer_exists) ... ok\ntest_installer_version (test_packaging.PackagingTests.test_installer_version) ... ok\ntest_smoke_script_parses (test_packaging.PackagingTests.test_smoke_script_parses) ... ok\ntest_spec_exists (test_packaging.PackagingTests.test_spec_exists) ... ok\ntest_nul_paths (test_parsers.ParserTests.test_nul_paths) ... ok\ntest_refs (test_parsers.ParserTests.test_refs) ... ok\ntest_status_normal (test_parsers.ParserTests.test_status_normal) ... ok\ntest_status_rename (test_parsers.ParserTests.test_status_rename) ... ok\ntest_defaults_and_atomic_roundtrip (test_preferences_service.PreferencesServiceTests.test_defaults_and_atomic_roundtrip) ... ok\ntest_invalid_json_falls_back (test_preferences_service.PreferencesServiceTests.test_invalid_json_falls_back) ... ok\ntest_clean_rebase (test_rebase_integration.RebaseIntegrationTests.test_clean_rebase) ... ok\ntest_rebase_abort_restores_branch (test_rebase_integration.RebaseIntegrationTests.test_rebase_abort_restores_branch) ... ok\ntest_branch_recovers_previous_commit (test_recovery_integration.RecoveryIntegrationTests.test_branch_recovers_previous_commit) ... ok\ntest_reflog_contains_previous_head (test_recovery_integration.RecoveryIntegrationTests.test_reflog_contains_previous_head) ... ok\ntest_safety_branch_preserves_commit (test_recovery_integration.RecoveryIntegrationTests.test_safety_branch_preserves_commit) ... ok\ntest_all_paths_non_destructive (test_recovery_policy.RecoveryPolicyTests.test_all_paths_non_destructive) ... ok\ntest_backup_fallback (test_recovery_policy.RecoveryPolicyTests.test_backup_fallback) ... ok\ntest_fsck (test_recovery_policy.RecoveryPolicyTests.test_fsck) ... ok\ntest_known_commit (test_recovery_policy.RecoveryPolicyTests.test_known_commit) ... ok\ntest_reflog_preferred (test_recovery_policy.RecoveryPolicyTests.test_reflog_preferred) ... ok\ntest_annotated_tag_targets_commit (test_release_integration.ReleaseIntegrationTests.test_annotated_tag_targets_commit) ... ok\ntest_archive_is_reproducibly_hashable (test_release_integration.ReleaseIntegrationTests.test_archive_is_reproducibly_hashable) ... ok\ntest_bundle_verifies (test_release_integration.ReleaseIntegrationTests.test_bundle_verifies) ... ok\ntest_failed_probe (test_reliability_service.ReliabilityTests.test_failed_probe) ... ok\ntest_standard_probes (test_reliability_service.ReliabilityTests.test_standard_probes) ... ok\ntest_ahead_branch_blocked (test_safety_policy.SafetyPolicyTests.test_ahead_branch_blocked) ... ok\ntest_current_branch_blocked (test_safety_policy.SafetyPolicyTests.test_current_branch_blocked) ... ok\ntest_protected_warning (test_safety_policy.SafetyPolicyTests.test_protected_warning) ... ok\ntest_rewrite_blocks_detached (test_safety_policy.SafetyPolicyTests.test_rewrite_blocks_detached) ... ok\ntest_rewrite_requires_clean (test_safety_policy.SafetyPolicyTests.test_rewrite_requires_clean) ... ok\ntest_safe_delete (test_safety_policy.SafetyPolicyTests.test_safe_delete) ... ok\ntest_unmerged_branch_blocked (test_safety_policy.SafetyPolicyTests.test_unmerged_branch_blocked) ... ok\ntest_worktree_branch_blocked (test_safety_policy.SafetyPolicyTests.test_worktree_branch_blocked) ... ok\n\n----------------------------------------------------------------------\nRan 70 tests in 6.921s\n\nOK\n"
+    }
+  ]
+}

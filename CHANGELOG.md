@@ -1,5 +1,15 @@
 # Changelog
 
+## v3.48.0
+- Added recovery/reflog/reset integration tests
+- Added rebase success/conflict-abort integration tests
+- Added conflict index stage and resolution integration tests
+- Added release tag/archive/bundle integration tests
+- Added non-destructive RecoveryPolicy
+- Added ReliabilityService performance probes and JSON report script
+- Added CI reliability report artifact
+- Retained all v0.1-v3.47 features
+
 ## v3.47.0
 - Added PyInstaller Windows executable specification
 - Added portable Windows ZIP builder
