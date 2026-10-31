@@ -1,27 +1,27 @@
-# GitHub Command Center v3.21.0
+# GitHub Command Center v3.22.0
 
-Version 3.21 continues decimal progression within major version 3 and adds three deeper Git tools for object recovery, contributor identity normalization, and equivalent-patch detection.
+Version 3.22 continues decimal progression within major version 3 and adds local credential-leak review, ref-consistency diagnostics, and a guarded release-branch workflow.
 
-## New in v3.21
+## New in v3.22
 
-### Dangling Object Recovery
-- Scan unreachable/dangling objects with `git fsck --no-reflogs --unreachable`
-- Identify unreachable commits, trees, blobs, and tags
-- Inspect unreachable commit patches or raw object content
-- Preserve an unreachable commit by creating a local recovery branch
-- Export the complete fsck evidence report
-- No object deletion
+### Credential Redaction Audit
+- Scan tracked text files up to 2 MB
+- GitHub-token, AWS-key, private-key and generic-secret assignment patterns
+- Redacted UI/report output rather than printing the suspected secret
+- Exportable audit evidence
+- Handoff to Security Center
 
-### Contributor Mailmap Center
-- Inventory raw contributor names and emails
-- Edit repository `.mailmap`
-- Preview canonical contributor shortlog
-- Normalize reporting without rewriting commits
+### Ref Consistency Center
+- Inspect HEAD symbolic ref
+- Inspect origin default-branch symbolic ref
+- Show local refs including dereferenced annotated tags
+- Connectivity-only fsck
+- Fetch/prune and refresh
 
-### Patch Identity Comparator
-- Stable `git patch-id` comparison for two commits
-- Detect equivalent changes independent of author/date/message
-- `git cherry -v` range comparison
-- Useful for duplicate cherry-picks and rebased-equivalent commits
+### Release Branch Planner
+- Choose a deliberate base ref
+- Preview base commit/history
+- Clean-tree and ref-validation gates
+- Create and switch to a named release branch
 
-All prior v0.1-v3.20 capabilities remain included through Command Palette.
+All prior v0.1-v3.21 features remain included through Command Palette.
