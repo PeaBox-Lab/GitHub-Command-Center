@@ -1,26 +1,24 @@
-# GitHub Command Center v3.51.0
+# GitHub Command Center v3.52.0
 
-Version 3.51 is the accessibility improvement release.
+Version 3.52 focuses on Windows validation, accessibility regressions, and startup performance profiling.
 
-## Accessibility & Display Center
+## Windows validation
+- Dedicated `windows-latest` GitHub Actions workflow
+- Compile + full tests
+- Git and Tkinter availability checks
+- Core import smoke tests
+- JSON evidence artifact
 
-Open `Ctrl+K → Accessibility & Display` to configure:
+## Accessibility regression tests
+- High-contrast palette regression checks
+- Immutable preference-model check
+- Keyboard-help content checks
+- Headless accessibility-model guard
+- Accessibility documentation rule checks
 
-- high contrast
-- larger text and larger list/table targets
-- reduced-motion preference
-- enhanced keyboard focus indicators
+## Startup performance
+- Cold subprocess import timings for package, GitService, DiffService, and navigation model
+- 2.5-second per-import CI budget
+- `startup-performance.json` artifact for regression tracking
 
-Preferences persist through the existing local preference service.
-
-## Keyboard-first operation
-
-The release documents and reinforces keyboard navigation around `Ctrl+K`, Tab / Shift+Tab, Enter / Space, F5, and standard dialog behavior. The Command Palette remains the fastest route to the complete Git/GitHub toolset.
-
-## Shared accessibility layer
-
-`ui/accessibility.py` provides reusable preferences, palette selection, accessible ttk styling, keyboard activation helpers, and text scaling. Future centers can consume one common accessibility contract instead of implementing accessibility independently.
-
-## Design baseline
-
-`ACCESSIBILITY.md` establishes rules for not relying on color alone, meaningful text labels, logical focus order, scalable text, and retaining keyboard access for destructive confirmations.
+No existing v3.51 user-facing workflow is removed.

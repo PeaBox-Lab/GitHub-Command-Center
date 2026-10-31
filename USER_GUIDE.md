@@ -264,3 +264,8 @@ Before publishing a release, open **Ctrl+K > Public Release Readiness**. Resolve
 # Version 3.51 Addendum
 
 Open **Ctrl+K > Accessibility & Display** to enable high contrast, larger text/targets, reduced motion, or stronger focus indicators. Preferences persist locally.
+
+
+# Version 3.52 Addendum
+
+Windows validation and startup profiling are automated in CI. Accessibility preferences remain under **Ctrl+K > Accessibility & Display** and now have regression tests guarding contrast, keyboard guidance, headless model imports, and documentation requirements.

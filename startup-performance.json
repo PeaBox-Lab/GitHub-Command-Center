@@ -1,0 +1,48 @@
+{
+  "python": "3.12.15 (main, Oct 25 2026, 23:53:29) [GCC 13.2.0]",
+  "platform": "Linux-6.1.158.2-microsoft-standard-x86_64-with-glibc2.38",
+  "cold_imports": [
+    {
+      "args": [
+        "/opt/pyvenv/bin/python",
+        "-c",
+        "import github_command_center"
+      ],
+      "seconds": 0.956689,
+      "returncode": 0,
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/opt/pyvenv/bin/python",
+        "-c",
+        "import github_command_center.services.git_service"
+      ],
+      "seconds": 1.952169,
+      "returncode": 0,
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/opt/pyvenv/bin/python",
+        "-c",
+        "import github_command_center.services.diff_service"
+      ],
+      "seconds": 2.192867,
+      "returncode": 0,
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/opt/pyvenv/bin/python",
+        "-c",
+        "import github_command_center.ui.navigation"
+      ],
+      "seconds": 1.723292,
+      "returncode": 0,
+      "stderr": ""
+    }
+  ],
+  "budget_seconds": 2.5,
+  "passes_budget": true
+}
