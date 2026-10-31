@@ -1,27 +1,17 @@
-# GitHub Command Center v3.57.0
+# GitHub Command Center v3.58.0
 
-Version 3.57 extracts Changes and History, migrates GitHub network/API calls to JobService, and adds a Windows UI regression suite.
+Version 3.58 consolidates the v3.50-v3.60 hardening roadmap: architecture extraction, async Git/GitHub execution, review/release separation, Windows UI regression, packaging, accessibility, reliability, plugin security and readiness evidence.
 
-## Architecture phase 4
-- `centers/changes/changes_center.py`
-- `centers/history/history_center.py`
-- `centers/github/async_github_center.py`
+## New extracted centers
+- Review Center V2: changed-file review plus async tests, compile, Ruff and Bandit
+- Release Publish Center V2: annotated tags, async tag push and async GitHub Release creation
+- GitHub Workflow Center: PR checks/merge, workflow dispatch, issue creation and failed-run rerun through JobService
 
-## Changes Center V2
-- status inventory, stage, unstage, discard, commit and diff
-- GitService boundary
-- responsive table layout
-
-## History Center V2
-- all-ref commit log, search, ref decorations and full patch inspection
-- GitService boundary
-- responsive table layout
-
-## Async GitHub Network Center
-- repository details, PRs, issues, Actions runs, releases
-- Dependabot, code-scanning and secret-scanning alerts
-- all calls use `gh` argument arrays through JobService
-- live output and cancellation
+## Remaining GitHub workflows migrated async
+All added GitHub mutation workflows use `gh` argument arrays and `JobPanel`; no shell execution is used.
 
 ## Windows UI regression
-A dedicated matrix runs at 1366x768 and 1920x1080 with 100%, 125% and 150% scaling inputs. It checks table widths, multiline-cell spillover and emits `ui-regression.json` evidence.
+The Windows matrix creates real Changes, History, Review and Release Evidence windows at 1366x768 and 1920x1080 with 100%, 125% and 150% scaling, inspects tables for narrow columns/multiline spillover and uploads `ui-regression.json`.
+
+## Roadmap consolidation
+Completed foundations from v3.50-v3.60 include 100+ tests, public readiness, accessibility, Windows packaging/validation, visual diff, task navigation, JobService, plugin security, startup profiling, table-layout correction and staged center extraction. Next releases should prioritize updater/signing and removing duplicated legacy class bodies.
