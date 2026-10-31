@@ -1,30 +1,39 @@
-# GitHub Command Center v3.41.0
+# GitHub Command Center v3.42.0
 
-Version 3.41 continues decimal progression within major version 3 with exact ref verification, batch ignore-rule provenance testing, and dry-run fetch analysis.
+Version 3.42 is the first architecture and quality release after the v3.41 audit. It prioritizes maintainability, testability, and safe execution over adding more Git commands.
 
-## New in v3.41
+## Architecture foundation
 
-### Ref Verification Center
-- Resolve and verify an exact ref/object expression
-- Display object type
-- Show matching refs
-- Peel annotated tags/refs to objects and commits
-- Inspect symbolic refs
-- Inspect recent reflog entries
-- Read-only safety utility
+```text
+github_command_center/
+├── centers/
+├── models/
+├── services/
+├── ui/
+└── local_git_gui.py
+```
 
-### Ignore Rule Batch Tester
-- Test many repository-relative paths at once
-- Verbose ignore provenance via `git check-ignore -v --no-index`
-- Show the source ignore file, rule line, and pattern
-- Load current untracked paths automatically
-- Direct access to Ignore & Attributes Studio
+### Central GitService
+- Argument-array execution only
+- Typed results and errors
+- Timeout handling
+- Repository-state model
+- Ref verification, clean-tree checks, and safety-branch helper
+- Existing legacy `git()` calls now route through the central service
 
-### Fetch Preview Center
-- Dry-run a fetch before changing remote-tracking refs
-- Select remote
-- Optional custom refspec
-- Optional prune and tag fetching
-- Execute the exact reviewed fetch after confirmation
+### Shared services
+- `JobService`: background subprocesses, streaming events, cancellation, status, and exit codes
+- `PreferencesService`: centralized defaults, invalid-JSON recovery, and atomic save
+- `ui/styles.py`: reusable modern ttk styling
 
-All v0.1-v3.40 capabilities remain included through Command Palette.
+## Automated tests
+
+The initial suite covers Git execution, clean/changed repository state, ref verification, command failures, shell-interpolation resistance, preferences, and typed models.
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+## Compatibility
+
+The legacy GUI remains during staged migration, retaining the complete v0.1-v3.41 user-facing toolset. New features must use the new architecture, and existing centers will move incrementally to avoid a high-risk one-shot rewrite.
