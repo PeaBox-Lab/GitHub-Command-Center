@@ -1,28 +1,32 @@
-# GitHub Command Center v3.33.0
+# GitHub Command Center v3.34.0
 
-Version 3.33 continues decimal progression within major version 3 with explicit lost-object preservation, shallow-clone history controls, and porcelain-v2 status analysis.
+Version 3.34 continues decimal progression within major version 3 with sparse-index controls, scheduled-maintenance administration, and repository-format compatibility inspection.
 
-## New in v3.33
+## New in v3.34
 
-### Lost & Found Center
-- Run `git fsck --lost-found`
-- Inventory `.git/lost-found/commit` and `.git/lost-found/other`
-- Inspect recovered commit patches or raw objects
-- Preserve a recovered commit by creating a local recovery branch
-- Export inventory
-- No object deletion
+### Sparse Index Center
+- Inspect sparse-checkout state and configured paths
+- Inspect `index.sparse`
+- Enable sparse index using `sparse-checkout reapply --sparse-index`
+- Disable sparse index using `--no-sparse-index`
+- Clean-working-tree safety gate
+- Open existing Sparse Checkout Center
 
-### Shallow Repository Center
-- Detect shallow clones
-- Show reachable commit count and boundary view
-- Deepen history by a selected number of commits
-- Fetch tags
-- Fetch complete history with confirmation
+### Maintenance Schedule Center
+- Inspect globally registered maintenance repositories
+- Register/unregister the current repository
+- Set incremental or geometric maintenance strategy
+- Run scheduled maintenance tasks immediately
+- Show repository object status
 
-### Status Porcelain Explorer
-- Parse `git status --porcelain=v2 --branch`
-- Show record type, XY state, submodule state, path, and raw details
-- Branch headers and raw output
-- Copy/export for automation diagnostics
+### Repository Format Inspector
+- Git version
+- Repository format version
+- Object format such as SHA-1/SHA-256
+- Ref storage format when supported by installed Git
+- Bare/shallow state
+- Common and worktree Git directories
+- Repository extension configuration
+- Read-only exportable compatibility report
 
-All v0.1-v3.32 tools remain included through Command Palette.
+All v0.1-v3.33 tools remain included through Command Palette.

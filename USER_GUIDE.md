@@ -182,3 +182,7 @@ Change Statistics helps quantify the review surface of a release or branch range
 # Version 3.33 Addendum
 
 Use Lost & Found Center after refs and reflogs no longer expose a desired commit; create a branch immediately to protect a recovered commit from future garbage collection. Shallow Repository Center controls how much history a shallow clone has locally. Status Porcelain Explorer helps troubleshoot automation by exposing Git's stable v2 status records.
+
+# Version 3.34 Addendum
+
+Sparse Index can reduce index overhead in very large sparse-checkout repositories, but should be enabled only with a compatible Git version and a clean tree. Maintenance Schedule controls Git's registered background maintenance. Repository Format Inspector is read-only because changing object/ref formats can break compatibility with older Git clients and tooling.

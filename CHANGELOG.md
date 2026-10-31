@@ -1,11 +1,13 @@
 # Changelog
 
-## v3.33.0
-- Added Lost & Found Center backed by git fsck --lost-found
-- Added Shallow Repository Center with deepen/unshallow controls
-- Added Status Porcelain v2 Explorer
-- Retained all v0.1-v3.32 functionality
+## v3.34.0
+- Added Sparse Index Center
+- Added Maintenance Schedule Center
+- Added Repository Format Inspector
+- Retained all v0.1-v3.33 functionality
 
+## v3.33.0
+- Added Lost & Found, Shallow Repository and Status Porcelain Explorer
 ## v3.32.0
 - Added Change Statistics, Conflict Stage Explorer and Branch Rename Planner
 ## v3.31.0
