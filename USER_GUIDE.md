@@ -224,3 +224,8 @@ Existing tools remain available through the same workspace and Command Palette. 
 # Version 3.43 Addendum
 
 CI workflows now validate Windows/Linux and Python 3.10/3.12. Contributors should run `python -m unittest discover -s tests -v` before push; GitHub Actions additionally runs Ruff, Bandit, and pip-audit.
+
+
+# Version 3.44 Addendum
+
+Use **Ctrl+K > Async Git Operations** for long-running fetch, fsck, maintenance, gc, commit-graph, and tag-fetch jobs. Output streams live and active jobs can be cancelled.

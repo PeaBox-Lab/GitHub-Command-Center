@@ -1,3 +1,3 @@
-# GitHub Command Center 3.43.0 Release Notes
+# GitHub Command Center 3.44.0 Release Notes
 
-Version 3.43 adds cross-platform CI, quality/security gates, expanded automated testing, parser and safety-policy modules, and recovery/branch/release domain registries while retaining every v3.42 user-facing feature.
+Version 3.44 begins the JobService migration with a reusable background-operation UI, cancellable fetch/fsck/maintenance/gc/commit-graph workflows, hardened process lifecycle handling, and additional async tests while retaining all v3.43 user-facing functionality.
