@@ -1,3 +1,3 @@
-# GitHub Command Center 3.30.0 Release Notes
+# GitHub Command Center 3.31.0 Release Notes
 
-Version 3.30 adds patch-series range comparison, dry-run refspec experimentation, and Git-notes merge management while preserving the full cumulative v3 Git/GitHub toolset.
+Version 3.31 adds controlled merge-strategy experimentation, configuration include-chain inspection, and read-only packed-object analysis while preserving the complete cumulative v3 Git/GitHub feature set.
