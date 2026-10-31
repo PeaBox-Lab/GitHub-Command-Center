@@ -1,26 +1,30 @@
-# GitHub Command Center v3.40.0
+# GitHub Command Center v3.41.0
 
-Version 3.40 continues decimal progression within major version 3 with multi-branch topology comparison, ref-relative object naming, and local object-database growth tracking.
+Version 3.41 continues decimal progression within major version 3 with exact ref verification, batch ignore-rule provenance testing, and dry-run fetch analysis.
 
-## New in v3.40
+## New in v3.41
 
-### Show-Branch Explorer
-- Compare multiple branch/ref tips with `git show-branch`
-- Use `--all` or explicit space-separated refs
-- Configure additional history depth
-- Export topology report
+### Ref Verification Center
+- Resolve and verify an exact ref/object expression
+- Display object type
+- Show matching refs
+- Peel annotated tags/refs to objects and commits
+- Inspect symbolic refs
+- Inspect recent reflog entries
+- Read-only safety utility
 
-### Name-Rev Explorer
-- Convert object IDs/revisions into human-readable ref-relative names
-- Optional tag-only naming
-- `--always` fallback
-- Name all reachable revisions
+### Ignore Rule Batch Tester
+- Test many repository-relative paths at once
+- Verbose ignore provenance via `git check-ignore -v --no-index`
+- Show the source ignore file, rule line, and pattern
+- Load current untracked paths automatically
+- Direct access to Ignore & Attributes Studio
 
-### Object Growth Tracker
-- Capture `git count-objects -vH` snapshots
-- Store local history under `.git/gccc-object-trends.json`
-- Compare loose objects, packed objects, pack size, and garbage between snapshots
-- Export CSV
-- Direct access to Maintenance Center
+### Fetch Preview Center
+- Dry-run a fetch before changing remote-tracking refs
+- Select remote
+- Optional custom refspec
+- Optional prune and tag fetching
+- Execute the exact reviewed fetch after confirmation
 
-All v0.1-v3.39 capabilities remain included through Command Palette.
+All v0.1-v3.40 capabilities remain included through Command Palette.

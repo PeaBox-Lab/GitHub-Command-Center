@@ -1,11 +1,13 @@
 # Changelog
 
-## v3.40.0
-- Added Show-Branch Explorer
-- Added Name-Rev Explorer
-- Added Object Growth Tracker with CSV export
-- Retained all v0.1-v3.39 functionality
+## v3.41.0
+- Added Ref Verification Center
+- Added Ignore Rule Batch Tester
+- Added Fetch Preview Center
+- Retained all v0.1-v3.40 functionality
 
+## v3.40.0
+- Added Show-Branch, Name-Rev and Object Growth Tracker
 ## v3.39.0
 - Added Fixup/Squash Commits, Tracked File Flags and Revision Walk Lab
 ## v3.38.0
