@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.43.0
+- Added Windows/Linux GitHub Actions CI across Python 3.10 and 3.12
+- Added compile, unittest, Ruff, Bandit, and pip-audit gates
+- Added release-tag smoke workflow
+- Added parser and safety-policy service modules
+- Added domain registries for recovery, branch, and release centers
+- Expanded automated test coverage across jobs, parsers, policies, registries, and Git helpers
+- Retained all v0.1-v3.42 user-facing features
+
 ## v3.42.0
 - Introduced `models/`, `services/`, `ui/`, and `centers/` package boundaries
 - Added typed command and repository-state models

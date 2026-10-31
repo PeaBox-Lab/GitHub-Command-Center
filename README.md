@@ -1,39 +1,43 @@
-# GitHub Command Center v3.42.0
+# GitHub Command Center v3.43.0
 
-Version 3.42 is the first architecture and quality release after the v3.41 audit. It prioritizes maintainability, testability, and safe execution over adding more Git commands.
+Version 3.43 continues the architecture repair with CI, expanded tests, parser/safety modules, and domain-based center registries.
 
-## Architecture foundation
+## GitHub Actions CI
+
+`.github/workflows/ci.yml` runs on Windows and Ubuntu with Python 3.10 and 3.12:
+
+- `compileall`
+- standard-library unit tests
+- Ruff critical lint rules
+- Bandit security scan
+- pip-audit dependency scan
+
+A separate release-smoke workflow runs on `v3.*` tags and supports manual execution.
+
+## Expanded tests
+
+The suite now covers:
+
+- Git execution and repository state
+- Preferences and typed models
+- Background job completion/cancellation behavior
+- Porcelain status and ref parsing
+- NUL-separated paths
+- Branch-delete safety policy
+- History-rewrite safety policy
+- Center-domain registry integrity
+- Git service clean-tree/safety-branch helpers
+
+## Modular migration
+
+Added explicit domain registries:
 
 ```text
-github_command_center/
-├── centers/
-├── models/
-├── services/
-├── ui/
-└── local_git_gui.py
+centers/
+├── recovery.py
+├── branches.py
+├── releases.py
+└── registry.py
 ```
 
-### Central GitService
-- Argument-array execution only
-- Typed results and errors
-- Timeout handling
-- Repository-state model
-- Ref verification, clean-tree checks, and safety-branch helper
-- Existing legacy `git()` calls now route through the central service
-
-### Shared services
-- `JobService`: background subprocesses, streaming events, cancellation, status, and exit codes
-- `PreferencesService`: centralized defaults, invalid-JSON recovery, and atomic save
-- `ui/styles.py`: reusable modern ttk styling
-
-## Automated tests
-
-The initial suite covers Git execution, clean/changed repository state, ref verification, command failures, shell-interpolation resistance, preferences, and typed models.
-
-```bash
-python -m unittest discover -s tests -v
-```
-
-## Compatibility
-
-The legacy GUI remains during staged migration, retaining the complete v0.1-v3.41 user-facing toolset. New features must use the new architecture, and existing centers will move incrementally to avoid a high-risk one-shot rewrite.
+The existing class implementations remain compatible while migration continues incrementally.

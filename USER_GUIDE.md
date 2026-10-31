@@ -219,3 +219,8 @@ Ref Verification is useful before resets, tag operations, scripts, or recovery a
 # Version 3.42 Addendum
 
 Existing tools remain available through the same workspace and Command Palette. Contributors should run `python -m unittest discover -s tests -v` and follow `ARCHITECTURE.md`.
+
+
+# Version 3.43 Addendum
+
+CI workflows now validate Windows/Linux and Python 3.10/3.12. Contributors should run `python -m unittest discover -s tests -v` before push; GitHub Actions additionally runs Ruff, Bandit, and pip-audit.
