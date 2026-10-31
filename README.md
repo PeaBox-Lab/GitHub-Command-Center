@@ -1,28 +1,27 @@
-# GitHub Command Center v3.20.0
+# GitHub Command Center v3.21.0
 
-Version 3.20 continues the decimal major-version-3 release train with automated regression hunting, flexible revision archives, and deeper commit metadata inspection.
+Version 3.21 continues decimal progression within major version 3 and adds three deeper Git tools for object recovery, contributor identity normalization, and equivalent-patch detection.
 
-## New in v3.20
+## New in v3.21
 
-### Automated Bisect Center
-- Known-good and known-bad refs
-- Configurable local test command
-- `git bisect run` automation
-- Clean-working-tree safety gate
-- Visible output and explicit bisect reset
+### Dangling Object Recovery
+- Scan unreachable/dangling objects with `git fsck --no-reflogs --unreachable`
+- Identify unreachable commits, trees, blobs, and tags
+- Inspect unreachable commit patches or raw object content
+- Preserve an unreachable commit by creating a local recovery branch
+- Export the complete fsck evidence report
+- No object deletion
 
-### Revision Archive Center
-- Export HEAD, a branch, tag, or commit as ZIP
-- Optional historical subdirectory export
-- Optional top-level archive prefix
-- No checkout required
+### Contributor Mailmap Center
+- Inventory raw contributor names and emails
+- Edit repository `.mailmap`
+- Preview canonical contributor shortlog
+- Normalize reporting without rewriting commits
 
-### Commit Metadata Inspector
-- Raw commit metadata
-- Tree and parent IDs
-- Author vs committer identity and dates
-- Signature status, signer and key information
-- Full commit message
-- Copyable metadata report
+### Patch Identity Comparator
+- Stable `git patch-id` comparison for two commits
+- Detect equivalent changes independent of author/date/message
+- `git cherry -v` range comparison
+- Useful for duplicate cherry-picks and rebased-equivalent commits
 
-All v0.1-v3.19 capabilities remain included through Command Palette.
+All prior v0.1-v3.20 capabilities remain included through Command Palette.

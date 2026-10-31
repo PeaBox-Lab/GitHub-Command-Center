@@ -1,3 +1,3 @@
-# GitHub Command Center 3.20.0 Release Notes
+# GitHub Command Center 3.21.0 Release Notes
 
-Version 3.20 adds automated regression hunting with `git bisect run`, revision/subdirectory archive exports, and deep commit metadata inspection while preserving the complete cumulative v3 feature set.
+Version 3.21 adds low-level but practical Git capabilities: unreachable-object recovery, contributor identity normalization with `.mailmap`, and stable patch-identity comparison for rebased or cherry-picked changes. All operations retain the project's non-destructive safety defaults.

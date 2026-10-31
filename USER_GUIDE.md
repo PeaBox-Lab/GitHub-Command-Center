@@ -130,3 +130,7 @@ Use Blame Explorer to find which commit introduced a specific line and immediate
 # Version 3.20 Addendum
 
 Automated Bisect repeatedly executes your supplied test command while Git narrows the first bad commit. Use a deterministic command whose exit status reliably indicates good/bad behavior. Revision Archive exports any ref without changing the working tree. Commit Metadata Inspector helps distinguish author and committer data and inspect signature provenance.
+
+# Version 3.21 Addendum
+
+Use Dangling Object Recovery only after ordinary Reflog Recovery cannot find the desired commit. Creating a recovery branch is non-destructive and prevents the selected unreachable commit from later garbage collection. Commit `.mailmap` when canonical contributor identities should be shared. Patch Identity Comparator is useful when determining whether a rebased or cherry-picked commit already contains the same logical change.
