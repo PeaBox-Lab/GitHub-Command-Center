@@ -1,3 +1,3 @@
-# GitHub Command Center 3.40.0 Release Notes
+# GitHub Command Center 3.41.0 Release Notes
 
-Version 3.40 adds multi-branch topology comparison, human-readable object naming, and local object-database growth trending while retaining the complete cumulative major-version-3 Git/GitHub toolset.
+Version 3.41 adds exact ref verification, batch ignore-rule provenance analysis, and fetch dry-run review while preserving the complete cumulative major-version-3 Git/GitHub toolset.

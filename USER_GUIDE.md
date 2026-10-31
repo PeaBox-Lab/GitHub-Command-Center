@@ -210,3 +210,7 @@ Use Fixup/Squash Commit Center when preparing staged corrections for an autosqua
 # Version 3.40 Addendum
 
 Show-Branch Explorer gives a compact multi-tip topology view that complements the graphical log. Name-Rev translates raw object IDs into understandable branch/tag-relative names. Object Growth Tracker helps determine whether maintenance, generated artifacts, or repository history are increasing local object storage over time.
+
+# Version 3.41 Addendum
+
+Ref Verification is useful before resets, tag operations, scripts, or recovery actions where an ambiguous ref would be risky. Ignore Rule Batch Tester explains exactly why each path is or is not ignored. Fetch Preview should be used when a remote/refspec may delete or force-update remote-tracking refs and you want to inspect Git's dry-run first.
