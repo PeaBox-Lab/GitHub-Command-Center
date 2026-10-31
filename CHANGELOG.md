@@ -1,11 +1,13 @@
 # Changelog
 
-## v3.20.0
-- Added Automated Bisect Center powered by `git bisect run`
-- Added Revision Archive Center for arbitrary ref/subdirectory ZIP exports
-- Added Commit Metadata Inspector with author/committer/signature details
-- Retained all v0.1-v3.19 functionality
+## v3.21.0
+- Added Dangling Object Recovery with non-destructive branch preservation
+- Added Contributor Mailmap Center
+- Added Patch Identity Comparator and range-equivalence checks
+- Retained all v0.1-v3.20 functionality
 
+## v3.20.0
+- Added Automated Bisect, Revision Archive and Commit Metadata Inspector
 ## v3.19.0
 - Added Blame Explorer, Remote Prune Audit and Git Object Inspector
 ## v3.18.0
