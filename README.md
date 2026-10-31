@@ -1,30 +1,31 @@
-# GitHub Command Center v3.38.0
+# GitHub Command Center v3.39.0
 
-Version 3.38 continues decimal progression within major version 3 with path-selective stashing, linked-worktree relocation, and effective Git-configuration snapshot comparison.
+Version 3.39 continues decimal progression within major version 3 with fixup/squash commit authoring, tracked-file index-flag management, and advanced revision-walk exploration.
 
-## New in v3.38
+## New in v3.39
 
-### Selective Stash Center
-- Inventory changed paths
-- Multi-select exact paths to stash
-- Named stash message
-- Optional `--keep-index`
-- Optional `--include-untracked`
-- Uses explicit pathspec after `--`
+### Fixup & Squash Commit Center
+- Browse recent commits
+- Create `--fixup=<commit>` commits from staged changes
+- Create `--squash=<commit>` commits
+- Amend HEAD using staged changes and `--no-edit`
+- Automatic `gccc-backup/pre-amend-*` branch before amend
+- Direct handoff to Interactive Rebase for autosquash
 
-### Worktree Move Center
-- Inventory linked worktrees
-- Choose destination folder
-- Clean-worktree gate on the selected linked worktree
-- Move with `git worktree move`
-- Prevent moving the primary worktree through this workflow
-- Repair all worktree metadata
+### Tracked File Flags Center
+- Inspect `git ls-files -v` flags
+- Set/clear assume-unchanged
+- Set/clear skip-worktree
+- Multi-select paths
+- Explicit confirmation
+- Explains that these are local index hints, not ignore rules
 
-### Git Config Snapshot Compare
-- Capture effective configuration baseline
-- Includes scope, origin, and resolved include files
-- Compare current effective config using unified diff
-- Export comparison report
-- Direct access to Git Configuration Center
+### Revision Walk Lab
+- Custom revision specification
+- Topological, date, or author-date order
+- First-parent walks
+- Ancestry-path filtering
+- Boundary commits
+- Graph/decorated one-line output
 
-All v0.1-v3.37 capabilities remain included through Command Palette.
+All v0.1-v3.38 capabilities remain included through Command Palette.
