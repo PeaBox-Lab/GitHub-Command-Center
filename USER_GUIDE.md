@@ -174,3 +174,7 @@ Use Range-Diff after an interactive rebase to validate that the rewritten patch 
 # Version 3.31 Addendum
 
 Use Merge Strategy Lab when the default merge result needs comparison against another strategy or strategy option. Config Include Inspector helps troubleshoot unexpected Git behavior caused by conditional user/worktree configuration. Pack Inventory is read-only and helps identify historical storage hotspots before using the separate History Rewrite Advisor.
+
+# Version 3.32 Addendum
+
+Change Statistics helps quantify the review surface of a release or branch range. Conflict Stage Explorer exposes the index's true base/ours/theirs blobs for difficult merges. Branch Rename Planner coordinates local rename, new upstream publication, and optional old remote deletion with explicit safeguards.

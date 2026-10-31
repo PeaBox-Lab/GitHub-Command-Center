@@ -1,27 +1,31 @@
-# GitHub Command Center v3.31.0
+# GitHub Command Center v3.32.0
 
-Version 3.31 continues decimal progression within major version 3 with merge-strategy experimentation, Git configuration include-chain visibility, and packed-object inventory analysis.
+Version 3.32 continues decimal progression within major version 3 with change-volume analytics, index-stage conflict exploration, and a guarded branch-rename workflow.
 
-## New in v3.31
+## New in v3.32
 
-### Merge Strategy Lab
-- Preview a target ref using merge-base and merge-tree
-- Strategies: ort, recursive, resolve, octopus, ours, subtree
-- Strategy options such as ours, theirs, patience, histogram, ignore-space-change, and renormalize
-- Actual merge starts with `--no-commit --no-ff`
-- Explicit abort control and clean-tree gate
+### Change Statistics Center
+- Analyze any revision range
+- Commit, file, addition, deletion, and total-churn counts
+- Contributor shortlog
+- Churn grouped by file extension
+- Highest-churn file inventory
+- Exportable report
 
-### Config Include Inspector
-- Inspect `include.path` and conditional `includeIf.*.path` rules
-- Show scope and origin
-- Display the effective configuration with includes resolved
-- Export the report
+### Conflict Stage Explorer
+- List unresolved paths
+- View stage 1 merge-base content
+- View stage 2 ours content
+- View stage 3 theirs content
+- View current working-file content
+- Use complete ours/theirs side with confirmation
+- Stage a resolved path
 
-### Pack Inventory Center
-- Pack-index inventory
-- Git object database statistics
-- Read-only `verify-pack` analysis
-- Largest packed blobs with best-effort path mapping
-- Exportable report and handoff to Maintenance Center
+### Branch Rename Planner
+- Preview current branch/upstream
+- Rename a local branch
+- Optionally publish the new remote branch and set upstream
+- Delete the old remote branch only after exact typed confirmation
+- Clean-working-tree gate
 
-All v0.1-v3.30 tools remain included through Command Palette.
+All v0.1-v3.31 tools remain included through Command Palette.
