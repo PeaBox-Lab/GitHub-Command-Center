@@ -732,58 +732,7 @@ class SettingsDiagnosticsCenter(tk.Toplevel):
         self.report="\n".join(lines);self.text.delete("1.0","end");self.text.insert("1.0",self.report)
     def copy(self):self.clipboard_clear();self.clipboard_append(getattr(self,"report",""));messagebox.showinfo("Diagnostics","Report copied to clipboard.",parent=self)
 
-class SyncCenter(tk.Toplevel):
-    """Safe, guided synchronization for a local repository."""
-    def __init__(self,parent,repo):
-        super().__init__(parent);self.repo=repo;self.title("Smart Sync Center");self.geometry("1050x700");self.minsize(900,600);self._build();self.refresh()
-    def _build(self):
-        top=ttk.Frame(self,padding=8);top.pack(fill="x")
-        for t,c in [("Refresh",self.refresh),("Fetch",self.fetch),("Safe sync",self.safe_sync),("Push",self.push_now),("Create checkpoint",self.checkpoint)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
-        self.text=tk.Text(self,wrap="word",font=("Consolas",10),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
-    def snapshot(self):
-        branch=git(self.repo,"branch","--show-current"); status=git(self.repo,"status","--porcelain")
-        try:upstream=git(self.repo,"rev-parse","--abbrev-ref","--symbolic-full-name","@{u}")
-        except:upstream=""
-        ahead=behind="-"
-        if upstream:
-            ahead=git(self.repo,"rev-list","--count","@{u}..HEAD");behind=git(self.repo,"rev-list","--count","HEAD..@{u}")
-        return branch,status,upstream,ahead,behind
-    def refresh(self):
-        try:
-            branch,status,upstream,ahead,behind=self.snapshot();clean=status=="Completed successfully."
-            rec="No action required."
-            if not upstream:rec="Set an upstream branch before synchronization."
-            elif not clean:rec="Commit or stash local changes before synchronization."
-            elif str(behind)!="0" and str(ahead)!="0":rec="Branch has diverged. Compare/review before rebasing or merging."
-            elif str(behind)!="0":rec="Remote is ahead. Safe sync can fast-forward pull."
-            elif str(ahead)!="0":rec="Local branch is ahead. Push when ready."
-            report=f"SMART SYNC\n{'='*72}\nRepository: {self.repo}\nBranch: {branch}\nUpstream: {upstream or 'Not configured'}\nWorking tree: {'Clean' if clean else 'Changed'}\nAhead: {ahead}\nBehind: {behind}\n\nRecommendation: {rec}\n"
-            self.text.delete("1.0","end");self.text.insert("1.0",report)
-        except Exception as e:messagebox.showerror("Smart Sync",str(e),parent=self)
-    def fetch(self):
-        try:messagebox.showinfo("Fetch",git(self.repo,"fetch","--all","--prune"),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Fetch",str(e),parent=self)
-    def checkpoint(self):
-        import datetime
-        name=f"gccc-backup/pre-sync-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}"
-        try:git(self.repo,"branch",name);messagebox.showinfo("Checkpoint",f"Created {name}",parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Checkpoint",str(e),parent=self)
-    def safe_sync(self):
-        try:
-            git(self.repo,"fetch","--all","--prune")
-            branch,status,upstream,ahead,behind=self.snapshot()
-            if status!="Completed successfully.":raise GitError("Working tree has local changes. Commit or stash them before sync.")
-            if not upstream:raise GitError("No upstream is configured for the current branch.")
-            if str(ahead)!="0" and str(behind)!="0":raise GitError("Branch histories have diverged. Use Compare and choose a deliberate merge or rebase workflow.")
-            if str(behind)!="0":out=git(self.repo,"pull","--ff-only")
-            elif str(ahead)!="0":out="Local commits are ready to push. Safe Sync does not auto-push without confirmation."
-            else:out="Already synchronized."
-            messagebox.showinfo("Safe Sync",out,parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Safe Sync",str(e),parent=self)
-    def push_now(self):
-        if not messagebox.askyesno("Push","Push the current branch to its configured upstream?",parent=self):return
-        try:messagebox.showinfo("Push",git(self.repo,"push"),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Push",str(e),parent=self)
+# Legacy SyncCenter retired in v3.63; compatibility alias declared below.
 
 class SearchCenter(tk.Toplevel):
     """Search commits, tracked files and repository text from one UI."""
@@ -1311,52 +1260,7 @@ class CredentialAuditCenter(tk.Toplevel):
             AsyncGitHubCenter(self,self.repo)
         except Exception as e:messagebox.showerror("GitHub authentication",str(e),parent=self)
 
-class ReleasePolicyCenter(tk.Toplevel):
-    """Repository-local release gates and version policy."""
-    def __init__(self,parent,repo):
-        super().__init__(parent);self.repo=repo;self.path=Path(repo)/".git"/"gccc-release-policy.json";self.title("Release Policy Center");self.geometry("1080x720");self._build();self.load()
-    def _build(self):
-        form=ttk.Frame(self,padding=8);form.pack(fill="x")
-        self.clean=tk.BooleanVar(value=True);self.upstream=tk.BooleanVar(value=True);self.changelog=tk.BooleanVar(value=True);self.security=tk.BooleanVar(value=True);self.prefix=tk.StringVar(value="v")
-        for text,var in [("Require clean working tree",self.clean),("Require configured upstream",self.upstream),("Require CHANGELOG.md",self.changelog),("Require SECURITY.md",self.security)]:ttk.Checkbutton(form,text=text,variable=var).pack(side="left",padx=5)
-        ttk.Label(form,text="Tag prefix").pack(side="left",padx=(15,2));ttk.Entry(form,textvariable=self.prefix,width=6).pack(side="left")
-        bar=ttk.Frame(self,padding=(8,0));bar.pack(fill="x")
-        for t,c in [("Evaluate",self.evaluate),("Save policy",self.save),("Suggest next version",self.suggest)]:ttk.Button(bar,text=t,command=c).pack(side="left",padx=2)
-        self.text=tk.Text(self,wrap="word",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
-    def load(self):
-        import json
-        if self.path.exists():
-            try:
-                p=json.loads(self.path.read_text(encoding="utf-8"));self.clean.set(p.get("clean",True));self.upstream.set(p.get("upstream",True));self.changelog.set(p.get("changelog",True));self.security.set(p.get("security",True));self.prefix.set(p.get("prefix","v"))
-            except:pass
-        self.evaluate()
-    def save(self):
-        import json
-        self.path.write_text(json.dumps({"clean":self.clean.get(),"upstream":self.upstream.get(),"changelog":self.changelog.get(),"security":self.security.get(),"prefix":self.prefix.get()},indent=2),encoding="utf-8");messagebox.showinfo("Release policy","Saved under .git/gccc-release-policy.json",parent=self)
-    def evaluate(self):
-        checks=[]
-        def add(name,ok,detail):checks.append((name,ok,detail))
-        status=git(self.repo,"status","--porcelain");add("Clean working tree",not self.clean.get() or status=="Completed successfully.","Clean" if status=="Completed successfully." else "Local changes found")
-        try:u=git(self.repo,"rev-parse","--abbrev-ref","--symbolic-full-name","@{u}");ok=True
-        except Exception as e:u=str(e);ok=False
-        add("Upstream configured",not self.upstream.get() or ok,u)
-        add("CHANGELOG.md",not self.changelog.get() or (Path(self.repo)/"CHANGELOG.md").exists(),"Present" if (Path(self.repo)/"CHANGELOG.md").exists() else "Missing")
-        add("SECURITY.md",not self.security.get() or (Path(self.repo)/"SECURITY.md").exists(),"Present" if (Path(self.repo)/"SECURITY.md").exists() else "Missing")
-        report="RELEASE POLICY EVALUATION\n"+"="*72+"\n\n"+"\n\n".join(f"[{'PASS' if ok else 'FAIL'}] {n}\n  {d}" for n,ok,d in checks)
-        report+=f"\n\nOVERALL: {'PASS' if all(x[1] for x in checks) else 'BLOCKED'}"
-        self.text.delete("1.0","end");self.text.insert("1.0",report)
-    def suggest(self):
-        import re
-        try:last=git(self.repo,"describe","--tags","--abbrev=0")
-        except:last=""
-        m=re.search(r"(\d+)\.(\d+)\.(\d+)",last)
-        if not m:return messagebox.showinfo("Version","No semantic-version tag found. Suggested first tag: v0.1.0",parent=self)
-        major,minor,patch=map(int,m.groups());raw=git(self.repo,"log","--pretty=format:%s",f"{last}..HEAD")
-        bump="patch"
-        if any("BREAKING CHANGE" in x or re.match(r"\w+(\([^)]*\))?!:",x) for x in raw.splitlines()):bump="major"
-        elif any(x.startswith("feat") for x in raw.splitlines()):bump="minor"
-        version=(major+1,0,0) if bump=="major" else (major,minor+1,0) if bump=="minor" else (major,minor,patch+1)
-        messagebox.showinfo("Suggested version",f"Latest tag: {last}\nSuggested bump: {bump}\nSuggested tag: {self.prefix.get()}{version[0]}.{version[1]}.{version[2]}",parent=self)
+# Legacy ReleasePolicyCenter retired in v3.63; compatibility alias declared below.
 
 class RepositoryMetricsCenter(tk.Toplevel):
     """Local engineering metrics without external analytics services."""
@@ -5219,3 +5123,7 @@ ReleaseEvidenceCenter = ReleaseEvidenceV2
 ChangeReviewCenter = ReviewCenterV2
 GitMaintenanceScheduleCenter = AsyncMaintenanceCenter
 CommitGraphMaintenanceCenter = AsyncMaintenanceCenter
+
+# v3.63 compatibility aliases
+SyncCenter = AsyncPushPullCenter
+ReleasePolicyCenter = PublicReleaseReadinessCenter

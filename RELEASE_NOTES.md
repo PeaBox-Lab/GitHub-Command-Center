@@ -1,3 +1,3 @@
-# GitHub Command Center 3.62.0 Release Notes
+# GitHub Command Center 3.63.0 Release Notes
 
-Version 3.62 removes eight additional duplicate legacy class bodies, tightens architecture budgets and introduces a simpler nine-group user navigation model while retaining the complete cumulative v3.61 capability set.
+Version 3.63 retires two additional duplicate legacy implementations, tightens architecture budgets, simplifies the nine-group navigation with user-friendly action labels and descriptions, and expands UI usability/regression coverage while retaining the complete v3.62 capability set.

@@ -1,12 +1,19 @@
-# GitHub Command Center v3.62.0
+# GitHub Command Center v3.63.0
 
-Version 3.62 is a debt-reduction and UI-simplification release with no intended feature removal.
+Version 3.63 continues debt reduction while making the nine primary navigation groups easier to understand.
 
-## Legacy retirement
-Eight more duplicate implementations were removed from `local_git_gui.py`: Submodule, Git LFS, Clone, Bundle Inspector, Release Evidence, Change Review, Maintenance Schedule and Commit Graph Maintenance. Thin compatibility aliases preserve old internal names while routing to the extracted implementations.
+## Debt reduction
+- Retired duplicate Sync Center implementation in favor of the extracted async Push & Pull Center
+- Retired duplicate Release Policy Center implementation in favor of Public Release Readiness
+- Compatibility aliases preserve old internal names and functionality
+- Architecture budgets lowered again
 
-## Simpler UI model
-The primary navigation contract is reduced to nine user-oriented groups: Changes, History, Branches, Sync, Review, GitHub, Release, Recover and Advanced. Each group exposes no more than three primary destinations; the full Command Palette remains available for specialized tools.
+## Friendlier navigation
+The same nine task groups remain, but each now has one obvious primary action, two secondary actions, a plain-language description and short help text. User-facing labels avoid internal version suffixes even when the destination class remains V2 internally.
 
-## Guardrails
-Architecture CI budgets are lowered again. Functionality is retained by aliasing retired classes to tested extracted centers before deleting implementation bodies.
+## Usability regression protection
+- Structural navigation policy tests
+- Unique destination tests
+- Help-text coverage tests
+- Maximum three primary actions per navigation group
+- Expanded Windows UI regression to instantiate Changes, History, Review, Release Evidence, Branch Dashboard and Recovery Dashboard at the existing resolution/scaling matrix
