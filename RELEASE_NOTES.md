@@ -1,3 +1,3 @@
-# GitHub Command Center 3.58.0 Release Notes
+# GitHub Command Center 3.59.0 Release Notes
 
-Version 3.58 extracts review/release publication, migrates remaining GitHub workflows to cancellable JobService execution, and expands Windows UI regression to instantiate real core screens across resolution/scaling matrices.
+Version 3.59 removes twelve duplicated legacy center implementations, reduces synchronous GitHub execution, adds compatibility aliases to extracted centers, introduces architecture CI budgets, refreshes the roadmap and retains the complete user-facing v3.58 feature set.

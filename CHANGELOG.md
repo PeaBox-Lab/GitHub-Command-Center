@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.59.0
+- Removed twelve migrated duplicate legacy center class bodies
+- Added thin compatibility aliases to extracted centers
+- Removed synchronous GitHub subprocess wrappers from retired centers
+- Routed remaining authentication diagnostics to the async GitHub center
+- Added architecture regression gate and tests
+- Replaced stale roadmap with v3.59/v3.60 completion plan
+- Retained all v0.1-v3.58 user-facing features
+
 ## v3.58.0
 - Extracted Review and Release Publish centers
 - Migrated remaining PR checks/merge, workflow dispatch, issue creation and rerun workflows to JobService
