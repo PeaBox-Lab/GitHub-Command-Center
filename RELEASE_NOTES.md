@@ -1,3 +1,3 @@
-# GitHub Command Center 3.61.0 Release Notes
+# GitHub Command Center 3.62.0 Release Notes
 
-Version 3.61 adds a user-controlled Verified Update Center and formal release-gate workflow orchestration across CI, Windows validation and Windows UI regression while retaining the complete v3.60 stabilized feature set.
+Version 3.62 removes eight additional duplicate legacy class bodies, tightens architecture budgets and introduces a simpler nine-group user navigation model while retaining the complete cumulative v3.61 capability set.

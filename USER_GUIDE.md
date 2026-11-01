@@ -304,3 +304,8 @@ Use the extracted Submodule, Git LFS and Clone centers for cancellable long-runn
 # Version 3.61 Addendum
 
 Use **Ctrl+K > Verified Update Center** to validate candidate update metadata and the downloaded installer SHA-256. The application does not silently install or execute updates.
+
+
+# Version 3.62 Addendum
+
+The recommended navigation is now Changes, History, Branches, Sync, Review, GitHub, Release, Recover and Advanced. Each group highlights only three primary workflows; Ctrl+K continues to expose every specialized tool.
