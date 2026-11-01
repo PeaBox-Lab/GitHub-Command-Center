@@ -811,56 +811,7 @@ class SearchCenter(tk.Toplevel):
             files=git(self.repo,"ls-files");matches=[x for x in files.splitlines() if q in x.lower()];self.put("FILE NAME SEARCH","\n".join(matches) if matches else "No tracked filenames matched.")
         except Exception as e:self.put("FILE NAME SEARCH",str(e))
 
-class ChangeReviewCenter(tk.Toplevel):
-    def __init__(self,parent,repo):
-        super().__init__(parent);self.repo=repo;self.title("Pre-Commit Review Center");self.geometry("1160x740");self._build();self.refresh()
-    def _build(self):
-        top=ttk.Frame(self,padding=8);top.pack(fill="x");self.msg=tk.StringVar()
-        for t,c in [("Refresh",self.refresh),("Stage selected",self.stage),("Unstage selected",self.unstage),("Commit",self.commit_now)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
-        ttk.Entry(top,textvariable=self.msg).pack(side="left",fill="x",expand=True,padx=8)
-        pane=ttk.Panedwindow(self,orient="horizontal");pane.pack(fill="both",expand=True,padx=8,pady=5);l=ttk.Frame(pane);r=ttk.Frame(pane);pane.add(l,weight=2);pane.add(r,weight=3)
-        self.tree=ttk.Treeview(l,columns=("state","file"),show="headings",selectmode="extended");self.tree.heading("state",text="State");self.tree.heading("file",text="File");self.tree.column("state",width=70);self.tree.pack(fill="both",expand=True);self.tree.bind("<<TreeviewSelect>>",lambda e:self.show_diff())
-        nb=ttk.Notebook(r);nb.pack(fill="both",expand=True);a=ttk.Frame(nb);b=ttk.Frame(nb);nb.add(a,text="Diff");nb.add(b,text="Checks")
-        self.diff=tk.Text(a,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.diff.pack(fill="both",expand=True);self.checks=tk.Text(b,wrap="word",font=("Consolas",9));self.checks.pack(fill="both",expand=True)
-    def refresh(self):
-        raw=git(self.repo,"status","--porcelain=v1");self.rows=[];self.tree.delete(*self.tree.get_children())
-        for line in raw.splitlines():
-            if len(line)>3:self.rows.append((line[:2],line[3:]));self.tree.insert("","end",iid=str(len(self.rows)-1),values=self.rows[-1])
-        def chk(*args):
-            try:o=git(self.repo,*args);return "PASS" if o=="Completed successfully." else o
-            except Exception as e:return str(e)
-        large=[]
-        for _,f in self.rows:
-            p=Path(self.repo)/f
-            try:
-                if p.is_file() and p.stat().st_size>5*1024*1024:large.append(f"{f} ({p.stat().st_size/1024/1024:.1f} MB)")
-            except OSError:pass
-        text="PRE-COMMIT CHECKS\n"+"="*70+"\nStaged whitespace: "+chk("diff","--cached","--check")+"\n\nUnstaged whitespace: "+chk("diff","--check")+"\n\nChanged files above 5 MB:\n"+("\n".join(large) or "None")
-        self.checks.delete("1.0","end");self.checks.insert("1.0",text)
-    def paths(self):return [self.rows[int(i)][1] for i in self.tree.selection()]
-    def stage(self):
-        p=self.paths()
-        if p:git(self.repo,"add","--",*p);self.refresh()
-    def unstage(self):
-        p=self.paths()
-        if p:git(self.repo,"restore","--staged","--",*p);self.refresh()
-    def show_diff(self):
-        p=self.paths()
-        if not p:return
-        def d(*args):
-            try:o=git(self.repo,*args);return "" if o=="Completed successfully." else o
-            except Exception as e:return str(e)
-        v="STAGED\n"+"="*60+"\n"+d("diff","--cached","--",p[0])+"\n\nUNSTAGED\n"+"="*60+"\n"+d("diff","--",p[0])
-        self.diff.delete("1.0","end");self.diff.insert("1.0",v)
-    def commit_now(self):
-        m=self.msg.get().strip()
-        if not m:return messagebox.showwarning("Commit","Enter a commit message.",parent=self)
-        try:
-            staged=git(self.repo,"diff","--cached","--name-only")
-            if staged=="Completed successfully.":raise GitError("Nothing is staged.")
-            if len(m)<8 and not messagebox.askyesno("Short message","Commit message is very short. Continue?",parent=self):return
-            messagebox.showinfo("Commit",git(self.repo,"commit","-m",m),parent=self);self.msg.set("");self.refresh()
-        except Exception as e:messagebox.showerror("Commit",str(e),parent=self)
+# Legacy ChangeReviewCenter retired in v3.62; compatibility alias declared below.
 
 class RepositoryNotesCenter(tk.Toplevel):
     def __init__(self,parent,repo):
@@ -1010,42 +961,7 @@ class BisectCenter(tk.Toplevel):
 
 # Legacy CommitInspector retired in v3.59; compatibility alias is declared at module end.
 
-class SubmoduleCenter(tk.Toplevel):
-    def __init__(self,parent,repo):
-        super().__init__(parent);self.repo=repo;self.title("Submodule Center");self.geometry("1050x680");self.rows=[];self._build();self.refresh()
-    def _build(self):
-        top=ttk.Frame(self,padding=8);top.pack(fill="x")
-        for t,c in [("Refresh",self.refresh),("Add",self.add),("Init/update all",self.update_all),("Update remote",self.update_remote),("Sync URLs",self.sync)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
-        self.tree=ttk.Treeview(self,columns=("state","sha","path","branch"),show="headings")
-        for c,t,w in [("state","State",70),("sha","Commit",120),("path","Path",370),("branch","Description",380)]:self.tree.heading(c,text=t);self.tree.column(c,width=w,anchor="w")
-        self.tree.pack(fill="both",expand=True,padx=8,pady=5)
-        ttk.Label(self,text="Submodule updates are explicit. Review parent-repository changes after updating because the recorded submodule commit may change.",padding=8).pack(fill="x")
-    def refresh(self):
-        self.tree.delete(*self.tree.get_children());self.rows=[]
-        try:raw=git(self.repo,"submodule","status","--recursive")
-        except Exception as e:raw=str(e)
-        if raw=="Completed successfully.":return
-        for line in raw.splitlines():
-            if len(line)<42:continue
-            state=line[0];rest=line[1:].strip().split(None,2);sha=rest[0];path=rest[1] if len(rest)>1 else "";desc=rest[2] if len(rest)>2 else "";self.rows.append(path);self.tree.insert("","end",values=(state,sha[:10],path,desc))
-    def add(self):
-        url=simpledialog.askstring("Add submodule","Repository URL:",parent=self)
-        if not url:return
-        path=simpledialog.askstring("Add submodule","Local path:",parent=self)
-        if path:
-            try:messagebox.showinfo("Submodule",git(self.repo,"submodule","add",url,path),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Submodule",str(e),parent=self)
-    def update_all(self):
-        if messagebox.askyesno("Submodules","Initialize and update all submodules recursively?",parent=self):
-            try:messagebox.showinfo("Submodules",git(self.repo,"submodule","update","--init","--recursive"),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Submodules",str(e),parent=self)
-    def update_remote(self):
-        if messagebox.askyesno("Submodules","Update submodules from their configured remote branches? Review resulting parent-repository pointer changes afterward.",parent=self):
-            try:messagebox.showinfo("Submodules",git(self.repo,"submodule","update","--remote","--recursive"),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Submodules",str(e),parent=self)
-    def sync(self):
-        try:messagebox.showinfo("Submodules",git(self.repo,"submodule","sync","--recursive"),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Submodules",str(e),parent=self)
+# Legacy SubmoduleCenter retired in v3.62; compatibility alias declared below.
 
 class TaskCenter(tk.Toplevel):
     """Repository-local checklist for release, refactor and maintenance work."""
@@ -1169,33 +1085,7 @@ class HooksCenter(tk.Toplevel):
             r=subprocess.run([str(p)],cwd=self.repo,text=True,capture_output=True,timeout=120,encoding="utf-8",errors="replace");messagebox.showinfo("Hook test",f"Exit code: {r.returncode}\n\n{r.stdout}\n{r.stderr}",parent=self)
         except Exception as e:messagebox.showerror("Hook test",str(e),parent=self)
 
-class LFSCenter(tk.Toplevel):
-    def __init__(self,parent,repo):
-        super().__init__(parent);self.repo=repo;self.title("Git LFS Center");self.geometry("1050x700");self._build();self.refresh()
-    def _build(self):
-        top=ttk.Frame(self,padding=8);top.pack(fill="x");self.pattern=tk.StringVar(value="*.zip");ttk.Entry(top,textvariable=self.pattern,width=24).pack(side="left")
-        for t,c in [("Track pattern",self.track),("Untrack pattern",self.untrack),("Refresh",self.refresh),("Pull LFS objects",lambda:self.run("pull")),("Prune local LFS",self.prune)]:ttk.Button(top,text=t,command=c).pack(side="left",padx=2)
-        self.text=tk.Text(self,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
-    def lfs(self,*args):return git(self.repo,"lfs",*args)
-    def refresh(self):
-        try:v="GIT LFS ENVIRONMENT\n"+"="*72+"\n"+self.lfs("env")+"\n\nTRACKED PATTERNS\n"+"="*72+"\n"+self.lfs("track")+"\n\nLFS FILES\n"+"="*72+"\n"+self.lfs("ls-files")
-        except Exception as e:v="Git LFS is unavailable or not installed. Install Git LFS and run `git lfs install`.\n\n"+str(e)
-        self.text.delete("1.0","end");self.text.insert("1.0",v)
-    def track(self):
-        p=self.pattern.get().strip()
-        if p:
-            try:messagebox.showinfo("Git LFS",self.lfs("track",p),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Git LFS",str(e),parent=self)
-    def untrack(self):
-        p=self.pattern.get().strip()
-        if p and messagebox.askyesno("Git LFS",f"Stop tracking {p} with LFS? Existing history is not rewritten.",parent=self):
-            try:messagebox.showinfo("Git LFS",self.lfs("untrack",p),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Git LFS",str(e),parent=self)
-    def run(self,*args):
-        try:messagebox.showinfo("Git LFS",self.lfs(*args),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Git LFS",str(e),parent=self)
-    def prune(self):
-        if messagebox.askyesno("Git LFS prune","Prune old local LFS objects that Git LFS considers safe to remove?",parent=self):self.run("prune")
+# Legacy LFSCenter retired in v3.62; compatibility alias declared below.
 
 class AutomationCenter(tk.Toplevel):
     """Extensible repository-local automation recipes stored as JSON."""
@@ -2374,31 +2264,7 @@ class IgnoreAttributesStudio(tk.Toplevel):
     def python_defaults(self):self.append_unique(self.ignore,"__pycache__/\n*.py[cod]\n.venv/\nbuild/\ndist/\n*.egg-info/\n.env")
     def binary_defaults(self):self.append_unique(self.attrs,"* text=auto eol=lf\n*.bat text eol=crlf\n*.cmd text eol=crlf\n*.png binary\n*.jpg binary\n*.jpeg binary\n*.gif binary\n*.zip binary\n*.pdf binary")
 
-class CloneWizard(tk.Toplevel):
-    """Guided clone with depth, single-branch, no-checkout and blob-filter options."""
-    def __init__(self,parent):
-        super().__init__(parent);self.title("Advanced Clone Wizard");self.geometry("820x620");self._build()
-    def _build(self):
-        f=ttk.Frame(self,padding=14);f.pack(fill="both",expand=True);self.url=tk.StringVar();self.dest=tk.StringVar();self.branch=tk.StringVar();self.depth=tk.IntVar(value=0);self.single=tk.BooleanVar();self.no_checkout=tk.BooleanVar();self.partial=tk.BooleanVar();self.recurse=tk.BooleanVar(value=True)
-        rows=[("Repository URL",ttk.Entry(f,textvariable=self.url)),("Destination parent",ttk.Entry(f,textvariable=self.dest)),("Branch (optional)",ttk.Entry(f,textvariable=self.branch)),("Depth (0 = full)",ttk.Spinbox(f,from_=0,to=100000,textvariable=self.depth))]
-        for i,(label,w) in enumerate(rows):ttk.Label(f,text=label).grid(row=i,column=0,sticky="w",pady=7);w.grid(row=i,column=1,sticky="ew",padx=8,pady=7)
-        ttk.Button(f,text="Browse destination",command=lambda:self.dest.set(filedialog.askdirectory(parent=self) or self.dest.get())).grid(row=1,column=2)
-        for j,(text,var) in enumerate((("Single branch",self.single),("No checkout",self.no_checkout),("Partial clone: filter blobs",self.partial),("Recurse submodules",self.recurse)),start=4):ttk.Checkbutton(f,text=text,variable=var).grid(row=j,column=1,sticky="w",pady=5)
-        f.columnconfigure(1,weight=1);ttk.Button(f,text="Clone repository",command=self.clone,style="Accent.TButton").grid(row=9,column=1,sticky="e",pady=20)
-        self.out=tk.Text(f,height=10,wrap="word",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.out.grid(row=10,column=0,columnspan=3,sticky="nsew");f.rowconfigure(10,weight=1)
-    def clone(self):
-        u=self.url.get().strip();d=self.dest.get().strip()
-        if not u or not d:return messagebox.showwarning("Clone","Repository URL and destination are required.",parent=self)
-        args=["clone"]
-        if self.depth.get()>0:args += ["--depth",str(self.depth.get())]
-        if self.branch.get().strip():args += ["--branch",self.branch.get().strip()]
-        if self.single.get():args.append("--single-branch")
-        if self.no_checkout.get():args.append("--no-checkout")
-        if self.partial.get():args += ["--filter=blob:none"]
-        if self.recurse.get():args.append("--recurse-submodules")
-        args.append(u)
-        try:out=git(d,*args);self.out.delete("1.0","end");self.out.insert("1.0",out);messagebox.showinfo("Clone","Clone completed.",parent=self)
-        except Exception as e:self.out.delete("1.0","end");self.out.insert("1.0",str(e));messagebox.showerror("Clone",str(e),parent=self)
+# Legacy CloneWizard retired in v3.62; compatibility alias declared below.
 
 class WorktreeSafetyCenter(tk.Toplevel):
     """Worktree-aware branch safety and cleanup dashboard."""
@@ -2677,36 +2543,7 @@ class CommitSearchPro(tk.Toplevel):
         p=self.path.get().strip()
         if p:self.show(["log","--follow","--date=short","--pretty=format:%h%x09%ad%x09%an%x09%s","--",p])
 
-class BundleInspector(tk.Toplevel):
-    """Inspect and verify Git bundles before restore or transfer."""
-    def __init__(self,parent,repo):
-        super().__init__(parent);self.repo=repo;self.title("Git Bundle Inspector");self.geometry("1050x690");self.bundle=tk.StringVar();self._build()
-    def _build(self):
-        top=ttk.Frame(self,padding=8);top.pack(fill="x");ttk.Entry(top,textvariable=self.bundle).pack(side="left",fill="x",expand=True);ttk.Button(top,text="Browse",command=self.browse).pack(side="left",padx=3);ttk.Button(top,text="Verify",command=self.verify).pack(side="left");ttk.Button(top,text="List heads",command=self.heads).pack(side="left",padx=3);ttk.Button(top,text="Clone bundle",command=self.clone).pack(side="left")
-        self.out=tk.Text(self,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.out.pack(fill="both",expand=True,padx=8,pady=5)
-    def browse(self):
-        p=filedialog.askopenfilename(parent=self,filetypes=[("Git bundle","*.bundle"),("All files","*")])
-        if p:self.bundle.set(p)
-    def path(self):
-        p=self.bundle.get().strip()
-        if not p:raise GitError("Select a bundle file first.")
-        return p
-    def result(self,v):self.out.delete("1.0","end");self.out.insert("1.0",v)
-    def verify(self):
-        try:self.result(git(self.repo,"bundle","verify",self.path()))
-        except Exception as e:self.result(str(e))
-    def heads(self):
-        try:self.result(git(self.repo,"bundle","list-heads",self.path()))
-        except Exception as e:self.result(str(e))
-    def clone(self):
-        try:p=self.path()
-        except Exception as e:return messagebox.showerror("Bundle",str(e),parent=self)
-        parent=filedialog.askdirectory(parent=self,title="Choose restore parent folder")
-        if not parent:return
-        name=simpledialog.askstring("Clone bundle","New repository folder name:",initialvalue=Path(p).stem,parent=self)
-        if name:
-            try:messagebox.showinfo("Bundle",git(parent,"clone",p,name),parent=self)
-            except Exception as e:messagebox.showerror("Bundle",str(e),parent=self)
+# Legacy BundleInspector retired in v3.62; compatibility alias declared below.
 
 # Legacy BranchProtectionAdvisor retired in v3.59; compatibility alias is declared at module end.
 
@@ -3407,26 +3244,7 @@ class UpstreamHealthCenter(tk.Toplevel):
             try:messagebox.showinfo("Publish",git(self.repo,"push","-u","origin",r["branch"]),parent=self);self.refresh()
             except Exception as e:messagebox.showerror("Publish",str(e),parent=self)
 
-class ReleaseEvidenceCenter(tk.Toplevel):
-    """Generate consolidated local evidence for release approval."""
-    def __init__(self,parent,repo):
-        super().__init__(parent);self.repo=repo;self.title("Release Evidence Center");self.geometry("1120x760");self._build();self.generate()
-    def _build(self):
-        bar=ttk.Frame(self,padding=8);bar.pack(fill="x");ttk.Button(bar,text="Regenerate",command=self.generate).pack(side="left");ttk.Button(bar,text="Export Markdown",command=self.export).pack(side="left",padx=3);ttk.Button(bar,text="Open Release Center",command=lambda:ReleaseCenter(self,self.repo)).pack(side="left")
-        self.text=tk.Text(self,wrap="word",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
-    def safe(self,*a):
-        try:return git(self.repo,*a)
-        except Exception as e:return f"Unavailable: {e}"
-    def generate(self):
-        import datetime
-        status=self.safe("status","--porcelain");clean=status=="Completed successfully.";branch=self.safe("branch","--show-current");head=self.safe("rev-parse","HEAD");tag=self.safe("describe","--tags","--abbrev=0");fsck=self.safe("fsck","--no-progress");sig=self.safe("log","-10","--pretty=format:%h %G? %s");docs=[]
-        for f in ("README.md","CHANGELOG.md","RELEASE_NOTES.md","SECURITY.md","LICENSE"):
-            docs.append((f,(Path(self.repo)/f).exists()))
-        self.report=f"# Release Evidence: {Path(self.repo).name}\n\n- Captured: {datetime.datetime.now().isoformat()}\n- Branch: `{branch}`\n- HEAD: `{head}`\n- Latest tag: `{tag}`\n- Working tree: **{'CLEAN' if clean else 'CHANGED'}**\n\n## Required files\n"+"\n".join(f"- [{'x' if ok else ' '}] {f}" for f,ok in docs)+f"\n\n## Integrity\n```text\n{fsck}\n```\n\n## Recent signature status\n```text\n{sig}\n```\n\n## Working-tree status\n```text\n{status}\n```\n"
-        self.text.delete("1.0","end");self.text.insert("1.0",self.report)
-    def export(self):
-        p=filedialog.asksaveasfilename(parent=self,defaultextension=".md",initialfile="release-evidence.md")
-        if p:Path(p).write_text(self.report,encoding="utf-8")
+# Legacy ReleaseEvidenceCenter retired in v3.62; compatibility alias declared below.
 
 class RepositoryLocatorCenter(tk.Toplevel):
     """Scan a workspace recursively for Git repositories and open them quickly."""
@@ -4269,28 +4087,7 @@ class MergeCommitRevertCenter(tk.Toplevel):
         try:messagebox.showinfo("Revert",git(self.repo,"revert",arg),parent=self)
         except Exception as e:messagebox.showerror("Revert",str(e),parent=self)
 
-class CommitGraphMaintenanceCenter(tk.Toplevel):
-    """Inspect and maintain the commit-graph and multi-pack-index acceleration files."""
-    def __init__(self,parent,repo):
-        super().__init__(parent);self.repo=repo;self.title("Commit Graph & Pack Index Center");self.geometry("1080x700");self._build();self.refresh()
-    def _build(self):
-        bar=ttk.Frame(self,padding=8);bar.pack(fill="x")
-        for t,c in [("Refresh",self.refresh),("Write commit graph",self.write_graph),("Verify commit graph",self.verify_graph),("Write multi-pack-index",self.write_midx),("Verify multi-pack-index",self.verify_midx),("Expire redundant packs",self.expire)]:ttk.Button(bar,text=t,command=c).pack(side="left",padx=2)
-        self.out=tk.Text(self,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.out.pack(fill="both",expand=True,padx=8,pady=5)
-        ttk.Label(self,text="These files accelerate history and object lookup. Expire only removes packfiles made redundant by the multi-pack-index and requires confirmation.",padding=8).pack(fill="x")
-    def run(self,args,title,confirm=None):
-        if confirm and not messagebox.askyesno(title,confirm,parent=self):return
-        try:v=git(self.repo,*args);messagebox.showinfo(title,v,parent=self);self.refresh()
-        except Exception as e:messagebox.showerror(title,str(e),parent=self)
-    def refresh(self):
-        gd=Path(git(self.repo,"rev-parse","--git-dir"));gd=(Path(self.repo)/gd).resolve() if not gd.is_absolute() else gd;cg=gd/"objects"/"info"/"commit-graph";chain=gd/"objects"/"info"/"commit-graphs";midx=gd/"objects"/"pack"/"multi-pack-index"
-        v=f"COMMIT GRAPH & PACK INDEX\n{'='*72}\nGit dir: {gd}\nSingle commit-graph: {'Present' if cg.exists() else 'Missing'}\nCommit-graph chain: {'Present' if chain.exists() else 'Missing'}\nMulti-pack-index: {'Present' if midx.exists() else 'Missing'}\n\nOBJECTS\n"+git(self.repo,"count-objects","-vH")
-        self.out.delete("1.0","end");self.out.insert("1.0",v)
-    def write_graph(self):self.run(["commit-graph","write","--reachable","--changed-paths"],"Commit graph")
-    def verify_graph(self):self.run(["commit-graph","verify","--shallow"],"Commit graph verify")
-    def write_midx(self):self.run(["multi-pack-index","write","--bitmap"],"Multi-pack-index")
-    def verify_midx(self):self.run(["multi-pack-index","verify"],"Multi-pack-index verify")
-    def expire(self):self.run(["multi-pack-index","expire"],"Expire packs","Expire packfiles Git considers redundant through the multi-pack-index?")
+# Legacy CommitGraphMaintenanceCenter retired in v3.62; compatibility alias declared below.
 
 class DiffAlgorithmCenter(tk.Toplevel):
     """Compare Git diff algorithms and word-diff output for a selected ref/path."""
@@ -4768,34 +4565,7 @@ class GitSparseIndexCenter(tk.Toplevel):
         try:messagebox.showinfo("Sparse index",git(self.repo,"sparse-checkout","reapply","--no-sparse-index"),parent=self);self.refresh()
         except Exception as e:messagebox.showerror("Sparse index",str(e),parent=self)
 
-class GitMaintenanceScheduleCenter(tk.Toplevel):
-    """Inspect and control Git maintenance registration and strategy."""
-    def __init__(self,parent,repo):
-        super().__init__(parent);self.repo=repo;self.title("Maintenance Schedule Center");self.geometry("1080x700");self.strategy=tk.StringVar(value="incremental");self._build();self.refresh()
-    def _build(self):
-        bar=ttk.Frame(self,padding=8);bar.pack(fill="x");ttk.Combobox(bar,textvariable=self.strategy,values=["incremental","geometric"],state="readonly",width=15).pack(side="left")
-        for t,c in [("Refresh",self.refresh),("Register repository",self.register),("Unregister",self.unregister),("Set strategy",self.set_strategy),("Run scheduled tasks now",self.run)]:ttk.Button(bar,text=t,command=c).pack(side="left",padx=2)
-        self.out=tk.Text(self,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.out.pack(fill="both",expand=True,padx=8,pady=5)
-        ttk.Label(self,text="Registration delegates scheduling to Git's platform integration. Unregister stops future scheduled maintenance for this repository; it does not delete objects.",padding=8).pack(fill="x")
-    def safe(self,*a):
-        try:return git(self.repo,*a)
-        except Exception as e:return "Unavailable: "+str(e)
-    def refresh(self):
-        repo=self.safe("config","--global","--get-all","maintenance.repo");strategy=self.safe("config","--get","maintenance.strategy");auto=self.safe("config","--get","maintenance.auto");v=f"MAINTENANCE SCHEDULE\n{'='*72}\nRegistered repositories:\n{repo}\n\nRepository strategy: {strategy}\nmaintenance.auto: {auto}\n\nOBJECT STATUS\n{self.safe('count-objects','-vH')}"
-        self.out.delete("1.0","end");self.out.insert("1.0",v)
-    def register(self):
-        try:messagebox.showinfo("Maintenance",git(self.repo,"maintenance","register"),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Maintenance",str(e),parent=self)
-    def unregister(self):
-        if messagebox.askyesno("Maintenance","Unregister this repository from scheduled maintenance?",parent=self):
-            try:messagebox.showinfo("Maintenance",git(self.repo,"maintenance","unregister"),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Maintenance",str(e),parent=self)
-    def set_strategy(self):
-        try:messagebox.showinfo("Maintenance",git(self.repo,"config","maintenance.strategy",self.strategy.get()),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Maintenance",str(e),parent=self)
-    def run(self):
-        try:messagebox.showinfo("Maintenance",git(self.repo,"maintenance","run","--scheduled"),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Maintenance",str(e),parent=self)
+# Legacy GitMaintenanceScheduleCenter retired in v3.62; compatibility alias declared below.
 
 class ObjectFormatCenter(tk.Toplevel):
     """Inspect repository object/ref storage formats and compatibility-sensitive extensions."""
@@ -5439,3 +5209,13 @@ LocalBranchDashboard = BranchDashboardV2
 RemotePruneAuditCenter = AsyncRemotePruneCenter
 GitFetchPreviewCenter = AsyncFetchCenter
 BranchProtectionAdvisor = AsyncGitHubCenter
+
+# v3.62 debt-reduction aliases. Functionality is retained in extracted centers.
+SubmoduleCenter = AsyncSubmoduleCenter
+LFSCenter = AsyncLFSCenter
+CloneWizard = AsyncCloneCenter
+BundleInspector = AsyncBundleCenter
+ReleaseEvidenceCenter = ReleaseEvidenceV2
+ChangeReviewCenter = ReviewCenterV2
+GitMaintenanceScheduleCenter = AsyncMaintenanceCenter
+CommitGraphMaintenanceCenter = AsyncMaintenanceCenter

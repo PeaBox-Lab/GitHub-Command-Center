@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.62.0
+- Retired eight additional duplicate legacy class bodies
+- Added compatibility aliases to extracted Submodule/LFS/Clone/Bundle/Review/Release/Maintenance centers
+- Added simplified nine-group primary navigation contract
+- Tightened legacy line/class CI budgets
+- Added debt and navigation regression tests
+- Retained all v0.1-v3.61 user-facing capabilities
+
 ## v3.61.0
 - Added Verified Update Center for version-policy and SHA-256 verification
 - Added central release-policy evaluator

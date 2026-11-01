@@ -1,19 +1,12 @@
-# GitHub Command Center v3.61.0
+# GitHub Command Center v3.62.0
 
-Version 3.61 continues the stabilization track instead of returning to feature accumulation.
+Version 3.62 is a debt-reduction and UI-simplification release with no intended feature removal.
 
-## Verified Update Center
-- Load signed-release metadata JSON
-- Enforce numeric major/minor/patch update policy
-- Verify downloaded installer SHA-256
-- Show notes/installer/signature URLs
-- Never silently installs or launches an installer
+## Legacy retirement
+Eight more duplicate implementations were removed from `local_git_gui.py`: Submodule, Git LFS, Clone, Bundle Inspector, Release Evidence, Change Review, Maintenance Schedule and Commit Graph Maintenance. Thin compatibility aliases preserve old internal names while routing to the extracted implementations.
 
-## Release gating
-A new release-gate workflow requires CI, Windows validation and the Windows UI-regression matrix before the release-ready job succeeds. Existing Windows package smoke tests remain part of packaging evidence.
+## Simpler UI model
+The primary navigation contract is reduced to nine user-oriented groups: Changes, History, Branches, Sync, Review, GitHub, Release, Recover and Advanced. Each group exposes no more than three primary destinations; the full Command Palette remains available for specialized tools.
 
-## Authenticode
-The optional v3.60 signing hooks remain supported. When certificate secrets are configured the package workflow signs and verifies the Windows executable before packaging continues.
-
-## Architecture
-v3.59 legacy retirement and architecture budgets remain enforced. New UI development stays outside `local_git_gui.py`.
+## Guardrails
+Architecture CI budgets are lowered again. Functionality is retained by aliasing retired classes to tested extracted centers before deleting implementation bodies.
