@@ -1,15 +1,15 @@
 {
   "metrics": {
-    "legacy_lines": 5129,
-    "legacy_classes": 143,
+    "legacy_lines": 5047,
+    "legacy_classes": 139,
     "heavy_sync_calls": 32,
     "direct_sync_gh_calls": 0,
     "shell_true": 0
   },
   "limits": {
-    "legacy_lines": 5150,
-    "legacy_classes": 143,
-    "heavy_sync_calls": 36,
+    "legacy_lines": 5050,
+    "legacy_classes": 139,
+    "heavy_sync_calls": 32,
     "direct_sync_gh_calls": 0,
     "shell_true": 0
   },

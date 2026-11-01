@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.64.0
+- Added Home Dashboard
+- Added Universal Search across tools, branches, tags and commit messages
+- Added Repository Insights
+- Added safe JobService-backed Automation presets
+- Retired four additional duplicate legacy utility classes
+- Tightened architecture budgets with functionality-preserving aliases
+- Retained all v0.1-v3.63 capabilities
+
 ## v3.63.0
 - Retired duplicate SyncCenter and ReleasePolicyCenter bodies
 - Preserved functionality with compatibility aliases to extracted centers
