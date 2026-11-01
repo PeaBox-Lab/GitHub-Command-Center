@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.61.0
+- Added Verified Update Center for version-policy and SHA-256 verification
+- Added central release-policy evaluator
+- Added release-gate workflow across CI, Windows validation and UI regression
+- Enabled workflow_call for reusable validation workflows
+- Retained v3.60 Authenticode hooks and architecture gates
+- Retained all v0.1-v3.60 user-facing features
+
 ## v3.60.0
 - Added async Submodule, Git LFS and Clone centers
 - Added verified updater metadata and SHA-256 validation service

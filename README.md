@@ -1,30 +1,19 @@
-# GitHub Command Center v3.60.0
+# GitHub Command Center v3.61.0
 
-Version 3.60 is the planned stabilization milestone.
+Version 3.61 continues the stabilization track instead of returning to feature accumulation.
 
-## Async completion
-- Extracted asynchronous Submodule Center: add, sync, recursive init/update
-- Extracted asynchronous Git LFS Center: track, fetch all, pull and guarded prune
-- Extracted asynchronous Clone Center: full/shallow/partial clone with cancellation and streamed output
+## Verified Update Center
+- Load signed-release metadata JSON
+- Enforce numeric major/minor/patch update policy
+- Verify downloaded installer SHA-256
+- Show notes/installer/signature URLs
+- Never silently installs or launches an installer
 
-## Verified updater foundation
-- Version-policy enforcement
-- Update metadata model
-- SHA-256 verification of downloaded installers
-- Metadata generator for release pipelines
-- No silent installation or automatic execution
+## Release gating
+A new release-gate workflow requires CI, Windows validation and the Windows UI-regression matrix before the release-ready job succeeds. Existing Windows package smoke tests remain part of packaging evidence.
 
-## Windows signing hooks
-- Optional secret-backed Authenticode signing in the Windows package workflow
-- SHA-256 timestamping through DigiCert's timestamp endpoint
-- PowerShell signature verification gate
-- Unsigned builds continue when signing secrets are not configured
+## Authenticode
+The optional v3.60 signing hooks remain supported. When certificate secrets are configured the package workflow signs and verifies the Windows executable before packaging continues.
 
-## Architecture stabilization
-- v3.59 duplicate retirement retained
-- CI architecture budgets tightened to the v3.59 baseline
-- Direct synchronous `gh` calls remain at zero
-- No `shell=True`
-
-## Release policy
-Windows UI regression and validation workflows remain separate evidence-producing gates. Production publishing should require their successful completion together with CI, package smoke tests and architecture gates.
+## Architecture
+v3.59 legacy retirement and architecture budgets remain enforced. New UI development stays outside `local_git_gui.py`.
