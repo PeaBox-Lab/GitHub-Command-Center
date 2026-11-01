@@ -309,3 +309,8 @@ Use **Ctrl+K > Verified Update Center** to validate candidate update metadata an
 # Version 3.62 Addendum
 
 The recommended navigation is now Changes, History, Branches, Sync, Review, GitHub, Release, Recover and Advanced. Each group highlights only three primary workflows; Ctrl+K continues to expose every specialized tool.
+
+
+# Version 3.63 Addendum
+
+Each of the nine main areas now highlights one recommended action and two supporting actions with plain-language descriptions. Use Ctrl+K whenever you need a specialist tool that is not shown in the simplified primary navigation.

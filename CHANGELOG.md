@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.63.0
+- Retired duplicate SyncCenter and ReleasePolicyCenter bodies
+- Preserved functionality with compatibility aliases to extracted centers
+- Simplified nine navigation groups to one primary plus two secondary actions
+- Added plain-language action hints and usability policy
+- Expanded Windows UI regression from four to six real screens
+- Added UI usability regression tests and lower architecture budgets
+- Retained all v0.1-v3.62 capabilities
+
 ## v3.62.0
 - Retired eight additional duplicate legacy class bodies
 - Added compatibility aliases to extracted Submodule/LFS/Clone/Bundle/Review/Release/Maintenance centers

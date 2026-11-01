@@ -25,8 +25,10 @@ def main():
     from github_command_center.centers.history import HistoryCenterV2
     from github_command_center.centers.review import ReviewCenterV2
     from github_command_center.centers.release import ReleaseEvidenceV2
-    for cls in (ChangesCenterV2,HistoryCenterV2,ReviewCenterV2,ReleaseEvidenceV2):
+    from github_command_center.centers.branches import BranchDashboardV2
+    from github_command_center.centers.recovery import RecoveryDashboardV2
+    for cls in (ChangesCenterV2,HistoryCenterV2,ReviewCenterV2,ReleaseEvidenceV2,BranchDashboardV2,RecoveryDashboardV2):
         try:w=cls(root,str(repo));w.update_idletasks();created.append(cls.__name__)
         except Exception as exc:errors.append(f'{cls.__name__}: {exc}')
-    tables,layout_errors=inspect(root);errors.extend(layout_errors);report={'platform':platform.platform(),'resolution':resolution,'scaling':scale,'created':created,'tables':tables,'errors':errors,'passed':len(created)==4 and not errors};(ROOT/'ui-regression.json').write_text(json.dumps(report,indent=2),encoding='utf-8');root.destroy();tmp.cleanup();print(json.dumps(report,indent=2));return 0 if report['passed'] else 1
+    tables,layout_errors=inspect(root);errors.extend(layout_errors);report={'platform':platform.platform(),'resolution':resolution,'scaling':scale,'created':created,'tables':tables,'errors':errors,'passed':len(created)==6 and not errors};(ROOT/'ui-regression.json').write_text(json.dumps(report,indent=2),encoding='utf-8');root.destroy();tmp.cleanup();print(json.dumps(report,indent=2));return 0 if report['passed'] else 1
 if __name__=='__main__':raise SystemExit(main())
