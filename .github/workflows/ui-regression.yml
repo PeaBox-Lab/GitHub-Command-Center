@@ -1,5 +1,6 @@
 name: Windows UI regression
 on:
+  workflow_call:
   workflow_dispatch:
   pull_request:
   push:

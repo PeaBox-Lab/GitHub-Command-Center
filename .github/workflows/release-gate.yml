@@ -1,0 +1,19 @@
+name: Release gate
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v3.*']
+permissions:
+  contents: read
+jobs:
+  quality:
+    uses: ./.github/workflows/ci.yml
+  windows-validation:
+    uses: ./.github/workflows/windows-validation.yml
+  ui-regression:
+    uses: ./.github/workflows/ui-regression.yml
+  release-ready:
+    needs: [quality, windows-validation, ui-regression]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Required release validation workflows completed successfully."

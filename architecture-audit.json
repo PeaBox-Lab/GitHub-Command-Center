@@ -1,8 +1,8 @@
 {
-  "legacy_lines": 5440,
+  "legacy_lines": 5441,
   "legacy_classes": 153,
-  "center_modules": 36,
-  "service_modules": 15,
+  "center_modules": 38,
+  "service_modules": 16,
   "legacy_sync_heavy_calls": 46,
   "migrated_centers": [
     "AsyncFetchCenter",

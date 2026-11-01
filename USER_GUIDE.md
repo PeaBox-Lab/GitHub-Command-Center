@@ -299,3 +299,8 @@ Migrated workflows now resolve to the extracted async centers even when older in
 # Version 3.60 Addendum
 
 Use the extracted Submodule, Git LFS and Clone centers for cancellable long-running operations. Update packages must be verified against release metadata SHA-256 before installation; installation remains user-confirmed.
+
+
+# Version 3.61 Addendum
+
+Use **Ctrl+K > Verified Update Center** to validate candidate update metadata and the downloaded installer SHA-256. The application does not silently install or execute updates.

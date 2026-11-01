@@ -1,3 +1,3 @@
-# GitHub Command Center 3.60.0 Release Notes
+# GitHub Command Center 3.61.0 Release Notes
 
-Version 3.60 completes the planned stabilization milestone with async submodule/LFS/clone centers, verified update metadata and SHA-256 checks, optional Authenticode signing hooks, tightened architecture budgets and the complete cumulative major-version-3 feature set.
+Version 3.61 adds a user-controlled Verified Update Center and formal release-gate workflow orchestration across CI, Windows validation and Windows UI regression while retaining the complete v3.60 stabilized feature set.
