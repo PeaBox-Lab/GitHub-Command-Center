@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.65.0
+- Added WorkspaceShell navigation hub
+- Added persistent recent tools, favorites and window geometry
+- Reused the nine simplified task groups
+- Added Home and Universal Search shortcuts
+- Preserved all v3.64 specialist centers and architecture safeguards
+
 ## v3.64.0
 - Added Home Dashboard
 - Added Universal Search across tools, branches, tags and commit messages
