@@ -289,3 +289,8 @@ Use **Push & Pull Center** for guarded asynchronous network operations and **Git
 # Version 3.58 Addendum
 
 Use **Review Center V2** for preflight quality gates, **Release Publish Center V2** for tag/release publication, and **GitHub Workflow Center** for PR checks/merge, workflow dispatch, issue creation and failed-run reruns. Network/quality operations stream asynchronously and can be cancelled.
+
+
+# Version 3.59 Addendum
+
+Migrated workflows now resolve to the extracted async centers even when older internal names are used. Architecture CI prevents the retired duplicate classes and synchronous GitHub wrappers from returning.

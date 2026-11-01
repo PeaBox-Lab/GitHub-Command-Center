@@ -1,17 +1,34 @@
-# GitHub Command Center v3.58.0
+# GitHub Command Center v3.59.0
 
-Version 3.58 consolidates the v3.50-v3.60 hardening roadmap: architecture extraction, async Git/GitHub execution, review/release separation, Windows UI regression, packaging, accessibility, reliability, plugin security and readiness evidence.
+Version 3.59 is the legacy-retirement, async-completion and architecture-enforcement release.
 
-## New extracted centers
-- Review Center V2: changed-file review plus async tests, compile, Ruff and Bandit
-- Release Publish Center V2: annotated tags, async tag push and async GitHub Release creation
-- GitHub Workflow Center: PR checks/merge, workflow dispatch, issue creation and failed-run rerun through JobService
+## Retired duplicate legacy implementations
 
-## Remaining GitHub workflows migrated async
-All added GitHub mutation workflows use `gh` argument arrays and `JobPanel`; no shell execution is used.
+Twelve migrated class bodies were removed from `local_git_gui.py` and replaced with thin compatibility aliases to extracted centers:
 
-## Windows UI regression
-The Windows matrix creates real Changes, History, Review and Release Evidence windows at 1366x768 and 1920x1080 with 100%, 125% and 150% scaling, inspects tables for narrow columns/multiline spillover and uploads `ui-regression.json`.
+- Release Center
+- Pull Requests
+- GitHub Actions
+- Security
+- Commit Inspector
+- Reflog Recovery
+- Maintenance
+- Preflight
+- Local Branch Dashboard
+- Remote Prune Audit
+- Fetch Preview
+- Branch Protection Advisor
 
-## Roadmap consolidation
-Completed foundations from v3.50-v3.60 include 100+ tests, public readiness, accessibility, Windows packaging/validation, visual diff, task navigation, JobService, plugin security, startup profiling, table-layout correction and staged center extraction. Next releases should prioritize updater/signing and removing duplicated legacy class bodies.
+Existing callers remain compatible, but only the extracted implementation is maintained.
+
+## Synchronous GitHub cleanup
+
+Direct synchronous `gh` subprocess wrappers inside retired centers were removed. The remaining authentication path now opens the asynchronous GitHub center. GitHub queries and mutations use JobService/JobPanel with argument arrays, streamed output, cancellation and exit status.
+
+## Architecture enforcement
+
+`scripts/architecture_gate.py` fails CI when the legacy module, synchronous heavy operations, direct synchronous GitHub calls or `shell=True` regress beyond approved limits. The limits only move downward in future releases.
+
+## Current direction
+
+v3.60 is the stabilization milestone: submodule/LFS/clone async migration, updater verification, Windows release gating and signing hooks.

@@ -1,23 +1,31 @@
-# Roadmap after v3.42
+# GitHub Command Center Roadmap
 
-## v3.43: modular migration + CI (completed)
-- Added recovery, branch, and release domain registries; class-body migration continues in v3.44
-- Expanded the test suite; continue toward 50+ tests in v3.44
-- Added GitHub Actions for unittest, compileall, Ruff, Bandit, and pip-audit
+## Completed through v3.59
 
-## v3.44: responsive execution
-- Migrate long Git/GitHub operations to `JobService`
-- Shared progress, cancellation, timeout, and output UI
+- Central GitService, JobService, typed models and shared UI architecture
+- 100+ automated tests and real Git integration tests
+- Visual diff and selected-hunk stage/unstage
+- Task-based navigation and accessibility preferences
+- Windows packaging, validation and UI-regression workflows
+- Plugin manifest security, executable allowlists and publisher trust
+- Public release readiness and reliability/startup evidence
+- Extracted Changes, History, Review, Branches, Recovery, Release, Sync, Backup and GitHub centers
+- Legacy duplicate retirement for twelve migrated center classes
+- Architecture CI gate preventing renewed monolith/synchronous-call growth
 
-## v3.45: visual diff foundation
-- Reusable side-by-side, inline, and word-diff widgets
-- Improved hunk staging and first line-level staging workflow
+## v3.60 stabilization milestone
 
-## v3.46: task-based UX
-- Home, Changes, History, Branches, Sync, Review, GitHub, Release, Recover, Advanced
+- Migrate/extract submodule, Git LFS and clone workflows
+- Reduce remaining heavy synchronous call sites below 20
+- Remove remaining duplicate compatibility classes where extracted replacements exist
+- Make Windows validation/UI matrix prerequisites for package publishing
+- Add verified updater metadata/download/checksum flow
+- Add Authenticode signing hooks and signature-verification gates
+- Performance/accessibility regression pass on packaged Windows artifacts
 
-## v3.47: packaging
-- PyInstaller executable, portable ZIP, Windows installer, checksums, smoke tests
+## Post-v3.60
 
-## v3.48-v3.50
-- Expanded real-Git integration coverage; continue toward 100+ tests in v3.49/v3.50, plugin signing, accessibility, upgrade path, and public-release hardening
+- Continue lowering `local_git_gui.py` line/class budgets each release
+- Certificate-backed plugin signatures and revocation/transparency support
+- Provider adapters only after GitHub workflows remain stable
+- No new feature center may be implemented in `local_git_gui.py`
