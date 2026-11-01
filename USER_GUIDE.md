@@ -294,3 +294,8 @@ Use **Review Center V2** for preflight quality gates, **Release Publish Center V
 # Version 3.59 Addendum
 
 Migrated workflows now resolve to the extracted async centers even when older internal names are used. Architecture CI prevents the retired duplicate classes and synchronous GitHub wrappers from returning.
+
+
+# Version 3.60 Addendum
+
+Use the extracted Submodule, Git LFS and Clone centers for cancellable long-running operations. Update packages must be verified against release metadata SHA-256 before installation; installation remains user-confirmed.

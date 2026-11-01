@@ -23,6 +23,17 @@ jobs:
         run: python -m unittest discover -s tests -v
       - name: Build executable and portable package
         run: python scripts/build_release.py
+      - name: Optional Authenticode signing hook
+        if: ${{ secrets.WINDOWS_CERT_BASE64 != '' }}
+        shell: pwsh
+        run: |
+          $bytes=[Convert]::FromBase64String("${{ secrets.WINDOWS_CERT_BASE64 }}")
+          [IO.File]::WriteAllBytes("certificate.pfx",$bytes)
+          signtool sign /fd SHA256 /f certificate.pfx /p "${{ secrets.WINDOWS_CERT_PASSWORD }}" /tr http://timestamp.digicert.com /td SHA256 dist\GitHubCommandCenter.exe
+      - name: Verify Authenticode when signing is configured
+        if: ${{ secrets.WINDOWS_CERT_BASE64 != '' }}
+        shell: pwsh
+        run: ./scripts/verify_windows_signature.ps1 dist\GitHubCommandCenter.exe
       - name: Build Inno Setup installer
         shell: pwsh
         run: |
