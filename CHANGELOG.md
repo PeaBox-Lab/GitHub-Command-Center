@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.60.0
+- Added async Submodule, Git LFS and Clone centers
+- Added verified updater metadata and SHA-256 validation service
+- Added update metadata generator
+- Added optional Authenticode signing and verification hooks
+- Tightened architecture regression budgets
+- Retained the full v0.1-v3.59 user-facing feature set
+
 ## v3.59.0
 - Removed twelve migrated duplicate legacy center class bodies
 - Added thin compatibility aliases to extracted centers

@@ -1,34 +1,30 @@
-# GitHub Command Center v3.59.0
+# GitHub Command Center v3.60.0
 
-Version 3.59 is the legacy-retirement, async-completion and architecture-enforcement release.
+Version 3.60 is the planned stabilization milestone.
 
-## Retired duplicate legacy implementations
+## Async completion
+- Extracted asynchronous Submodule Center: add, sync, recursive init/update
+- Extracted asynchronous Git LFS Center: track, fetch all, pull and guarded prune
+- Extracted asynchronous Clone Center: full/shallow/partial clone with cancellation and streamed output
 
-Twelve migrated class bodies were removed from `local_git_gui.py` and replaced with thin compatibility aliases to extracted centers:
+## Verified updater foundation
+- Version-policy enforcement
+- Update metadata model
+- SHA-256 verification of downloaded installers
+- Metadata generator for release pipelines
+- No silent installation or automatic execution
 
-- Release Center
-- Pull Requests
-- GitHub Actions
-- Security
-- Commit Inspector
-- Reflog Recovery
-- Maintenance
-- Preflight
-- Local Branch Dashboard
-- Remote Prune Audit
-- Fetch Preview
-- Branch Protection Advisor
+## Windows signing hooks
+- Optional secret-backed Authenticode signing in the Windows package workflow
+- SHA-256 timestamping through DigiCert's timestamp endpoint
+- PowerShell signature verification gate
+- Unsigned builds continue when signing secrets are not configured
 
-Existing callers remain compatible, but only the extracted implementation is maintained.
+## Architecture stabilization
+- v3.59 duplicate retirement retained
+- CI architecture budgets tightened to the v3.59 baseline
+- Direct synchronous `gh` calls remain at zero
+- No `shell=True`
 
-## Synchronous GitHub cleanup
-
-Direct synchronous `gh` subprocess wrappers inside retired centers were removed. The remaining authentication path now opens the asynchronous GitHub center. GitHub queries and mutations use JobService/JobPanel with argument arrays, streamed output, cancellation and exit status.
-
-## Architecture enforcement
-
-`scripts/architecture_gate.py` fails CI when the legacy module, synchronous heavy operations, direct synchronous GitHub calls or `shell=True` regress beyond approved limits. The limits only move downward in future releases.
-
-## Current direction
-
-v3.60 is the stabilization milestone: submodule/LFS/clone async migration, updater verification, Windows release gating and signing hooks.
+## Release policy
+Windows UI regression and validation workflows remain separate evidence-producing gates. Production publishing should require their successful completion together with CI, package smoke tests and architecture gates.
