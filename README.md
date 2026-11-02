@@ -1,4 +1,4 @@
-# GitHub Command Center v3.71.0
+# GitHub Command Center v3.72.0
 
 > A unified Python desktop command center for Git, GitHub, repository engineering, recovery, releases and developer workflows.
 
@@ -121,3 +121,21 @@ Every release must update at least:
 - `USER_GUIDE.md`
 
 `ROADMAP.md` and architecture/security documentation are updated whenever the corresponding scope changes.
+
+## v3.71 Git productivity additions
+
+- **Git Log Visualizer**: searchable branch-aware graph, ref decorations, commit inspection, and selected-commit comparison to HEAD.
+- **Stash Workbench**: create, preview, selectively stash paths, apply, pop, branch, and drop stashes with background mutation jobs.
+- **Worktree Workbench**: inventory, add, lock/unlock, move, remove, dry-run prune, and prune linked worktrees.
+- **Ref Compare** and **Revision Explain** remain available from the v3.71 developer tooling.
+
+Existing Git, GitHub, release, recovery, developer, accessibility, packaging, and validation functionality from v3.70 is retained.
+
+## Release lineage
+
+v3.72.0 is built directly from the complete v3.71.0 release.
+
+## New in v3.72
+- Interactive Commit Graph filters by refs, author, dates, message, path, merges and first-parent history.
+- Stash Diff & Conflict Preview uses read-only `git merge-tree` analysis before apply/pop.
+- Complete v3.71 stash, worktree, log, developer, GitHub, recovery and release functionality is retained.

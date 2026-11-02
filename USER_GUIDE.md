@@ -323,3 +323,18 @@ Open **Ref Compare** from Ctrl+K, enter two revisions such as `main` and `featur
 
 ### Revision Explain
 Open **Revision Explain**, enter a branch, tag, commit hash or other revision, and select Explain to see its resolved object, type, nearest readable name and commit metadata.
+
+# Version 3.71 Addendum
+
+## Git Log Visualizer
+Open **Ctrl+K > Git Log Visualizer**. Choose refs such as `--all`, search commit messages, inspect a selected commit patch, or compare the selected commit with HEAD.
+
+## Stash Workbench
+Open **Ctrl+K > Stash Workbench**. Create a named stash, optionally include untracked files or keep the index, preview older stashes, and apply/pop/branch/drop them. Selective stash accepts repository-relative paths.
+
+## Worktree Workbench
+Open **Ctrl+K > Worktree Workbench**. Add parallel worktrees, lock removable worktrees, move linked worktrees, remove non-primary worktrees, and preview stale metadata before pruning.
+
+# Version 3.72 Addendum
+
+Use **Ctrl+K > Interactive Commit Graph** for filtered history. Use **Ctrl+K > Stash Diff & Conflict Preview** for read-only patch and merge-tree analysis.
