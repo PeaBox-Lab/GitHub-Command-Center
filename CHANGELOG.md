@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.71.0
+- Incremental upgrade from the complete v3.70.0 codebase with no feature reset.
+- Added Ref Compare for commit/branch/tag/ref comparison.
+- Added Revision Explain for revision identity, object type, name and metadata inspection.
+- Updated README.md, CHANGELOG.md, RELEASE_NOTES.md and USER_GUIDE.md.
+- Preserved architecture and command-safety guardrails.
+
+
 ## v3.70.0
 - Added extracted Developer Quality, Code Search, Patch Series, Repository Metrics, Build Runner and Developer Artifacts
 - Added async developer validation presets

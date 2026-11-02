@@ -63,3 +63,24 @@ class DevArtifactCenter(tk.Toplevel):
     def archive(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension='.zip',initialfile='source.zip')
         if p:self.out.delete('1.0','end');self.out.insert('1.0',self.git.execute('archive','--format=zip',f'--output={p}',self.ref.get().strip() or 'HEAD',check=False).output+'\n'+p)
+
+class RefCompareCenter(tk.Toplevel):
+    """Compare two revisions without modifying the working tree."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.g=GitService(repo);self.a=tk.StringVar(value='HEAD~1');self.b=tk.StringVar(value='HEAD');self.title('Ref Compare');self.geometry('1120x720');self._build();self.compare()
+    def _build(self):
+        bar=ttk.Frame(self,padding=8);bar.pack(fill='x');ttk.Label(bar,text='Left').pack(side='left');ttk.Entry(bar,textvariable=self.a,width=28).pack(side='left',padx=4);ttk.Label(bar,text='Right').pack(side='left');ttk.Entry(bar,textvariable=self.b,width=28).pack(side='left',padx=4);ttk.Button(bar,text='Compare',command=self.compare).pack(side='left');self.out=tk.Text(self,wrap='none',bg='#0f172a',fg='#e2e8f0',font=('Consolas',9));self.out.pack(fill='both',expand=True,padx=8,pady=8)
+    def compare(self):
+        a,b=self.a.get().strip(),self.b.get().strip(); parts=[]
+        for title,args in [('COMMITS',['log','--left-right','--graph','--oneline',f'{a}...{b}']),('STAT',['diff','--stat',a,b]),('FILES',['diff','--name-status',a,b])]:
+            r=self.g.run(args,check=False) if hasattr(self.g,'run') else self.g.execute(*args,check=False);parts.extend([title, getattr(r,'output',None) or getattr(r,'stdout','') or ''])
+        self.out.delete('1.0','end');self.out.insert('1.0','\n'.join(parts))
+
+class RevisionExplainCenter(tk.Toplevel):
+    """Resolve a revision to its object identity and nearby human-readable ref."""
+    def __init__(self,parent,repo):
+        super().__init__(parent);self.g=GitService(repo);self.rev=tk.StringVar(value='HEAD');self.title('Revision Explain');self.geometry('1000x680');bar=ttk.Frame(self,padding=8);bar.pack(fill='x');ttk.Entry(bar,textvariable=self.rev).pack(side='left',fill='x',expand=True);ttk.Button(bar,text='Explain',command=self.explain).pack(side='left',padx=4);self.out=tk.Text(self,wrap='none',bg='#0f172a',fg='#e2e8f0',font=('Consolas',9));self.out.pack(fill='both',expand=True,padx=8,pady=8);self.explain()
+    def _run(self,args):
+        r=self.g.run(args,check=False) if hasattr(self.g,'run') else self.g.execute(*args,check=False);return getattr(r,'output',None) or getattr(r,'stdout','') or ''
+    def explain(self):
+        r=self.rev.get().strip() or 'HEAD';text='\n\n'.join(['RESOLVED\n'+self._run(['rev-parse','--verify',r]),'TYPE\n'+self._run(['cat-file','-t',r]),'NAME\n'+self._run(['name-rev','--name-only','--always',r]),'COMMIT\n'+self._run(['show','-s','--format=fuller',r])]);self.out.delete('1.0','end');self.out.insert('1.0',text)

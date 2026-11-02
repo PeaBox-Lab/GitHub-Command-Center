@@ -314,3 +314,12 @@ The recommended navigation is now Changes, History, Branches, Sync, Review, GitH
 # Version 3.63 Addendum
 
 Each of the nine main areas now highlights one recommended action and two supporting actions with plain-language descriptions. Use Ctrl+K whenever you need a specialist tool that is not shown in the simplified primary navigation.
+
+
+## v3.71 developer tools
+
+### Ref Compare
+Open **Ref Compare** from Ctrl+K, enter two revisions such as `main` and `feature/api`, then select Compare. The tool is read-only.
+
+### Revision Explain
+Open **Revision Explain**, enter a branch, tag, commit hash or other revision, and select Explain to see its resolved object, type, nearest readable name and commit metadata.
