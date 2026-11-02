@@ -1,5 +1,11 @@
 # Changelog
 
+## v3.70.0
+- Added extracted Developer Quality, Code Search, Patch Series, Repository Metrics, Build Runner and Developer Artifacts
+- Added async developer validation presets
+- Added developer-tool regression tests
+- Preserved architecture debt budgets and cumulative capabilities
+
 ## v3.68.0
 - Added Developer Toolbox with changed-file, whitespace, commit and patch tools
 - Added Git Object Query for cat-file/tree/path/object verification workflows
