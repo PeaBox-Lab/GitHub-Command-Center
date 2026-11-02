@@ -1,3 +1,3 @@
-# GitHub Command Center 3.66.0 Release Notes
+# GitHub Command Center 3.67.0 Release Notes
 
-Version 3.66 is a validated consolidation package built from the v3.63 debt-reduced baseline. It preserves the cumulative functionality, simplified nine-group navigation, architecture gates, asynchronous Git/GitHub execution, accessibility, packaging, updater verification, and Windows validation infrastructure.
+Version 3.67 continues the major-version-3 stabilization line. It adds a reusable repository health snapshot service for diagnostics and evidence, while preserving the v3.66 functionality, simplified navigation, async execution, accessibility, update verification, packaging and architecture gates.

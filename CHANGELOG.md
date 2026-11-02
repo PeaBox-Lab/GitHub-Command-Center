@@ -1,5 +1,11 @@
 # Changelog
 
+## v3.67.0
+- Added typed repository HealthSnapshot service for diagnostic/release evidence
+- Added health snapshot automated tests
+- Preserved v3.66 debt-reduced architecture and simplified navigation
+- No intentional feature removals
+
 ## v3.66.0
 - Consolidated the validated v3.63 debt-reduced baseline into the requested v3.66 release
 - Preserved simplified nine-group navigation and compatibility aliases
