@@ -8,7 +8,7 @@
         "-c",
         "import github_command_center"
       ],
-      "seconds": 1.207718,
+      "seconds": 1.320577,
       "returncode": 0,
       "stderr": ""
     },
@@ -18,7 +18,7 @@
         "-c",
         "import github_command_center.services.git_service"
       ],
-      "seconds": 2.303657,
+      "seconds": 2.412084,
       "returncode": 0,
       "stderr": ""
     },
@@ -28,7 +28,7 @@
         "-c",
         "import github_command_center.services.diff_service"
       ],
-      "seconds": 2.397289,
+      "seconds": 2.471505,
       "returncode": 0,
       "stderr": ""
     },
@@ -38,7 +38,7 @@
         "-c",
         "import github_command_center.ui.navigation"
       ],
-      "seconds": 1.708156,
+      "seconds": 1.610565,
       "returncode": 0,
       "stderr": ""
     }

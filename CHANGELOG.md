@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.68.0
+- Added Developer Toolbox with changed-file, whitespace, commit and patch tools
+- Added Git Object Query for cat-file/tree/path/object verification workflows
+- Added developer-tool regression tests
+- Preserved v3.67 architecture, navigation, async and validation foundations
+- No intentional feature removals
+
 ## v3.67.0
 - Added typed repository HealthSnapshot service for diagnostic/release evidence
 - Added health snapshot automated tests

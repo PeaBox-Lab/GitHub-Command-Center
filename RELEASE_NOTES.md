@@ -1,3 +1,3 @@
-# GitHub Command Center 3.67.0 Release Notes
+# GitHub Command Center 3.68.0 Release Notes
 
-Version 3.67 continues the major-version-3 stabilization line. It adds a reusable repository health snapshot service for diagnostics and evidence, while preserving the v3.66 functionality, simplified navigation, async execution, accessibility, update verification, packaging and architecture gates.
+Version 3.68 adds developer-focused Git diagnostics while preserving the v3.67 stabilization baseline. New tools include a Developer Toolbox for whitespace checks, changed-file review, commit inspection and patch export, plus a Git Object Query center for object type/size/content, tree browsing, historical-path inspection and object verification.

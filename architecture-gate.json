@@ -1,6 +1,6 @@
 {
   "metrics": {
-    "legacy_lines": 5129,
+    "legacy_lines": 5132,
     "legacy_classes": 143,
     "heavy_sync_calls": 32,
     "direct_sync_gh_calls": 0,
