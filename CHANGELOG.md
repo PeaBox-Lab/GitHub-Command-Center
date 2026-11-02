@@ -1,20 +1,10 @@
 # Changelog
 
-## v3.65.0
-- Added WorkspaceShell navigation hub
-- Added persistent recent tools, favorites and window geometry
-- Reused the nine simplified task groups
-- Added Home and Universal Search shortcuts
-- Preserved all v3.64 specialist centers and architecture safeguards
-
-## v3.64.0
-- Added Home Dashboard
-- Added Universal Search across tools, branches, tags and commit messages
-- Added Repository Insights
-- Added safe JobService-backed Automation presets
-- Retired four additional duplicate legacy utility classes
-- Tightened architecture budgets with functionality-preserving aliases
-- Retained all v0.1-v3.63 capabilities
+## v3.66.0
+- Consolidated the validated v3.63 debt-reduced baseline into the requested v3.66 release
+- Preserved simplified nine-group navigation and compatibility aliases
+- Preserved architecture, startup, reliability, accessibility, packaging and Windows validation gates
+- No intentional feature removals
 
 ## v3.63.0
 - Retired duplicate SyncCenter and ReleasePolicyCenter bodies
