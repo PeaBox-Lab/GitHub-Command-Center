@@ -1,12 +1,17 @@
 # Changelog
 
-## v3.71.0
-- Incremental upgrade from the complete v3.70.0 codebase with no feature reset.
-- Added Ref Compare for commit/branch/tag/ref comparison.
-- Added Revision Explain for revision identity, object type, name and metadata inspection.
-- Updated README.md, CHANGELOG.md, RELEASE_NOTES.md and USER_GUIDE.md.
-- Preserved architecture and command-safety guardrails.
+## v3.72.0
+- Added interactive commit graph filters.
+- Added stash diff and read-only conflict previews.
+- Updated cumulative documentation.
 
+
+## v3.71.0
+- Added Git Log Visualizer with searchable graph, decorations and commit inspection.
+- Added Stash Workbench with create/preview/selective stash/apply/pop/branch/drop workflows.
+- Added Worktree Workbench with add/lock/unlock/move/remove/prune workflows.
+- Retained Ref Compare and Revision Explain.
+- Updated README, release notes and user guide while preserving cumulative v3.70 functionality.
 
 ## v3.70.0
 - Added extracted Developer Quality, Code Search, Patch Series, Repository Metrics, Build Runner and Developer Artifacts
