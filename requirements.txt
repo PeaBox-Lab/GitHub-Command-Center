@@ -1,5 +1,5 @@
 
-keyring>=25.0
+keyring>=25.7.0
 # Optional security scanners used by Security Center:
 # pip-audit>=2.7
 # bandit>=1.7
