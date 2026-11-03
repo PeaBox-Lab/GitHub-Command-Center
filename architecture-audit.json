@@ -1,90 +1,23 @@
 {
-  "version": "3.74.0",
-  "architecture": "shell + command gateway + bounded Git feature domains",
-  "modules": {
-    "github_command_center/local_git_gui.py": {
-      "lines": 244,
-      "classes": 1
-    },
-    "github_command_center/core/command_gateway.py": {
-      "lines": 19,
-      "classes": 1
-    },
-    "github_command_center/features/domains/expert_diagnostics.py": {
-      "lines": 348,
-      "classes": 10
-    },
-    "github_command_center/features/domains/expert_history.py": {
-      "lines": 287,
-      "classes": 10
-    },
-    "github_command_center/features/domains/expert_query.py": {
-      "lines": 314,
-      "classes": 10
-    },
-    "github_command_center/features/domains/expert_refs.py": {
-      "lines": 316,
-      "classes": 10
-    },
-    "github_command_center/features/domains/expert_revision.py": {
-      "lines": 268,
-      "classes": 9
-    },
-    "github_command_center/features/domains/expert_storage.py": {
-      "lines": 335,
-      "classes": 10
-    },
-    "github_command_center/features/domains/repository_governance.py": {
-      "lines": 247,
-      "classes": 8
-    },
-    "github_command_center/features/domains/repository_history.py": {
-      "lines": 391,
-      "classes": 7
-    },
-    "github_command_center/features/domains/repository_inspection.py": {
-      "lines": 221,
-      "classes": 7
-    },
-    "github_command_center/features/domains/repository_productivity.py": {
-      "lines": 265,
-      "classes": 8
-    },
-    "github_command_center/features/domains/repository_release.py": {
-      "lines": 272,
-      "classes": 7
-    },
-    "github_command_center/features/domains/repository_safety.py": {
-      "lines": 304,
-      "classes": 8
-    },
-    "github_command_center/features/domains/workspace_automation.py": {
-      "lines": 307,
-      "classes": 8
-    },
-    "github_command_center/features/domains/workspace_graph.py": {
-      "lines": 332,
-      "classes": 4
-    },
-    "github_command_center/features/domains/workspace_operations.py": {
-      "lines": 275,
-      "classes": 7
-    },
-    "github_command_center/features/domains/workspace_productivity.py": {
-      "lines": 256,
-      "classes": 8
-    },
-    "github_command_center/features/domains/workspace_repository.py": {
-      "lines": 259,
-      "classes": 6
-    },
-    "github_command_center/features/domains/workspace_staging.py": {
-      "lines": 236,
-      "classes": 4
-    }
-  },
-  "domain_modules": 18,
-  "total_feature_classes": 141,
-  "compatibility_facades": 3,
-  "compatibility_exports": true
+  "legacy_lines": 5132,
+  "legacy_classes": 143,
+  "center_modules": 41,
+  "service_modules": 17,
+  "legacy_sync_heavy_calls": 32,
+  "migrated_centers": [
+    "AsyncFetchCenter",
+    "AsyncRemotePruneCenter",
+    "AsyncMaintenanceCenter",
+    "BranchDashboardV2",
+    "RecoveryDashboardV2",
+    "ReleaseEvidenceV2",
+    "AsyncPushPullCenter",
+    "AsyncBundleCenter",
+    "ChangesCenterV2",
+    "HistoryCenterV2",
+    "AsyncGitHubCenter",
+    "ReviewCenterV2",
+    "ReleasePublishCenterV2",
+    "AsyncGitHubWorkflowCenter"
+  ]
 }

@@ -1,24 +1,9 @@
-"""Bounded feature domain for GitHub Command Center v3.74."""
-import csv
-import datetime
-import hashlib
-import json
-import os
-import platform
-import re
-import shutil
-import subprocess
-import sys
-import tempfile
-import threading
-import time
-import tkinter as tk
-import zipfile
+"""Bounded Git feature domain."""
+import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, tempfile, threading, time, tkinter as tk, zipfile
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
-
 from ...core.command_gateway import GitError, git
-from ...core.process_gateway import run_process, start_process
+from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class GitPathspecCenter(tk.Toplevel):
     """Preview Git pathspec selection before using it in other workflows."""
@@ -31,12 +16,12 @@ class GitPathspecCenter(tk.Toplevel):
     def preview(self):
         s=self.spec.get().strip()
         try:v=git(self.repo,"ls-files","--",s)
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def changed(self):
         s=self.spec.get().strip()
         try:v=git(self.repo,"status","--short","--",s)
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
 
 class GitGrepStudio(tk.Toplevel):
@@ -60,7 +45,7 @@ class GitGrepStudio(tk.Toplevel):
         p=self.path.get().strip()
         if p:args += ["--",p]
         try:v=git(self.repo,*args)
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
 
 class ArchiveCompareCenter(tk.Toplevel):
@@ -75,11 +60,11 @@ class ArchiveCompareCenter(tk.Toplevel):
         try:
             names=git(self.repo,"diff","--name-status","--find-renames",a,b);stat=git(self.repo,"diff","--dirstat=files,0,cumulative",a,b);short=git(self.repo,"diff","--shortstat",a,b)
             self.report=f"TREE COMPARISON\n{'='*72}\n{a} -> {b}\n{short}\n\nDIRECTORY DISTRIBUTION\n{stat}\n\nFILES\n{names}"
-        except Exception as e:self.report=str(e)
+        except HANDLED_EXCEPTIONS as e:self.report=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",self.report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="tree-comparison.txt")
-        if p:Path(p).write_text(self.report)
+        if p:Path(p).write_text(self.report,encoding="utf-8")
 
 class RemoteUrlAuditCenter(tk.Toplevel):
     """Audit fetch/push URLs independently and safely update them."""
@@ -95,9 +80,9 @@ class RemoteUrlAuditCenter(tk.Toplevel):
         names=[x for x in git(self.repo,"remote").splitlines() if x and x!="Completed successfully."];self.rows=[];self.tree.delete(*self.tree.get_children())
         for n in names:
             try:f=git(self.repo,"remote","get-url",n)
-            except:f=""
+            except HANDLED_EXCEPTIONS:f=""
             try:p=git(self.repo,"remote","get-url","--push",n)
-            except:p=f
+            except HANDLED_EXCEPTIONS:p=f
             self.rows.append((n,f,p));self.tree.insert("","end",iid=str(len(self.rows)-1),values=(n,f,p))
     def selected(self):
         s=self.tree.selection();return self.rows[int(s[0])] if s else None
@@ -111,7 +96,7 @@ class RemoteUrlAuditCenter(tk.Toplevel):
         if not f or not p:return
         if messagebox.askyesno("Remote URLs",f"Update fetch/push URLs for {r[0]}?",parent=self):
             try:git(self.repo,"remote","set-url",r[0],f);git(self.repo,"remote","set-url","--push",r[0],p);self.refresh()
-            except Exception as e:messagebox.showerror("Remote URLs",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Remote URLs",str(e),parent=self)
 
 class GitReplaceCenter(tk.Toplevel):
     """Inspect and manage git replace refs with guarded creation/deletion."""
@@ -125,11 +110,11 @@ class GitReplaceCenter(tk.Toplevel):
         ttk.Label(self,text="git replace changes local object interpretation without rewriting objects. Replace refs are local unless explicitly transferred and should be used deliberately.",padding=8).pack(fill="x")
     def refresh(self):
         try:raw=git(self.repo,"replace","-l")
-        except Exception:raw=""
+        except HANDLED_EXCEPTIONS:raw=""
         self.rows=[];self.tree.delete(*self.tree.get_children())
         for orig in [x for x in raw.splitlines() if x and x!="Completed successfully."]:
             try:rep=git(self.repo,"rev-parse",f"refs/replace/{orig}")
-            except:rep=""
+            except HANDLED_EXCEPTIONS:rep=""
             self.rows.append((orig,rep));self.tree.insert("","end",iid=str(len(self.rows)-1),values=(orig,rep))
     def selected(self):
         s=self.tree.selection();return self.rows[int(s[0])] if s else None
@@ -137,21 +122,21 @@ class GitReplaceCenter(tk.Toplevel):
         old=self.old.get().strip();new=self.new.get().strip()
         if not old or not new:return
         try:old=git(self.repo,"rev-parse",old);new=git(self.repo,"rev-parse",new)
-        except Exception as e:return messagebox.showerror("Replace",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:return messagebox.showerror("Replace",str(e),parent=self)
         if messagebox.askyesno("Create replace ref",f"Locally replace object interpretation:\n{old}\nwith\n{new}?",parent=self):
             try:messagebox.showinfo("Replace",git(self.repo,"replace",old,new),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Replace",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Replace",str(e),parent=self)
     def inspect(self):
         r=self.selected()
         if not r:return
         try:v="ORIGINAL\n"+git(self.repo,"cat-file","-p",r[0])+"\n\nREPLACEMENT\n"+git(self.repo,"cat-file","-p",r[1])
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def delete(self):
         r=self.selected()
         if r and messagebox.askyesno("Delete replace ref",f"Remove local replace ref for {r[0]}?",parent=self):
             try:messagebox.showinfo("Replace",git(self.repo,"replace","-d",r[0]),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Replace",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Replace",str(e),parent=self)
 
 class MergeBaseExplorer(tk.Toplevel):
     """Explore merge bases, ancestry, fork points and independent tips."""
@@ -167,18 +152,18 @@ class MergeBaseExplorer(tk.Toplevel):
         try:
             base=git(self.repo,"merge-base",a,b);allb=git(self.repo,"merge-base","--all",a,b);left=git(self.repo,"rev-list","--count",f"{b}..{a}");right=git(self.repo,"rev-list","--count",f"{a}..{b}");
             try:anc=git(self.repo,"merge-base","--is-ancestor",a,b);ancestor="Yes" if anc=="Completed successfully." else "Yes"
-            except:ancestor="No"
+            except HANDLED_EXCEPTIONS:ancestor="No"
             v=f"MERGE BASE ANALYSIS\n{'='*72}\nA: {a}\nB: {b}\nPrimary merge base: {base}\nAll merge bases: {allb}\nA-only commits: {left}\nB-only commits: {right}\nIs A ancestor of B: {ancestor}\n\n"+git(self.repo,"show","-s","--oneline","--decorate",base)
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.show(v)
     def forkpoint(self):
         a=self.a.get().strip();b=self.b.get().strip()
         try:v=git(self.repo,"merge-base","--fork-point",a,b)+"\n\n"+git(self.repo,"log","-1","--oneline",git(self.repo,"merge-base","--fork-point",a,b))
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.show(v)
     def independent(self):
         try:self.show(git(self.repo,"merge-base","--independent",self.a.get().strip(),self.b.get().strip()))
-        except Exception as e:self.show(str(e))
+        except HANDLED_EXCEPTIONS as e:self.show(str(e))
 
 class BranchContainsCenter(tk.Toplevel):
     """Find branches and tags that contain, merged, or point around a selected commit."""
@@ -192,17 +177,17 @@ class BranchContainsCenter(tk.Toplevel):
     def run(self):
         r=self.ref.get().strip() or "HEAD"
         try:v=git(self.repo,"show","-s","--decorate","--date=iso-strict","--pretty=fuller",r)+"\n\nBRANCHES CONTAINING\n"+git(self.repo,"branch","-a","--contains",r)+"\n\nTAGS CONTAINING\n"+git(self.repo,"tag","--contains",r)
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.show(v)
     def branches(self):
         try:self.show(git(self.repo,"branch","-a","--contains",self.ref.get().strip() or "HEAD"))
-        except Exception as e:self.show(str(e))
+        except HANDLED_EXCEPTIONS as e:self.show(str(e))
     def tags(self):
         try:self.show(git(self.repo,"tag","--contains",self.ref.get().strip() or "HEAD"))
-        except Exception as e:self.show(str(e))
+        except HANDLED_EXCEPTIONS as e:self.show(str(e))
     def notmerged(self):
         try:self.show(git(self.repo,"branch","-a","--no-merged",self.ref.get().strip() or "HEAD"))
-        except Exception as e:self.show(str(e))
+        except HANDLED_EXCEPTIONS as e:self.show(str(e))
 
 class RevertQueueCenter(tk.Toplevel):
     """Build and execute a protected queue of commits to revert."""
@@ -243,10 +228,10 @@ class RevertQueueCenter(tk.Toplevel):
         if not messagebox.askyesno("Revert queue",f"Create {len(self.queue)} revert commit(s) in the displayed order?",parent=self):return
         backup=f"gccc-backup/pre-revert-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}"
         try:git(self.repo,"branch",backup);out=git(self.repo,"revert","--no-edit",*[r[0] for r in self.queue]);messagebox.showinfo("Revert queue",f"{out}\n\nBackup: {backup}",parent=self);self.queue=[];self.render()
-        except Exception as e:messagebox.showwarning("Revert paused",f"Backup: {backup}\n\n{e}\n\nResolve conflicts, stage them, then Continue or Abort.",parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showwarning("Revert paused",f"Backup: {backup}\n\n{e}\n\nResolve conflicts, stage them, then Continue or Abort.",parent=self)
     def control(self,arg):
         try:messagebox.showinfo("Revert",git(self.repo,"revert",arg),parent=self)
-        except Exception as e:messagebox.showerror("Revert",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Revert",str(e),parent=self)
 
 class GitLogQueryCenter(tk.Toplevel):
     """Compose advanced git log queries from author/date/path/merge filters."""
@@ -272,11 +257,11 @@ class GitLogQueryCenter(tk.Toplevel):
         return args
     def run(self):
         try:self.report=git(self.repo,*self.args())
-        except Exception as e:self.report=str(e)
+        except HANDLED_EXCEPTIONS as e:self.report=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",self.report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="git-log-query.txt")
-        if p:Path(p).write_text(self.report)
+        if p:Path(p).write_text(self.report,encoding="utf-8")
 
 class IndexInspectorCenter(tk.Toplevel):
     """Inspect index entries, stages, flags and staged blob metadata."""
@@ -301,14 +286,14 @@ class IndexInspectorCenter(tk.Toplevel):
         if not rows:return
         mode,obj,stage,path=rows[0]
         try:v=f"Path: {path}\nMode: {mode}\nObject: {obj}\nStage: {stage}\n\n"+git(self.repo,"cat-file","-p",obj)
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def flags(self):
         try:v=git(self.repo,"ls-files","-v")
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def unstage(self):
         paths=sorted(set(r[3] for r in self.selected()))
         if paths and messagebox.askyesno("Unstage",f"Unstage {len(paths)} selected path(s)?",parent=self):
             try:messagebox.showinfo("Unstage",git(self.repo,"restore","--staged","--",*paths),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Unstage",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Unstage",str(e),parent=self)

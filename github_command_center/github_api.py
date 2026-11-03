@@ -1,3 +1,4 @@
+from github_command_center.core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 import json
 import urllib.error
@@ -39,7 +40,7 @@ class GitHubClient:
             try:
                 body = json.loads(exc.read().decode("utf-8"))
                 message = body.get("message", str(exc))
-            except Exception:
+            except HANDLED_EXCEPTIONS:
                 message = str(exc)
             raise GitHubError(f"GitHub API {exc.code}: {message}") from exc
         except urllib.error.URLError as exc:

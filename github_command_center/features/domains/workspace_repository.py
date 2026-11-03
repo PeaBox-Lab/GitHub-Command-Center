@@ -1,24 +1,9 @@
-"""Bounded feature domain for GitHub Command Center v3.74."""
-import csv
-import datetime
-import hashlib
-import json
-import os
-import platform
-import re
-import shutil
-import subprocess
-import sys
-import tempfile
-import threading
-import time
-import tkinter as tk
-import zipfile
+"""Bounded Git feature domain."""
+import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, tempfile, threading, time, tkinter as tk, zipfile
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
-
 from ...core.command_gateway import GitError, git
-from ...core.process_gateway import run_process, start_process
+from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class WorktreeCenter(tk.Toplevel):
     def __init__(self,parent,repo):
@@ -39,7 +24,7 @@ class WorktreeCenter(tk.Toplevel):
                     k,v=line.split(" ",1);cur[k]=v
             self.tree.delete(*self.tree.get_children())
             for i,r in enumerate(self.rows):self.tree.insert("","end",iid=str(i),values=(r.get("worktree",""),r.get("HEAD","")[:10],r.get("branch","").replace("refs/heads/","")))
-        except Exception as e:messagebox.showerror("Worktrees",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Worktrees",str(e),parent=self)
     def add(self):
         folder=filedialog.askdirectory(title="Choose parent folder for worktree",parent=self)
         if not folder:return
@@ -50,7 +35,7 @@ class WorktreeCenter(tk.Toplevel):
         try:
             out=git(self.repo,"worktree","add",target,branch) if exists!="Completed successfully." else git(self.repo,"worktree","add","-b",branch,target)
             messagebox.showinfo("Worktree",out,parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Worktree",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Worktree",str(e),parent=self)
     def remove(self):
         s=self.tree.selection()
         if not s:return
@@ -58,10 +43,10 @@ class WorktreeCenter(tk.Toplevel):
         if path==str(Path(self.repo).resolve()):return messagebox.showwarning("Worktree","The main worktree cannot be removed here.",parent=self)
         if messagebox.askyesno("Remove worktree",f"Remove worktree?\n{path}",parent=self):
             try:messagebox.showinfo("Worktree",git(self.repo,"worktree","remove",path),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Worktree",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Worktree",str(e),parent=self)
     def prune(self):
         try:messagebox.showinfo("Worktree",git(self.repo,"worktree","prune"),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Worktree",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Worktree",str(e),parent=self)
 
 class RepositoryCompareCenter(tk.Toplevel):
     """Compare branches, tags or commits before merge/release and export a review report."""
@@ -87,7 +72,7 @@ class RepositoryCompareCenter(tk.Toplevel):
             self.base_box["values"]=refs;self.compare_box["values"]=refs
             current=git(self.repo,"branch","--show-current")
             if refs:self.base.set("main" if "main" in refs else refs[0]);self.compare.set(current if current in refs else refs[min(1,len(refs)-1)])
-        except Exception as e:messagebox.showerror("Compare",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Compare",str(e),parent=self)
     def put(self,w,v):w.delete("1.0","end");w.insert("1.0",v)
     def run_compare(self):
         a=self.base.get().strip();b=self.compare.get().strip()
@@ -108,12 +93,12 @@ class RepositoryCompareCenter(tk.Toplevel):
             summary=f"COMPARE: {a} ... {b}\n"+"="*78+f"\nCommits only in compare: {ahead}\nCommits only in base   : {behind}\nChanged files          : {files}\nAdditions              : {additions}\nDeletions              : {deletions}\n\nDIFF STAT\n{stat}\n"
             self.put(self.summary,summary);self.put(self.files,names);self.put(self.commits,commits);self.put(self.diff,udiff)
             self.report=summary+"\nFILES\n"+names+"\n\nCOMMITS\n"+commits+"\n\nDIFF\n"+udiff
-        except Exception as e:messagebox.showerror("Compare",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Compare",str(e),parent=self)
     def export_report(self):
         if not self.report:self.run_compare()
         if not self.report:return
         path=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="repository-comparison.txt")
-        if path:Path(path).write_text(self.report);messagebox.showinfo("Export",f"Saved {path}",parent=self)
+        if path:Path(path).write_text(self.report,encoding="utf-8");messagebox.showinfo("Export",f"Saved {path}",parent=self)
 
 class BackupRestoreCenter(tk.Toplevel):
     """Local recovery checkpoints using refs, stashes and bundles."""
@@ -129,24 +114,24 @@ class BackupRestoreCenter(tk.Toplevel):
             st=git(self.repo,"stash","list")
             txt="SAFETY CHECKPOINT BRANCHES\n"+"="*72+"\n"+(refs if refs!="Completed successfully." else "None")+"\n\nSTASHES\n"+"="*72+"\n"+(st if st!="Completed successfully." else "None")
             self.text.delete("1.0","end");self.text.insert("1.0",txt)
-        except Exception as e:messagebox.showerror("Recovery",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Recovery",str(e),parent=self)
     def checkpoint(self):
         import datetime
         label=simpledialog.askstring("Checkpoint","Optional label:",initialvalue="manual",parent=self) or "manual"
         safe="".join(c if c.isalnum() or c in "-_" else "-" for c in label)
         name=f"gccc-backup/{safe}-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}"
         try:messagebox.showinfo("Checkpoint",git(self.repo,"branch",name),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Checkpoint",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Checkpoint",str(e),parent=self)
     def bundle(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".bundle",initialfile=Path(self.repo).name+"-backup.bundle")
         if p:
             try:messagebox.showinfo("Bundle",git(self.repo,"bundle","create",p,"--all"),parent=self)
-            except Exception as e:messagebox.showerror("Bundle",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Bundle",str(e),parent=self)
     def verify(self):
         p=filedialog.askopenfilename(parent=self,filetypes=[("Git bundle","*.bundle"),("All files","*")])
         if p:
             try:messagebox.showinfo("Bundle verification",git(self.repo,"bundle","verify",p),parent=self)
-            except Exception as e:messagebox.showerror("Bundle verification",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Bundle verification",str(e),parent=self)
     def restore_bundle(self):
         p=filedialog.askopenfilename(parent=self,filetypes=[("Git bundle","*.bundle")])
         if not p:return
@@ -155,7 +140,7 @@ class BackupRestoreCenter(tk.Toplevel):
         name=simpledialog.askstring("Restore","New repository folder name:",initialvalue=Path(self.repo).name+"-recovered",parent=self)
         if name:
             try:messagebox.showinfo("Restore",git(parent,"clone",p,name),parent=self)
-            except Exception as e:messagebox.showerror("Restore",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Restore",str(e),parent=self)
 
 class RepositoryManager(tk.Toplevel):
     """Multi-repository command center for local portfolios."""
@@ -184,12 +169,12 @@ class RepositoryManager(tk.Toplevel):
             try:
                 branch=git(p,"branch","--show-current");status=git(p,"status","--porcelain");state="Clean" if status=="Completed successfully." else "Changed"
                 try:remote=git(p,"remote","get-url","origin")
-                except:remote="-"
+                except HANDLED_EXCEPTIONS:remote="-"
                 try:ahead=git(p,"rev-list","--count","@{u}..HEAD");behind=git(p,"rev-list","--count","HEAD..@{u}")
-                except:ahead=behind="-"
+                except HANDLED_EXCEPTIONS:ahead=behind="-"
                 row={"path":str(p),"branch":branch,"state":state,"ahead":ahead,"behind":behind,"remote":remote};self.rows.append(row)
                 self.tree.insert("","end",iid=str(len(self.rows)-1),values=(p.name,branch,state,ahead,behind,remote))
-            except Exception:pass
+            except HANDLED_EXCEPTIONS:pass
     def selected(self):return [self.rows[int(i)] for i in self.tree.selection()]
     def fetch(self):
         selected=self.selected()
@@ -197,7 +182,7 @@ class RepositoryManager(tk.Toplevel):
         errors=[]
         for r in selected:
             try:git(r["path"],"fetch","--all","--prune")
-            except Exception as e:errors.append(f"{Path(r['path']).name}: {e}")
+            except HANDLED_EXCEPTIONS as e:errors.append(f"{Path(r['path']).name}: {e}")
         self.scan();messagebox.showinfo("Fetch", "Completed." if not errors else "Completed with errors:\n"+"\n".join(errors),parent=self)
     def open_local(self):
         s=self.selected()
@@ -212,9 +197,9 @@ class SettingsDiagnosticsCenter(tk.Toplevel):
         self.text=tk.Text(self,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
     def cmdver(self,cmd,args):
         try:
-            r=run_process([cmd,*args],timeout=20)
+            r=subprocess.run([cmd,*args],text=True,capture_output=True,timeout=20,encoding="utf-8",errors="replace")
             return (r.returncode==0,(r.stdout or r.stderr).strip().splitlines()[0] if (r.stdout or r.stderr).strip() else "Available")
-        except Exception as e:return False,str(e)
+        except HANDLED_EXCEPTIONS as e:return False,str(e)
     def refresh(self):
         lines=["GITHUB COMMAND CENTER 1.0 DIAGNOSTICS","="*78]
         import sys,platform
@@ -225,10 +210,10 @@ class SettingsDiagnosticsCenter(tk.Toplevel):
             lines.append("\nGit config")
             for key in ("user.name","user.email","core.autocrlf","pull.rebase"):
                 try:v=git(self.repo,"config","--get",key)
-                except:v="Not set"
+                except HANDLED_EXCEPTIONS:v="Not set"
                 lines.append(f"  {key}: {v}")
             lines.append("\nRepository integrity\n  "+git(self.repo,"fsck","--no-progress").replace("\n","\n  "))
-        except Exception as e:lines.append("Repository diagnostics error: "+str(e))
+        except HANDLED_EXCEPTIONS as e:lines.append("Repository diagnostics error: "+str(e))
         self.report="\n".join(lines);self.text.delete("1.0","end");self.text.insert("1.0",self.report)
     def copy(self):self.clipboard_clear();self.clipboard_append(getattr(self,"report",""));messagebox.showinfo("Diagnostics","Report copied to clipboard.",parent=self)
 
@@ -245,15 +230,15 @@ class SearchCenter(tk.Toplevel):
         q=self.q.get().strip()
         if not q:return
         try:self.put("TRACKED TEXT SEARCH",git(self.repo,"grep","-n","-I","--",q))
-        except Exception as e:self.put("TRACKED TEXT SEARCH",str(e))
+        except HANDLED_EXCEPTIONS as e:self.put("TRACKED TEXT SEARCH",str(e))
     def search_commits(self):
         q=self.q.get().strip()
         if not q:return
         try:self.put("COMMIT MESSAGE SEARCH",git(self.repo,"log","--all","--date=short","--pretty=format:%h%x09%ad%x09%an%x09%s","--grep",q,"-i"))
-        except Exception as e:self.put("COMMIT MESSAGE SEARCH",str(e))
+        except HANDLED_EXCEPTIONS as e:self.put("COMMIT MESSAGE SEARCH",str(e))
     def search_files(self):
         q=self.q.get().strip().lower()
         if not q:return
         try:
             files=git(self.repo,"ls-files");matches=[x for x in files.splitlines() if q in x.lower()];self.put("FILE NAME SEARCH","\n".join(matches) if matches else "No tracked filenames matched.")
-        except Exception as e:self.put("FILE NAME SEARCH",str(e))
+        except HANDLED_EXCEPTIONS as e:self.put("FILE NAME SEARCH",str(e))

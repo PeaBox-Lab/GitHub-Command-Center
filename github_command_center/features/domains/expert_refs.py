@@ -1,24 +1,9 @@
-"""Bounded feature domain for GitHub Command Center v3.74."""
-import csv
-import datetime
-import hashlib
-import json
-import os
-import platform
-import re
-import shutil
-import subprocess
-import sys
-import tempfile
-import threading
-import time
-import tkinter as tk
-import zipfile
+"""Bounded Git feature domain."""
+import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, tempfile, threading, time, tkinter as tk, zipfile
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
-
 from ...core.command_gateway import GitError, git
-from ...core.process_gateway import run_process, start_process
+from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class MailmapCenter(tk.Toplevel):
     """Audit contributor identities and maintain a repository .mailmap file."""
@@ -34,15 +19,15 @@ class MailmapCenter(tk.Toplevel):
         ttk.Label(self,text=".mailmap consolidates alternate author names/emails for shortlog and reporting without rewriting commits.",padding=8).pack(fill="x")
     def refresh(self):
         try:v=git(self.repo,"log","--all","--format=%aN <%aE>")
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         unique=sorted(set(v.splitlines()),key=str.lower);self.ids.delete("1.0","end");self.ids.insert("1.0","\n".join(unique));self.load()
     def load(self):
-        self.editor.delete("1.0","end");self.editor.insert("1.0",self.mailmap.read_text(encoding="utf-8") if self.mailmap.exists() else "# Canonical Name <canonical@email> <alternate@email>\n")
+        self.editor.delete("1.0","end");self.editor.insert("1.0",self.mailmap.read_text(encoding="utf-8",errors="replace") if self.mailmap.exists() else "# Canonical Name <canonical@email> <alternate@email>\n")
     def save(self):
-        self.mailmap.write_text(self.editor.get("1.0","end-1c")+"\n");messagebox.showinfo("Mailmap","Saved .mailmap. Review and commit it for shared canonical reporting.",parent=self);self.preview()
+        self.mailmap.write_text(self.editor.get("1.0","end-1c")+"\n",encoding="utf-8");messagebox.showinfo("Mailmap","Saved .mailmap. Review and commit it for shared canonical reporting.",parent=self);self.preview()
     def preview(self):
         try:v=git(self.repo,"shortlog","-sne","--all","--use-mailmap")
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
 
 class PatchIdCenter(tk.Toplevel):
@@ -54,20 +39,20 @@ class PatchIdCenter(tk.Toplevel):
         self.out=tk.Text(self,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.out.pack(fill="both",expand=True,padx=8,pady=5)
         ttk.Label(self,text="Patch IDs compare the introduced change while ignoring commit metadata. Equivalent patch IDs can reveal duplicate cherry-picks or rebased equivalents.",padding=8).pack(fill="x")
     def patch_id(self,ref):
-        show=run_process(["git","show","--pretty=format:",ref],cwd=self.repo,timeout=120,binary=True)
-        if show.returncode:raise GitError(show.stderr.decode("utf-8"))
-        pid=run_process(["git","patch-id","--stable"],cwd=self.repo,input_bytes=show.stdout_bytes,timeout=120,binary=True)
-        if pid.returncode:raise GitError(pid.stderr.decode("utf-8"))
-        return pid.stdout.decode("utf-8").split()[0]
+        show=subprocess.run(["git","show","--pretty=format:",ref],cwd=self.repo,capture_output=True,timeout=120)
+        if show.returncode:raise GitError(show.stderr.decode("utf-8",errors="replace"))
+        pid=subprocess.run(["git","patch-id","--stable"],cwd=self.repo,input=show.stdout,capture_output=True,timeout=120)
+        if pid.returncode:raise GitError(pid.stderr.decode("utf-8",errors="replace"))
+        return pid.stdout.decode("utf-8",errors="replace").split()[0]
     def compare(self):
         try:
             pa=self.patch_id(self.a.get().strip());pb=self.patch_id(self.b.get().strip());v=f"PATCH ID COMPARISON\n{'='*72}\n{self.a.get()}: {pa}\n{self.b.get()}: {pb}\n\nResult: {'EQUIVALENT CHANGES' if pa==pb else 'DIFFERENT CHANGES'}"
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def range_check(self):
         a=self.a.get().strip();b=self.b.get().strip()
         try:v=git(self.repo,"cherry","-v",a,b)
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",f"git cherry -v {a} {b}\n{'='*72}\n{v}\n\n'-' indicates an equivalent patch already exists upstream; '+' indicates a unique patch.")
 
 class CredentialRedactionAuditCenter(tk.Toplevel):
@@ -94,7 +79,7 @@ class CredentialRedactionAuditCenter(tk.Toplevel):
             try:
                 if not p.is_file() or p.stat().st_size>2*1024*1024:continue
                 data=p.read_text(encoding="utf-8",errors="strict")
-            except:continue
+            except HANDLED_EXCEPTIONS:continue
             for n,line in enumerate(data.splitlines(),1):
                 for label,pattern in self.PATTERNS:
                     if re.search(pattern,line):
@@ -102,7 +87,7 @@ class CredentialRedactionAuditCenter(tk.Toplevel):
         self.report="CREDENTIAL REDACTION AUDIT\n"+"="*72+f"\nFindings: {len(self.findings)}\n\n"+"\n".join(f"{k} | {f}:{n} | {p}" for k,f,n,p in self.findings)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="credential-redaction-audit.txt")
-        if p:Path(p).write_text(self.report)
+        if p:Path(p).write_text(self.report,encoding="utf-8")
 
 class RefConsistencyCenter(tk.Toplevel):
     """Validate local refs and detect broken symbolic refs or missing upstream targets."""
@@ -113,13 +98,13 @@ class RefConsistencyCenter(tk.Toplevel):
         self.text=tk.Text(self,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
     def safe(self,*a):
         try:return git(self.repo,*a)
-        except Exception as e:return "ERROR: "+str(e)
+        except HANDLED_EXCEPTIONS as e:return "ERROR: "+str(e)
     def refresh(self):
         refs=self.safe("show-ref","--head","--dereference");head=self.safe("symbolic-ref","-q","HEAD");origin_head=self.safe("symbolic-ref","-q","refs/remotes/origin/HEAD");verify=self.safe("fsck","--connectivity-only","--no-dangling");report=f"REF CONSISTENCY\n{'='*72}\nHEAD symbolic ref: {head}\nOrigin default ref: {origin_head}\n\nCONNECTIVITY\n{verify}\n\nREFS\n{refs}"
         self.text.delete("1.0","end");self.text.insert("1.0",report)
     def fetch(self):
         try:messagebox.showinfo("Refs",git(self.repo,"fetch","--all","--prune"),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Refs",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Refs",str(e),parent=self)
 
 class ReleaseBranchPlanner(tk.Toplevel):
     """Create a release branch from a deliberate base after validating cleanliness and ref existence."""
@@ -134,7 +119,7 @@ class ReleaseBranchPlanner(tk.Toplevel):
     def preview(self):
         b=self.base.get().strip()
         try:v=git(self.repo,"show","-s","--date=iso-strict","--pretty=fuller",b)+"\n\n"+git(self.repo,"log","-10","--oneline",b)
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def create(self):
         import re
@@ -142,10 +127,10 @@ class ReleaseBranchPlanner(tk.Toplevel):
         if not n or not re.match(r"^[A-Za-z0-9._/-]+$",n):return messagebox.showwarning("Release branch","Enter a valid branch name.",parent=self)
         if git(self.repo,"status","--porcelain")!="Completed successfully.":return messagebox.showwarning("Release branch","Commit or stash local changes first.",parent=self)
         try:git(self.repo,"rev-parse","--verify",b)
-        except Exception as e:return messagebox.showerror("Release branch",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:return messagebox.showerror("Release branch",str(e),parent=self)
         if messagebox.askyesno("Release branch",f"Create and switch to {n} from {b}?",parent=self):
             try:messagebox.showinfo("Release branch",git(self.repo,"switch","-c",n,b),parent=self)
-            except Exception as e:messagebox.showerror("Release branch",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Release branch",str(e),parent=self)
 
 class GitSwitchRestoreCenter(tk.Toplevel):
     """Guided modern switch/restore workflows with explicit source and path selection."""
@@ -159,27 +144,27 @@ class GitSwitchRestoreCenter(tk.Toplevel):
         ttk.Label(self,text="Restore can discard file changes. A preview of the selected path is shown before execution and confirmation is required.",padding=8).pack(fill="x")
     def refresh(self):
         try:v=git(self.repo,"branch","-vv")+"\n\nSTATUS\n"+git(self.repo,"status","--short","--branch")
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def switch(self):
         b=self.branch.get().strip()
         if b:
             try:messagebox.showinfo("Switch",git(self.repo,"switch",b),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Switch",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Switch",str(e),parent=self)
     def create(self):
         b=self.branch.get().strip()
         if b:
             try:messagebox.showinfo("Switch",git(self.repo,"switch","-c",b),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Switch",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Switch",str(e),parent=self)
     def restore(self,staged):
         p=self.path.get().strip();src=self.source.get().strip() or "HEAD"
         if not p:return
         try:preview=git(self.repo,"diff","--",p)
-        except Exception as e:preview=str(e)
+        except HANDLED_EXCEPTIONS as e:preview=str(e)
         if not messagebox.askyesno("Restore path",f"Restore {p} from {src}?\n\nCurrent diff preview:\n{preview[:1600]}",parent=self):return
         args=["restore",f"--source={src}"]+(["--staged","--worktree"] if staged else ["--worktree"])+["--",p]
         try:messagebox.showinfo("Restore",git(self.repo,*args),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Restore",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Restore",str(e),parent=self)
 
 class RebaseStateCenter(tk.Toplevel):
     """Inspect an in-progress rebase state without guessing what Git is doing."""
@@ -200,17 +185,17 @@ class RebaseStateCenter(tk.Toplevel):
                 p=state/n
                 if p.exists():files.append(f"## {n}\n{p.read_text(encoding='utf-8',errors='replace')[:8000]}")
             try:conf=git(self.repo,"diff","--name-only","--diff-filter=U")
-            except:conf=""
+            except HANDLED_EXCEPTIONS:conf=""
             v=f"ACTIVE REBASE: {state}\n{'='*72}\n\n"+"\n\n".join(files)+f"\n\nUNRESOLVED FILES\n{conf}"
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def cmd(self,a):
         try:messagebox.showinfo("Rebase",git(self.repo,"rebase",a),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Rebase",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Rebase",str(e),parent=self)
     def todo(self):
         gd=self.gitdir();p=gd/"rebase-merge"/"git-rebase-todo"
         if not p.exists():return messagebox.showinfo("Rebase","No editable interactive-rebase todo file found.",parent=self)
-        w=tk.Toplevel(self);w.title("Rebase todo");w.geometry("900x600");t=tk.Text(w,wrap="none",font=("Consolas",9));t.pack(fill="both",expand=True);t.insert("1.0",p.read_text(encoding="utf-8"))
-        def save():p.write_text(t.get("1.0","end-1c")+"\n");messagebox.showinfo("Rebase todo","Saved. Review carefully before continuing.",parent=w)
+        w=tk.Toplevel(self);w.title("Rebase todo");w.geometry("900x600");t=tk.Text(w,wrap="none",font=("Consolas",9));t.pack(fill="both",expand=True);t.insert("1.0",p.read_text(encoding="utf-8",errors="replace"))
+        def save():p.write_text(t.get("1.0","end-1c")+"\n",encoding="utf-8");messagebox.showinfo("Rebase todo","Saved. Review carefully before continuing.",parent=w)
         ttk.Button(w,text="Save todo",command=save).pack(anchor="e",padx=8,pady=8)
 
 class GitDescribeCenter(tk.Toplevel):
@@ -225,7 +210,7 @@ class GitDescribeCenter(tk.Toplevel):
         values=[]
         for label,args in [("Nearest annotated tag",["describe","--tags","--always",r]),("Long form",["describe","--tags","--always","--long","--dirty",r]),("Exact tag",["describe","--tags","--exact-match",r])]:
             try:v=git(self.repo,*args)
-            except Exception:v="No exact tag" if label=="Exact tag" else "Unavailable"
+            except HANDLED_EXCEPTIONS:v="No exact tag" if label=="Exact tag" else "Unavailable"
             values.append((label,v))
         self.version=values[1][1];text="GIT DESCRIBE\n"+"="*72+"\n\n"+"\n\n".join(f"{k}:\n  {v}" for k,v in values);self.out.delete("1.0","end");self.out.insert("1.0",text)
     def copy(self):self.clipboard_clear();self.clipboard_append(getattr(self,"version",""));messagebox.showinfo("Describe","Copied long-form version string.",parent=self)
@@ -241,20 +226,20 @@ class GitWorktreeRepairCenter(tk.Toplevel):
         ttk.Label(self,text="Repair adjusts worktree administrative metadata. Prune removes stale records only after a dry-run/confirmation.",padding=8).pack(fill="x")
     def refresh(self):
         try:v=git(self.repo,"worktree","list","--porcelain")
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def repair(self):
         try:messagebox.showinfo("Worktree repair",git(self.repo,"worktree","repair"),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Worktree repair",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Worktree repair",str(e),parent=self)
     def preview(self):
         try:v=git(self.repo,"worktree","prune","--dry-run","--verbose")
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0","PRUNE DRY RUN\n"+"="*72+"\n"+v)
     def prune(self):
         self.preview()
         if messagebox.askyesno("Prune worktrees","Remove worktree entries Git reports as stale?",parent=self):
             try:messagebox.showinfo("Prune",git(self.repo,"worktree","prune","--verbose"),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Prune",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Prune",str(e),parent=self)
 
 class TagManagerPro(tk.Toplevel):
     """Create, inspect, sign, push and safely delete local/remote tags."""
@@ -279,38 +264,38 @@ class TagManagerPro(tk.Toplevel):
         t=self.selected()
         if t:
             try:v=git(self.repo,"show","--stat","--decorate",t)
-            except Exception as e:v=str(e)
+            except HANDLED_EXCEPTIONS as e:v=str(e)
             self.out.delete("1.0","end");self.out.insert("1.0",v)
     def create(self):
         n=self.name.get().strip();target=self.target.get().strip() or "HEAD"
         if n:
             try:messagebox.showinfo("Tag",git(self.repo,"tag","-a",n,target,"-m",n),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Tag",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Tag",str(e),parent=self)
     def sign(self):
         n=self.name.get().strip();target=self.target.get().strip() or "HEAD"
         if n:
             try:messagebox.showinfo("Tag",git(self.repo,"tag","-s",n,target,"-m",n),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Tag",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Tag",str(e),parent=self)
     def push(self):
         t=self.selected()
         if t and messagebox.askyesno("Push tag",f"Push {t} to origin?",parent=self):
             try:messagebox.showinfo("Tag",git(self.repo,"push","origin",f"refs/tags/{t}"),parent=self)
-            except Exception as e:messagebox.showerror("Tag",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Tag",str(e),parent=self)
     def verify(self):
         t=self.selected()
         if t:
             try:v=git(self.repo,"tag","-v",t)
-            except Exception as e:v=str(e)
+            except HANDLED_EXCEPTIONS as e:v=str(e)
             self.out.delete("1.0","end");self.out.insert("1.0",v)
     def delete_local(self):
         t=self.selected()
         if t and messagebox.askyesno("Delete local tag",f"Delete local tag {t}?",parent=self):
             try:messagebox.showinfo("Tag",git(self.repo,"tag","-d",t),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Tag",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Tag",str(e),parent=self)
     def delete_remote(self):
         t=self.selected()
         if not t:return
         typed=simpledialog.askstring("Delete remote tag",f"Delete refs/tags/{t} from origin. Type the tag exactly:",parent=self)
         if typed==t:
             try:messagebox.showinfo("Tag",git(self.repo,"push","origin",f":refs/tags/{t}"),parent=self)
-            except Exception as e:messagebox.showerror("Tag",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Tag",str(e),parent=self)

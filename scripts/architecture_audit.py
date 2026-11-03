@@ -1,11 +1,8 @@
 from __future__ import annotations
-import ast,json
+import json,re
 from pathlib import Path
-ROOT=Path(__file__).resolve().parents[1]
-files=[ROOT/'github_command_center/local_git_gui.py',ROOT/'github_command_center/core/command_gateway.py',*(ROOT/'github_command_center/features/domains').glob('*.py')]
-modules={}
-for p in files:
- if p.name=='__init__.py': continue
- text=p.read_text(encoding='utf-8'); tree=ast.parse(text); modules[str(p.relative_to(ROOT))]={'lines':len(text.splitlines()),'classes':sum(isinstance(n,ast.ClassDef) for n in tree.body)}
-report={'version':'3.74.0','architecture':'shell + command gateway + bounded Git feature domains','modules':modules,'domain_modules':sum('/domains/' in '/'+k for k in modules),'total_feature_classes':sum(v['classes'] for k,v in modules.items() if '/domains/' in '/'+k),'compatibility_facades':3,'compatibility_exports':True}
-(ROOT/'architecture-audit.json').write_text(json.dumps(report,indent=2),encoding='utf-8'); print(json.dumps(report,indent=2))
+ROOT=Path(__file__).resolve().parents[1];legacy=ROOT/'github_command_center/local_git_gui.py';text=legacy.read_text(encoding='utf-8')
+migrated=["AsyncFetchCenter","AsyncRemotePruneCenter","AsyncMaintenanceCenter","BranchDashboardV2","RecoveryDashboardV2","ReleaseEvidenceV2","AsyncPushPullCenter","AsyncBundleCenter","ChangesCenterV2","HistoryCenterV2","AsyncGitHubCenter","ReviewCenterV2","ReleasePublishCenterV2","AsyncGitHubWorkflowCenter"]
+report={"legacy_lines":len(text.splitlines()),"legacy_classes":len(re.findall(r'^class ',text,re.M)),"center_modules":len(list((ROOT/'github_command_center/centers').rglob('*.py'))),"service_modules":len(list((ROOT/'github_command_center/services').glob('*.py'))),"legacy_sync_heavy_calls":len(re.findall(r'git\(self\.repo,"(?:fetch|fsck|gc|maintenance|clone|bundle|submodule|push|pull)',text)),"migrated_centers":migrated}
+(ROOT/'architecture-audit.json').write_text(json.dumps(report,indent=2),encoding='utf-8');print(json.dumps(report,indent=2))
+

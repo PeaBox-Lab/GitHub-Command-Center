@@ -1,4 +1,5 @@
 from __future__ import annotations
+from github_command_center.core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 import json
 import time
@@ -29,7 +30,7 @@ class ReliabilityService:
         try:
             function()
             return TimingResult(name, time.perf_counter() - start, True)
-        except Exception as exc:
+        except HANDLED_EXCEPTIONS as exc:
             return TimingResult(name, time.perf_counter() - start, False, str(exc))
 
     def standard_probes(self) -> list[TimingResult]:

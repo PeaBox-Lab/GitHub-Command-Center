@@ -1,7 +1,4 @@
-"""Compatibility facade for v3.73 feature imports.
-
-Implementations are organized into bounded domain modules in v3.74.
-"""
+"""Compatibility facade."""
 from ..core.command_gateway import GitError, git
 from .domains.expert_refs import *
 from .domains.expert_query import *

@@ -1,24 +1,9 @@
-"""Bounded feature domain for GitHub Command Center v3.74."""
-import csv
-import datetime
-import hashlib
-import json
-import os
-import platform
-import re
-import shutil
-import subprocess
-import sys
-import tempfile
-import threading
-import time
-import tkinter as tk
-import zipfile
+"""Bounded Git feature domain."""
+import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, tempfile, threading, time, tkinter as tk, zipfile
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
-
 from ...core.command_gateway import GitError, git
-from ...core.process_gateway import run_process, start_process
+from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class PackInventoryCenter(tk.Toplevel):
     """Inspect pack indexes, object counts and largest packed blobs without modifying history."""
@@ -32,19 +17,19 @@ class PackInventoryCenter(tk.Toplevel):
         gd=Path(git(self.repo,"rev-parse","--git-dir"));gd=(Path(self.repo)/gd).resolve() if not gd.is_absolute() else gd;idxs=list((gd/"objects"/"pack").glob("*.idx"));entries=[]
         for idx in idxs:
             try:raw=git(self.repo,"verify-pack","-v",str(idx))
-            except:continue
+            except HANDLED_EXCEPTIONS:continue
             for line in raw.splitlines():
                 p=line.split()
                 if len(p)>=5 and len(p[0])>=40 and p[1]=="blob" and p[2].isdigit():entries.append((int(p[2]),p[0],idx.name))
         entries=sorted(entries,reverse=True)[:int(self.limit.get())];report="PACK INVENTORY\n"+"="*72+f"\nPack indexes: {len(idxs)}\n\n"+git(self.repo,"count-objects","-vH")+"\n\nLARGEST PACKED BLOBS\n"
         for size,sha,pack in entries:
             try:paths=git(self.repo,"rev-list","--objects","--all");path=next((x.split(" ",1)[1] for x in paths.splitlines() if x.startswith(sha+" ")),"(path not directly mapped)")
-            except:path=""
+            except HANDLED_EXCEPTIONS:path=""
             report+=f"{size/1024/1024:9.2f} MB  {sha[:12]}  {path}  [{pack}]\n"
         self.report=report;self.out.delete("1.0","end");self.out.insert("1.0",report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="pack-inventory.txt")
-        if p:Path(p).write_text(self.report)
+        if p:Path(p).write_text(self.report,encoding="utf-8")
 
 class ChangeStatisticsCenter(tk.Toplevel):
     """Analyze change volume, file types, authors, and churn for a revision range."""
@@ -67,11 +52,11 @@ class ChangeStatisticsCenter(tk.Toplevel):
             report+="\nHIGHEST-CHURN FILES\n"
             for total,ad,de,path in sorted(churn,reverse=True)[:40]:report+=f"{total:>8}  +{ad:<7} -{de:<7} {path}\n"
             self.report=report
-        except Exception as e:self.report=str(e)
+        except HANDLED_EXCEPTIONS as e:self.report=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",self.report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="change-statistics.txt")
-        if p:Path(p).write_text(self.report)
+        if p:Path(p).write_text(self.report,encoding="utf-8")
 
 class ConflictStageExplorer(tk.Toplevel):
     """Inspect stage-1/base, stage-2/ours, and stage-3/theirs blobs for unresolved paths."""
@@ -87,31 +72,31 @@ class ConflictStageExplorer(tk.Toplevel):
         ttk.Label(self,text="Stage views are read-only. Use ours/theirs only when that complete side is intended; otherwise edit the working file using the main conflict resolver.",padding=8).pack(fill="x")
     def refresh(self):
         try:raw=git(self.repo,"diff","--name-only","--diff-filter=U")
-        except:raw=""
+        except HANDLED_EXCEPTIONS:raw=""
         self.paths=[x for x in raw.splitlines() if x and x!="Completed successfully."];self.list.delete(0,"end");[self.list.insert("end",p) for p in self.paths]
         if self.paths:self.list.selection_set(0);self.load()
     def selected(self):
         s=self.list.curselection();return self.paths[s[0]] if s else None
     def blob(self,stage,path):
-        r=run_process(["git","show",f":{stage}:{path}"],cwd=self.repo,timeout=120,binary=True)
-        return r.stdout.decode("utf-8") if r.returncode==0 else "(stage unavailable or binary)"
+        r=subprocess.run(["git","show",f":{stage}:{path}"],cwd=self.repo,capture_output=True,timeout=120)
+        return r.stdout.decode("utf-8",errors="replace") if r.returncode==0 else "(stage unavailable or binary)"
     def load(self):
         p=self.selected()
         if not p:return
         values={"BASE stage 1":self.blob(1,p),"OURS stage 2":self.blob(2,p),"THEIRS stage 3":self.blob(3,p)}
-        try:values["WORKTREE"]=(Path(self.repo)/p).read_text(encoding="utf-8")
-        except:values["WORKTREE"]="(working file unavailable or binary)"
+        try:values["WORKTREE"]=(Path(self.repo)/p).read_text(encoding="utf-8",errors="replace")
+        except HANDLED_EXCEPTIONS:values["WORKTREE"]="(working file unavailable or binary)"
         for n,v in values.items():self.views[n].delete("1.0","end");self.views[n].insert("1.0",v)
     def use(self,side):
         p=self.selected()
         if p and messagebox.askyesno("Resolve conflict",f"Replace the working file with {side[2:]} for {p}?",parent=self):
             try:messagebox.showinfo("Conflict",git(self.repo,"checkout",side,"--",p),parent=self);self.load()
-            except Exception as e:messagebox.showerror("Conflict",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Conflict",str(e),parent=self)
     def stage(self):
         p=self.selected()
         if p:
             try:messagebox.showinfo("Conflict",git(self.repo,"add","--",p),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Conflict",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Conflict",str(e),parent=self)
 
 class BranchRenamePlanner(tk.Toplevel):
     """Plan local and optional remote branch rename with upstream repair."""
@@ -128,7 +113,7 @@ class BranchRenamePlanner(tk.Toplevel):
             current=git(self.repo,"branch","--show-current")
             if not self.old.get():self.old.set(current)
             up=git(self.repo,"rev-parse","--abbrev-ref","--symbolic-full-name",f"{self.old.get()}@{{u}}")
-        except Exception as e:up="Not configured: "+str(e)
+        except HANDLED_EXCEPTIONS as e:up="Not configured: "+str(e)
         v=f"BRANCH RENAME PLAN\n{'='*72}\nOld local: {self.old.get()}\nNew local: {self.new.get() or '(enter a name)'}\nCurrent upstream: {up}\nRemote workflow: {'publish new + delete old' if self.update_remote.get() else 'local only'}\n\nRemote deletion always requires exact typed confirmation."
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def execute(self):
@@ -143,7 +128,7 @@ class BranchRenamePlanner(tk.Toplevel):
                 git(self.repo,"push","-u",remote,new);typed=simpledialog.askstring("Delete old remote",f"New branch published. Type the old branch name exactly to delete {remote}/{old}:",parent=self)
                 if typed==old:git(self.repo,"push",remote,"--delete",old)
             messagebox.showinfo("Rename","Branch rename workflow completed.",parent=self);self.old.set(new);self.preview()
-        except Exception as e:messagebox.showerror("Rename",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Rename",str(e),parent=self)
 
 class LostFoundCenter(tk.Toplevel):
     """Inspect Git fsck lost-found objects and preserve commits safely."""
@@ -162,7 +147,7 @@ class LostFoundCenter(tk.Toplevel):
         p=Path(git(self.repo,"rev-parse","--git-dir"));return (Path(self.repo)/p).resolve() if not p.is_absolute() else p
     def scan(self):
         try:messagebox.showinfo("Lost & Found",git(self.repo,"fsck","--full","--lost-found","--no-reflogs"),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Lost & Found",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Lost & Found",str(e),parent=self)
     def refresh(self):
         base=self.gitdir()/"lost-found";self.rows=[];self.tree.delete(*self.tree.get_children())
         for kind in ("commit","other"):
@@ -172,7 +157,7 @@ class LostFoundCenter(tk.Toplevel):
                 sha=p.name;date=subject=""
                 if kind=="commit":
                     try:info=git(self.repo,"show","-s","--date=iso-strict","--pretty=format:%cI%x1f%s",sha).split("\x1f",1);date=info[0];subject=info[1] if len(info)>1 else ""
-                    except:pass
+                    except HANDLED_EXCEPTIONS:pass
                 else:subject="Recovered object reference"
                 self.rows.append((kind,sha,date,subject));self.tree.insert("","end",iid=str(len(self.rows)-1),values=self.rows[-1])
         self.report="LOST & FOUND INVENTORY\n"+"="*72+"\n"+"\n".join(" | ".join(r) for r in self.rows)
@@ -182,7 +167,7 @@ class LostFoundCenter(tk.Toplevel):
         r=self.selected()
         if not r:return
         try:v=git(self.repo,"show","--stat","--patch",r[1]) if r[0]=="commit" else git(self.repo,"cat-file","-p",r[1])
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def recover(self):
         import datetime,re
@@ -191,10 +176,10 @@ class LostFoundCenter(tk.Toplevel):
         default=f"recovery/lost-found-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}-{r[1][:8]}";name=simpledialog.askstring("Recovery branch","New branch name:",initialvalue=default,parent=self)
         if name and re.match(r"^[A-Za-z0-9._/-]+$",name):
             try:messagebox.showinfo("Recovery",git(self.repo,"branch",name,r[1]),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Recovery",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Recovery",str(e),parent=self)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="lost-found-inventory.txt")
-        if p:Path(p).write_text(self.report)
+        if p:Path(p).write_text(self.report,encoding="utf-8")
 
 class ShallowRepositoryCenter(tk.Toplevel):
     """Inspect and deepen shallow repositories deliberately."""
@@ -209,21 +194,21 @@ class ShallowRepositoryCenter(tk.Toplevel):
     def refresh(self):
         shallow=self.is_shallow();count=git(self.repo,"rev-list","--count","HEAD");boundary=""
         try:boundary=git(self.repo,"rev-list","--boundary","--max-count=30","HEAD")
-        except:pass
+        except HANDLED_EXCEPTIONS:pass
         v=f"SHALLOW REPOSITORY\n{'='*72}\nShallow: {'Yes' if shallow else 'No'}\nReachable commits from HEAD: {count}\n\nRECENT/BOUNDARY VIEW\n{boundary}"
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def deepen(self):
         if not self.is_shallow():return messagebox.showinfo("Shallow repository","Repository already has complete history.",parent=self)
         try:messagebox.showinfo("Deepen",git(self.repo,"fetch",f"--deepen={int(self.depth.get())}"),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Deepen",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Deepen",str(e),parent=self)
     def unshallow(self):
         if not self.is_shallow():return messagebox.showinfo("Shallow repository","Repository is not shallow.",parent=self)
         if messagebox.askyesno("Complete history","Fetch complete history for this clone? This may download substantial data.",parent=self):
             try:messagebox.showinfo("Unshallow",git(self.repo,"fetch","--unshallow"),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Unshallow",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Unshallow",str(e),parent=self)
     def tags(self):
         try:messagebox.showinfo("Tags",git(self.repo,"fetch","--tags"),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Tags",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Tags",str(e),parent=self)
 
 class StatusPorcelainCenter(tk.Toplevel):
     """Explain Git status porcelain v2 records for automation and debugging."""
@@ -250,7 +235,7 @@ class StatusPorcelainCenter(tk.Toplevel):
     def copy(self):self.clipboard_clear();self.clipboard_append(self.raw);messagebox.showinfo("Status","Copied raw porcelain output.",parent=self)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="status-porcelain-v2.txt")
-        if p:Path(p).write_text(self.raw)
+        if p:Path(p).write_text(self.raw,encoding="utf-8")
 
 class GitSparseIndexCenter(tk.Toplevel):
     """Inspect and toggle sparse-index support for sparse-checkout repositories."""
@@ -264,22 +249,22 @@ class GitSparseIndexCenter(tk.Toplevel):
     def refresh(self):
         def cfg(k):
             try:return git(self.repo,"config","--get",k)
-            except:return "Not set"
+            except HANDLED_EXCEPTIONS:return "Not set"
         try:sparse=git(self.repo,"sparse-checkout","list")
-        except Exception:sparse="Sparse checkout is not active."
+        except HANDLED_EXCEPTIONS:sparse="Sparse checkout is not active."
         try:gitver=git(self.repo,"--version")
-        except Exception as e:gitver=str(e)
+        except HANDLED_EXCEPTIONS as e:gitver=str(e)
         v=f"SPARSE INDEX STATUS\n{'='*72}\n{gitver}\ncore.sparseCheckout: {cfg('core.sparseCheckout')}\nindex.sparse: {cfg('index.sparse')}\n\nSPARSE PATHS\n{sparse}"
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def clean(self):return git(self.repo,"status","--porcelain")=="Completed successfully."
     def enable(self):
         if not self.clean():return messagebox.showwarning("Sparse index","Commit or stash changes first.",parent=self)
         try:messagebox.showinfo("Sparse index",git(self.repo,"sparse-checkout","reapply","--sparse-index"),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Sparse index",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Sparse index",str(e),parent=self)
     def disable(self):
         if not self.clean():return messagebox.showwarning("Sparse index","Commit or stash changes first.",parent=self)
         try:messagebox.showinfo("Sparse index",git(self.repo,"sparse-checkout","reapply","--no-sparse-index"),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Sparse index",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Sparse index",str(e),parent=self)
 
 class ObjectFormatCenter(tk.Toplevel):
     """Inspect repository object/ref storage formats and compatibility-sensitive extensions."""
@@ -291,7 +276,7 @@ class ObjectFormatCenter(tk.Toplevel):
         ttk.Label(self,text="Read-only format inspection. Repository format/object format changes require careful compatibility planning and are not modified here.",padding=8).pack(fill="x")
     def safe(self,*a):
         try:return git(self.repo,*a)
-        except Exception as e:return "Unavailable: "+str(e)
+        except HANDLED_EXCEPTIONS as e:return "Unavailable: "+str(e)
     def refresh(self):
         fields=[("Git version",self.safe("--version")),("Repository format version",self.safe("config","--get","core.repositoryformatversion")),("Object format",self.safe("rev-parse","--show-object-format")),("Ref storage format",self.safe("rev-parse","--show-ref-format")),("Bare repository",self.safe("rev-parse","--is-bare-repository")),("Shallow repository",self.safe("rev-parse","--is-shallow-repository")),("Common Git dir",self.safe("rev-parse","--git-common-dir")),("Worktree Git dir",self.safe("rev-parse","--git-dir"))]
         ext=self.safe("config","--get-regexp",r"^extensions\.")
@@ -299,7 +284,7 @@ class ObjectFormatCenter(tk.Toplevel):
         self.out.delete("1.0","end");self.out.insert("1.0",self.report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="repository-format.txt")
-        if p:Path(p).write_text(self.report)
+        if p:Path(p).write_text(self.report,encoding="utf-8")
 
 class GitCleanInteractiveCenter(tk.Toplevel):
     """Selective untracked-file cleanup with mandatory preview and explicit selection."""
@@ -314,7 +299,7 @@ class GitCleanInteractiveCenter(tk.Toplevel):
     def refresh(self):
         args=["clean","-nd"]+(["-x"] if self.include_ignored.get() else [])
         try:raw=git(self.repo,*args)
-        except Exception as e:raw=str(e)
+        except HANDLED_EXCEPTIONS as e:raw=str(e)
         self.rows=[];self.list.delete(0,"end")
         for line in raw.splitlines():
             if line.startswith("Would remove "):
@@ -331,5 +316,5 @@ class GitCleanInteractiveCenter(tk.Toplevel):
         for p in selected:
             try:
                 args=["clean","-fd"]+(["-x"] if self.include_ignored.get() else [])+["--",p];git(self.repo,*args)
-            except Exception as e:errors.append(f"{p}: {e}")
+            except HANDLED_EXCEPTIONS as e:errors.append(f"{p}: {e}")
         messagebox.showinfo("Selective clean","Completed." if not errors else "Completed with errors:\n"+"\n".join(errors),parent=self);self.refresh()

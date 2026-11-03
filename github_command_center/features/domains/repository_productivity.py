@@ -1,24 +1,9 @@
-"""Bounded feature domain for GitHub Command Center v3.74."""
-import csv
-import datetime
-import hashlib
-import json
-import os
-import platform
-import re
-import shutil
-import subprocess
-import sys
-import tempfile
-import threading
-import time
-import tkinter as tk
-import zipfile
+"""Bounded Git feature domain."""
+import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, tempfile, threading, time, tkinter as tk, zipfile
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
-
 from ...core.command_gateway import GitError, git
-from ...core.process_gateway import run_process, start_process
+from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class CommitSearchPro(tk.Toplevel):
     """Advanced content/history search with pickaxe, regex and path filters."""
@@ -31,7 +16,7 @@ class CommitSearchPro(tk.Toplevel):
         ttk.Label(self,text="First field is search text/regex. Second field is an optional tracked path. Pickaxe (-S) finds commits where the number of occurrences changed; diff regex (-G) matches patch text.",padding=8).pack(fill="x")
     def show(self,args):
         try:v=git(self.repo,*args)
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def base(self):return ["log","--all","--date=short","--pretty=format:%h%x09%ad%x09%an%x09%s"]
     def path_arg(self):return ["--",self.path.get().strip()] if self.path.get().strip() else []
@@ -61,7 +46,7 @@ class RepositoryFavoritesCenter(tk.Toplevel):
     def load(self):
         import json
         try:self.rows=json.loads(self.path.read_text(encoding="utf-8")) if self.path.exists() else []
-        except:self.rows=[]
+        except HANDLED_EXCEPTIONS:self.rows=[]
         self.render()
     def render(self):
         self.tree.delete(*self.tree.get_children())
@@ -85,7 +70,7 @@ class RepositoryFavoritesCenter(tk.Toplevel):
         if r:self.rows=[x for x in self.rows if x.get("path")!=r.get("path")];self.save(False);self.render()
     def save(self,notice=True):
         import json
-        self.path.write_text(json.dumps(self.rows,indent=2))
+        self.path.write_text(json.dumps(self.rows,indent=2),encoding="utf-8")
         if notice:messagebox.showinfo("Favorites",f"Saved {self.path}",parent=self)
 
 class CommitTemplateCenter(tk.Toplevel):
@@ -99,18 +84,18 @@ class CommitTemplateCenter(tk.Toplevel):
         ttk.Label(self,text="The template is local to this clone under .git. It is used by Git commit editors but does not force a message format.",padding=8).pack(fill="x")
     def load(self):
         self.text.delete("1.0","end")
-        if self.path.exists():self.text.insert("1.0",self.path.read_text(encoding="utf-8"))
+        if self.path.exists():self.text.insert("1.0",self.path.read_text(encoding="utf-8",errors="replace"))
         else:self.defaults()
     def defaults(self):
         value="<type>(<scope>): <short summary>\n\nWhy:\n\nWhat changed:\n- \n\nValidation:\n- \n\nRefs: \n"
         self.text.delete("1.0","end");self.text.insert("1.0",value)
     def save(self):
         try:
-            self.path.write_text(self.text.get("1.0","end-1c")+"\n");git(self.repo,"config","commit.template",str(self.path));messagebox.showinfo("Commit template",f"Saved and configured {self.path}",parent=self)
-        except Exception as e:messagebox.showerror("Commit template",str(e),parent=self)
+            self.path.write_text(self.text.get("1.0","end-1c")+"\n",encoding="utf-8");git(self.repo,"config","commit.template",str(self.path));messagebox.showinfo("Commit template",f"Saved and configured {self.path}",parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Commit template",str(e),parent=self)
     def disable(self):
         try:git(self.repo,"config","--unset","commit.template");messagebox.showinfo("Commit template","Repository commit template configuration removed.",parent=self)
-        except Exception as e:messagebox.showerror("Commit template",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Commit template",str(e),parent=self)
 
 class PatchQueueCenter(tk.Toplevel):
     """Apply and manage an email-style patch queue using git am."""
@@ -138,10 +123,10 @@ class PatchQueueCenter(tk.Toplevel):
         if git(self.repo,"status","--porcelain")!="Completed successfully.":return messagebox.showwarning("Patch queue","Commit or stash local changes before applying a patch queue.",parent=self)
         if not messagebox.askyesno("Apply patch queue",f"Apply {len(self.files)} patch(es) as commits?",parent=self):return
         try:out=git(self.repo,"am","--3way",*self.files);messagebox.showinfo("Patch queue",out,parent=self);self.clear();self.refresh()
-        except Exception as e:self.out.delete("1.0","end");self.out.insert("1.0",str(e));messagebox.showwarning("Patch queue","Patch application paused or failed. Resolve conflicts, then Continue/Skip/Abort.",parent=self)
+        except HANDLED_EXCEPTIONS as e:self.out.delete("1.0","end");self.out.insert("1.0",str(e));messagebox.showwarning("Patch queue","Patch application paused or failed. Resolve conflicts, then Continue/Skip/Abort.",parent=self)
     def control(self,arg):
         try:messagebox.showinfo("Patch queue",git(self.repo,"am",arg),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Patch queue",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Patch queue",str(e),parent=self)
 
 class HookAuditCenter(tk.Toplevel):
     """Inventory local hooks, executable state and basic provenance."""
@@ -163,13 +148,13 @@ class HookAuditCenter(tk.Toplevel):
         s=self.tree.selection();return self.rows[int(s[0])] if s else None
     def preview(self):
         r=self.selected();self.text.delete("1.0","end")
-        if r:self.text.insert("1.0",r[4].read_text(encoding="utf-8"))
+        if r:self.text.insert("1.0",r[4].read_text(encoding="utf-8",errors="replace"))
     def open_hook(self):
         r=self.selected()
         if not r:return
         import os
-        try:os.startfile(r[4]) if hasattr(os,"startfile") else start_process(["xdg-open",str(r[4])])
-        except Exception as e:messagebox.showerror("Hook",str(e),parent=self)
+        try:os.startfile(r[4]) if hasattr(os,"startfile") else subprocess.Popen(["xdg-open",str(r[4])])
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Hook",str(e),parent=self)
 
 class MergePreviewCenter(tk.Toplevel):
     """Preview a merge with merge-tree before changing the working tree."""
@@ -189,7 +174,7 @@ class MergePreviewCenter(tk.Toplevel):
         try:
             base=git(self.repo,"merge-base","HEAD",t);v=git(self.repo,"merge-tree",base,"HEAD",t)
             summary=f"MERGE PREVIEW\n{'='*72}\nCurrent: {git(self.repo,'branch','--show-current')}\nTarget: {t}\nMerge base: {base}\n\n{v}"
-        except Exception as e:summary=str(e)
+        except HANDLED_EXCEPTIONS as e:summary=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",summary)
     def merge(self):
         t=self.target.get().strip()
@@ -197,10 +182,10 @@ class MergePreviewCenter(tk.Toplevel):
         if git(self.repo,"status","--porcelain")!="Completed successfully.":return messagebox.showwarning("Merge","Commit or stash changes before merging.",parent=self)
         if messagebox.askyesno("Merge",f"Merge {t} into the current branch?",parent=self):
             try:messagebox.showinfo("Merge",git(self.repo,"merge","--no-edit",t),parent=self)
-            except Exception as e:messagebox.showerror("Merge",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Merge",str(e),parent=self)
     def abort(self):
         try:messagebox.showinfo("Merge",git(self.repo,"merge","--abort"),parent=self)
-        except Exception as e:messagebox.showerror("Merge",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Merge",str(e),parent=self)
 
 class ResetRecoveryPlanner(tk.Toplevel):
     """Plan soft/mixed/hard reset with mandatory recovery branch and impact preview."""
@@ -217,13 +202,13 @@ class ResetRecoveryPlanner(tk.Toplevel):
         try:
             resolved=git(self.repo,"rev-parse",t);summary=git(self.repo,"diff","--stat",t,"HEAD");commits=git(self.repo,"log","--oneline",f"{t}..HEAD")
             v=f"RESET PREVIEW\n{'='*72}\nTarget: {t}\nResolved: {resolved}\nMode: {self.mode.get()}\n\nCOMMITS MOVED OUT OF CURRENT BRANCH\n{commits}\n\nCHANGE SUMMARY\n{summary}"
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def execute(self):
         import datetime
         t=self.target.get().strip();mode=self.mode.get()
         try:git(self.repo,"rev-parse",t)
-        except Exception as e:return messagebox.showerror("Reset",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:return messagebox.showerror("Reset",str(e),parent=self)
         warning=f"Reset current branch to {t} using {mode}?"
         if mode=="--hard":warning+="\n\nTracked local changes will be permanently discarded."
         if not messagebox.askyesno("Protected reset",warning,parent=self):return
@@ -234,7 +219,7 @@ class ResetRecoveryPlanner(tk.Toplevel):
                 typed=simpledialog.askstring("Hard reset",f"Recovery branch created: {backup}\nType HARD RESET to continue:",parent=self)
                 if typed!="HARD RESET":return
             out=git(self.repo,"reset",mode,t);messagebox.showinfo("Reset",f"{out}\n\nRecovery branch: {backup}",parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Reset",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Reset",str(e),parent=self)
 
 class GitConfigCenter(tk.Toplevel):
     """Inspect effective Git configuration by scope and safely edit common values."""
@@ -248,18 +233,18 @@ class GitConfigCenter(tk.Toplevel):
         ttk.Label(self,text="Values come from `git config --list --show-origin --show-scope`. Global edits affect all repositories for the current user.",padding=8).pack(fill="x")
     def refresh(self):
         try:self.report=git(self.repo,"config","--list","--show-origin","--show-scope")
-        except Exception as e:self.report=str(e)
+        except HANDLED_EXCEPTIONS as e:self.report=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",self.report)
     def set_value(self):
         k=self.key.get().strip();v=self.value.get()
         if not k:return
         if self.scope.get()=="--global" and not messagebox.askyesno("Global Git config",f"Set global {k} for the current user?",parent=self):return
         try:messagebox.showinfo("Git config",git(self.repo,"config",self.scope.get(),k,v),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Git config",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Git config",str(e),parent=self)
     def unset(self):
         k=self.key.get().strip()
         if not k:return
         if messagebox.askyesno("Unset config",f"Unset {k} at {self.scope.get()} scope?",parent=self):
             try:messagebox.showinfo("Git config",git(self.repo,"config",self.scope.get(),"--unset-all",k),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Git config",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Git config",str(e),parent=self)
     def copy(self):self.clipboard_clear();self.clipboard_append(self.report);messagebox.showinfo("Git config","Copied report.",parent=self)

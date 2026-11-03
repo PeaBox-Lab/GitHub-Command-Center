@@ -1,4 +1,5 @@
 from __future__ import annotations
+from github_command_center.core.error_boundary import HANDLED_EXCEPTIONS, report_error
 import json,tkinter as tk
 from pathlib import Path
 from tkinter import filedialog,messagebox,ttk
@@ -23,6 +24,6 @@ class UpdateCenter(tk.Toplevel):
         try:
             m=self.service.load_metadata(self.metadata_path.get().strip());decision=self.service.is_allowed(self.current,m);hash_ok=self.service.verify(self.installer.get().strip(),m) if self.installer.get().strip() else False
             value=f"CURRENT VERSION: {self.current}\nCANDIDATE: {m.version}\nVERSION POLICY: {'PASS' if decision.allowed else 'BLOCK'}\nREASON: {decision.reason}\nINSTALLER SHA-256: {'PASS' if hash_ok else 'FAIL / NOT SELECTED'}\nNOTES: {m.notes_url}\nINSTALLER URL: {m.installer_url}\nSIGNATURE URL: {m.signature_url or '(not declared)'}\n\nInstallation remains user-controlled."
-        except Exception as exc:value=str(exc)
+        except HANDLED_EXCEPTIONS as exc:value=str(exc)
         self.out.delete("1.0","end");self.out.insert("1.0",value)
 

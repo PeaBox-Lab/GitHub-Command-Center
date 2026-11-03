@@ -1,4 +1,5 @@
 from __future__ import annotations
+from github_command_center.core.error_boundary import HANDLED_EXCEPTIONS, report_error
 import tkinter as tk
 from tkinter import messagebox,ttk
 from ...services import GitService
@@ -29,7 +30,7 @@ class BranchDashboardV2(tk.Toplevel):
         r=self.selected()
         if not r:return
         try:messagebox.showinfo("Branch",self.git.text("switch",r[0]),parent=self);self.refresh()
-        except Exception as exc:messagebox.showerror("Branch",str(exc),parent=self)
+        except HANDLED_EXCEPTIONS as exc:messagebox.showerror("Branch",str(exc),parent=self)
     def compare(self):
         r=self.selected()
         if not r:return

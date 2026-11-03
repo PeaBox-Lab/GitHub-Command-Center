@@ -1,26 +1,10 @@
 # Changelog
 
-## v3.75.0
-- Completed the v3.73-v3.75 architecture refactor.
-- Introduced a centralized process gateway for external command execution.
-- Removed direct subprocess execution from feature-domain modules while preserving behavior.
-- Retained 18 bounded domains, three compatibility facades, the focused UI shell, and all cumulative features.
-- Added v3.75 dependency and process-boundary regression tests and stricter architecture gates.
-
-## v3.74.0
-- Split workspace, repository, and expert feature collections into 18 bounded domain modules.
-- Kept each domain module below 600 lines and at or below 10 top-level feature classes.
-- Preserved all v3.73 compatibility facades, features, public names, and UI workflows.
-- Added v3.74 domain-boundary tests and stricter architecture gates.
-- Verified the cumulative automated test suite after decomposition.
-
-## v3.73.0
-- Refactored the 5,100-line Local Git module into a focused application shell and three feature-domain modules.
-- Added a core Git command gateway used by both the shell and extracted feature windows.
-- Preserved every feature window, public class name, compatibility alias, command-palette route, and repository workflow from v3.72.
-- Kept the user-friendly daily action bar, repository summary badges, grouped tool navigation, command palette, and accessibility behavior.
-- Added v3.73 architecture regression tests and updated architecture evidence.
-- Verified all 208 cumulative tests pass after the refactor.
+## v3.76.0
+- Removed 51 bare exception handlers and 341 broad `Exception` handlers from the audited baseline.
+- Added a typed recoverable-error boundary and structured logging helper.
+- Added regression gates requiring zero bare and zero direct broad exception handlers.
+- Preserved cumulative application functionality and compatibility routes.
 
 ## v3.72.0
 - Added interactive commit graph filters.

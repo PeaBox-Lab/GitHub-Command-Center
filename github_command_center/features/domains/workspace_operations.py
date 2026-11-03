@@ -1,24 +1,9 @@
-"""Bounded feature domain for GitHub Command Center v3.74."""
-import csv
-import datetime
-import hashlib
-import json
-import os
-import platform
-import re
-import shutil
-import subprocess
-import sys
-import tempfile
-import threading
-import time
-import tkinter as tk
-import zipfile
+"""Bounded Git feature domain."""
+import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, tempfile, threading, time, tkinter as tk, zipfile
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
-
 from ...core.command_gateway import GitError, git
-from ...core.process_gateway import run_process, start_process
+from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class PluginManager(tk.Toplevel):
     """Manage local JSON command plugins without importing arbitrary Python modules."""
@@ -37,7 +22,7 @@ class PluginManager(tk.Toplevel):
         for p in sorted(self.dir.glob("*.json")):
             try:
                 d=json.loads(p.read_text(encoding="utf-8"));d["_path"]=p;self.plugins.append(d)
-            except Exception:pass
+            except HANDLED_EXCEPTIONS:pass
         self.list.delete(0,"end")
         for p in self.plugins:self.list.insert("end",("[ON] " if p.get("enabled",True) else "[OFF] ")+p.get("name",p["_path"].stem))
     def selected(self):
@@ -52,26 +37,26 @@ class PluginManager(tk.Toplevel):
         if not cmd:return
         slug=re.sub(r"[^a-z0-9_-]+","-",name.lower()).strip("-") or "plugin"
         d={"name":name,"description":"Local command plugin","command":shlex.split(cmd),"enabled":True}
-        (self.dir/f"{slug}.json").write_text(json.dumps(d,indent=2));self.load()
+        (self.dir/f"{slug}.json").write_text(json.dumps(d,indent=2),encoding="utf-8");self.load()
     def run(self):
         p=self.selected()
         if not p or not p.get("enabled",True):return
         command=p.get("command")
         if not isinstance(command,list) or not command:return messagebox.showerror("Plugin","Plugin command must be a JSON array.",parent=self)
         if not messagebox.askyesno("Run plugin",f"Run {p.get('name')}?\n\n{' '.join(command)}",parent=self):return
-        try:r=run_process(command,cwd=self.repo,timeout=1800);v=f"Exit code: {r.returncode}\n\n{r.stdout}\n{r.stderr}"
-        except Exception as e:v=str(e)
+        try:r=subprocess.run(command,cwd=self.repo,text=True,capture_output=True,timeout=1800,encoding="utf-8",errors="replace");v=f"Exit code: {r.returncode}\n\n{r.stdout}\n{r.stderr}"
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def toggle(self):
         import json
         p=self.selected()
-        if p:p["enabled"]=not p.get("enabled",True);p["_path"].write_text(json.dumps({k:v for k,v in p.items() if k!="_path"},indent=2));self.load()
+        if p:p["enabled"]=not p.get("enabled",True);p["_path"].write_text(json.dumps({k:v for k,v in p.items() if k!="_path"},indent=2),encoding="utf-8");self.load()
     def delete(self):
         p=self.selected()
         if p and messagebox.askyesno("Delete plugin",f"Delete {p.get('name')}?",parent=self):p["_path"].unlink();self.load()
     def open_folder(self):
         import os
-        os.startfile(self.dir) if hasattr(os,"startfile") else start_process(["xdg-open",str(self.dir)])
+        os.startfile(self.dir) if hasattr(os,"startfile") else subprocess.Popen(["xdg-open",str(self.dir)])
 
 class BatchOperationsCenter(tk.Toplevel):
     """Portfolio operations with dry-run and per-repository results."""
@@ -93,7 +78,7 @@ class BatchOperationsCenter(tk.Toplevel):
         candidates=[root] if (root/".git").exists() else [p for p in root.iterdir() if p.is_dir() and (p/".git").exists()]
         for p in sorted(candidates):
             try:b=git(p,"branch","--show-current");s=git(p,"status","--porcelain");state="Clean" if s=="Completed successfully." else "Changed";self.rows.append({"path":p,"branch":b,"state":state,"result":""});self.tree.insert("","end",iid=str(len(self.rows)-1),values=(p.name,b,state,""))
-            except Exception:pass
+            except HANDLED_EXCEPTIONS:pass
     def run(self):
         ids=self.tree.selection()
         if not ids:return
@@ -106,10 +91,10 @@ class BatchOperationsCenter(tk.Toplevel):
                 elif op=="Status":out=git(p,"status","--short","--branch")
                 elif op=="Integrity check":out=git(p,"fsck","--no-progress")
                 elif op=="Python compile":
-                    x=run_process(["python","-m","compileall","-q","."],cwd=p,timeout=900);out=f"Exit {x.returncode}: {(x.stdout+x.stderr).strip()}"
+                    x=subprocess.run(["python","-m","compileall","-q","."],cwd=p,text=True,capture_output=True,timeout=900,encoding="utf-8",errors="replace");out=f"Exit {x.returncode}: {(x.stdout+x.stderr).strip()}"
                 elif r["state"]!="Clean":out="SKIPPED: local changes"
                 else:out=git(p,"pull","--ff-only")
-            except Exception as e:out="ERROR: "+str(e)
+            except HANDLED_EXCEPTIONS as e:out="ERROR: "+str(e)
             short=out.replace("\n"," | ")[:500];self.tree.set(iid,"result",short)
 
 class RepositoryDashboardCenter(tk.Toplevel):
@@ -121,11 +106,11 @@ class RepositoryDashboardCenter(tk.Toplevel):
         self.text=tk.Text(self,wrap="word",font=("Consolas",10),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
     def safe(self,*a):
         try:return git(self.repo,*a)
-        except Exception as e:return "Unavailable: "+str(e)
+        except HANDLED_EXCEPTIONS as e:return "Unavailable: "+str(e)
     def refresh(self):
         branch=self.safe("branch","--show-current");status=self.safe("status","--porcelain");clean=status=="Completed successfully."
         try:up=self.safe("rev-parse","--abbrev-ref","--symbolic-full-name","@{u}");ahead=self.safe("rev-list","--count","@{u}..HEAD");behind=self.safe("rev-list","--count","HEAD..@{u}")
-        except:up=ahead=behind="-"
+        except HANDLED_EXCEPTIONS:up=ahead=behind="-"
         last=self.safe("log","-1","--date=short","--pretty=format:%h %ad %an %s");tags=self.safe("tag","--sort=-creatordate").splitlines()[:5];changes=0 if clean else len(status.splitlines())
         health=[]
         for f in ("README.md","CHANGELOG.md","LICENSE","SECURITY.md","CONTRIBUTING.md"):health.append((f,(Path(self.repo)/f).exists()))
@@ -149,7 +134,7 @@ class DataExportCenter(tk.Toplevel):
         import json
         def safe(*a):
             try:return git(self.repo,*a)
-            except:return ""
+            except HANDLED_EXCEPTIONS:return ""
         commits=[]
         raw=safe("log","-500","--date=iso-strict","--pretty=format:%H%x1f%h%x1f%ad%x1f%an%x1f%ae%x1f%s")
         for line in raw.splitlines():
@@ -162,12 +147,12 @@ class DataExportCenter(tk.Toplevel):
     def json_export(self):
         import json
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".json",initialfile=Path(self.repo).name+"-repository-data.json")
-        if p:Path(p).write_text(json.dumps(self.collect(),indent=2))
+        if p:Path(p).write_text(json.dumps(self.collect(),indent=2),encoding="utf-8")
     def csv_export(self):
         import csv
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".csv",initialfile=Path(self.repo).name+"-commits.csv")
         if p:
-            with open(p,"w",newline="") as f:
+            with open(p,"w",newline="",encoding="utf-8") as f:
                 w=csv.DictWriter(f,fieldnames=["hash","short","date","author","email","subject"]);w.writeheader();w.writerows(self.collect()["commits"])
 
 class BackgroundJobsCenter(tk.Toplevel):
@@ -186,18 +171,18 @@ class BackgroundJobsCenter(tk.Toplevel):
     def queue(self):
         import shlex,threading,time
         try:args=shlex.split(self.command.get())
-        except Exception as e:return messagebox.showerror("Job",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:return messagebox.showerror("Job",str(e),parent=self)
         if not args:return
         job={"id":len(self.jobs)+1,"args":args,"status":"Queued","code":"","log":""};self.jobs.append(job);iid=str(job["id"]);self.tree.insert("","end",iid=iid,values=(job["id"]," ".join(args),job["status"],""))
         def worker():
             job["status"]="Running";self.after(0,lambda:self.update_row(job))
             try:
-                p=start_process(args,cwd=self.repo);self.processes[job["id"]]=p
+                p=subprocess.Popen(args,cwd=self.repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,encoding="utf-8",errors="replace");self.processes[job["id"]]=p
                 for line in iter(p.stdout.readline,""):
                     job["log"]+=line
                     self.after(0,self.show_log)
                 p.wait();job["code"]=p.returncode;job["status"]="Completed" if p.returncode==0 else "Failed"
-            except Exception as e:job["log"]+=str(e);job["status"]="Failed";job["code"]="-"
+            except HANDLED_EXCEPTIONS as e:job["log"]+=str(e);job["status"]="Failed";job["code"]="-"
             self.processes.pop(job["id"],None);self.after(0,lambda:self.update_row(job))
         threading.Thread(target=worker,daemon=True).start()
     def update_row(self,j):self.tree.item(str(j["id"]),values=(j["id"]," ".join(j["args"]),j["status"],j["code"]))
@@ -229,12 +214,12 @@ class PreferencesCenter(tk.Toplevel):
         if self.path.exists():
             try:
                 p=json.loads(self.path.read_text(encoding="utf-8"));self.theme.set(p.get("theme","clam"));self.font.set(p.get("font_size",9));self.limit.set(p.get("history_limit",200));self.confirm.set(p.get("confirm_destructive",True));self.default_branch.set(p.get("default_branch","main"))
-            except:pass
+            except HANDLED_EXCEPTIONS:pass
     def save(self):
         import json
-        p={"theme":self.theme.get(),"font_size":self.font.get(),"history_limit":self.limit.get(),"confirm_destructive":self.confirm.get(),"default_branch":self.default_branch.get()};self.path.write_text(json.dumps(p,indent=2))
+        p={"theme":self.theme.get(),"font_size":self.font.get(),"history_limit":self.limit.get(),"confirm_destructive":self.confirm.get(),"default_branch":self.default_branch.get()};self.path.write_text(json.dumps(p,indent=2),encoding="utf-8")
         try:ttk.Style().theme_use(self.theme.get())
-        except:pass
+        except HANDLED_EXCEPTIONS:pass
         messagebox.showinfo("Preferences",f"Saved {self.path}",parent=self)
 
 class PortfolioHistoryCenter(tk.Toplevel):
@@ -257,9 +242,9 @@ class PortfolioHistoryCenter(tk.Toplevel):
             try:
                 branch=git(p,"branch","--show-current");s=git(p,"status","--porcelain");state="Clean" if s=="Completed successfully." else "Changed"
                 try:a=git(p,"rev-list","--count","@{u}..HEAD");b=git(p,"rev-list","--count","HEAD..@{u}")
-                except:a=b="-"
+                except HANDLED_EXCEPTIONS:a=b="-"
                 rows.append((now,str(p),p.name,branch,state,a,b))
-            except:pass
+            except HANDLED_EXCEPTIONS:pass
         with sqlite3.connect(self.db) as c:c.executemany("insert into snapshots values(?,?,?,?,?,?,?)",rows)
         self.refresh();messagebox.showinfo("Portfolio",f"Captured {len(rows)} repositories.",parent=self)
     def refresh(self):
@@ -272,4 +257,4 @@ class PortfolioHistoryCenter(tk.Toplevel):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".csv",initialfile="portfolio-history.csv")
         if not p:return
         with sqlite3.connect(self.db) as c:rows=c.execute("select captured,path,repo,branch,state,ahead,behind from snapshots order by captured").fetchall()
-        with open(p,"w",newline="") as f:w=csv.writer(f);w.writerow(["captured","path","repo","branch","state","ahead","behind"]);w.writerows(rows)
+        with open(p,"w",newline="",encoding="utf-8") as f:w=csv.writer(f);w.writerow(["captured","path","repo","branch","state","ahead","behind"]);w.writerows(rows)

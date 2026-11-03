@@ -1,24 +1,9 @@
-"""Bounded feature domain for GitHub Command Center v3.74."""
-import csv
-import datetime
-import hashlib
-import json
-import os
-import platform
-import re
-import shutil
-import subprocess
-import sys
-import tempfile
-import threading
-import time
-import tkinter as tk
-import zipfile
+"""Bounded Git feature domain."""
+import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, tempfile, threading, time, tkinter as tk, zipfile
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
-
 from ...core.command_gateway import GitError, git
-from ...core.process_gateway import run_process, start_process
+from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class IgnoreAttributesStudio(tk.Toplevel):
     """Unified editor and tester for .gitignore and .gitattributes."""
@@ -33,20 +18,20 @@ class IgnoreAttributesStudio(tk.Toplevel):
         self.out=tk.Text(c,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.out.pack(fill="both",expand=True)
     def load(self):
         for widget,name in ((self.ignore,".gitignore"),(self.attrs,".gitattributes")):
-            p=Path(self.repo)/name;widget.delete("1.0","end");widget.insert("1.0",p.read_text(encoding="utf-8") if p.exists() else "")
+            p=Path(self.repo)/name;widget.delete("1.0","end");widget.insert("1.0",p.read_text(encoding="utf-8",errors="replace") if p.exists() else "")
     def save(self):
-        (Path(self.repo)/".gitignore").write_text(self.ignore.get("1.0","end-1c")+"\n");(Path(self.repo)/".gitattributes").write_text(self.attrs.get("1.0","end-1c")+"\n");messagebox.showinfo("Ignore & Attributes","Saved both files. Review and stage them when ready.",parent=self)
+        (Path(self.repo)/".gitignore").write_text(self.ignore.get("1.0","end-1c")+"\n",encoding="utf-8");(Path(self.repo)/".gitattributes").write_text(self.attrs.get("1.0","end-1c")+"\n",encoding="utf-8");messagebox.showinfo("Ignore & Attributes","Saved both files. Review and stage them when ready.",parent=self)
     def result(self,v):self.out.delete("1.0","end");self.out.insert("1.0",v)
     def test_ignore(self):
         p=self.path.get().strip()
         if not p:return
         try:self.result(git(self.repo,"check-ignore","-v","--no-index","--",p))
-        except Exception as e:self.result("Path is not ignored, or Git returned:\n"+str(e))
+        except HANDLED_EXCEPTIONS as e:self.result("Path is not ignored, or Git returned:\n"+str(e))
     def check_attr(self):
         p=self.path.get().strip()
         if not p:return
         try:self.result(git(self.repo,"check-attr","-a","--",p))
-        except Exception as e:self.result(str(e))
+        except HANDLED_EXCEPTIONS as e:self.result(str(e))
     def append_unique(self,w,text):
         cur=w.get("1.0","end-1c")
         for line in text.splitlines():
@@ -82,22 +67,22 @@ class WorktreeSafetyCenter(tk.Toplevel):
         r=self.selected()
         if r:
             p=r.get("worktree")
-            try:os.startfile(p) if hasattr(os,"startfile") else start_process(["xdg-open",p])
-            except Exception as e:messagebox.showerror("Worktree",str(e),parent=self)
+            try:os.startfile(p) if hasattr(os,"startfile") else subprocess.Popen(["xdg-open",p])
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Worktree",str(e),parent=self)
     def worktree_cmd(self,action):
         r=self.selected()
         if not r:return
         try:messagebox.showinfo("Worktree",git(self.repo,"worktree",action,r["worktree"]),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Worktree",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Worktree",str(e),parent=self)
     def lock(self):self.worktree_cmd("lock")
     def unlock(self):self.worktree_cmd("unlock")
     def prune_preview(self):
         try:messagebox.showinfo("Prune dry-run",git(self.repo,"worktree","prune","--dry-run","--verbose"),parent=self)
-        except Exception as e:messagebox.showerror("Prune",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Prune",str(e),parent=self)
     def prune(self):
         if messagebox.askyesno("Prune worktrees","Remove stale worktree administration records?",parent=self):
             try:messagebox.showinfo("Prune",git(self.repo,"worktree","prune","--verbose"),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Prune",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Prune",str(e),parent=self)
 
 class RepositoryDoctor(tk.Toplevel):
     """Actionable repository diagnosis combining Git state, config and integrity."""
@@ -108,7 +93,7 @@ class RepositoryDoctor(tk.Toplevel):
         self.text=tk.Text(self,wrap="word",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
     def safe(self,*a):
         try:return git(self.repo,*a)
-        except Exception as e:return "ERROR: "+str(e)
+        except HANDLED_EXCEPTIONS as e:return "ERROR: "+str(e)
     def run(self):
         checks=[]
         status=self.safe("status","--porcelain");checks.append(("Working tree",status=="Completed successfully.","Clean" if status=="Completed successfully." else "Local changes exist"))
@@ -117,10 +102,10 @@ class RepositoryDoctor(tk.Toplevel):
         remote=self.safe("remote","get-url","origin");checks.append(("Origin",not remote.startswith("ERROR"),remote))
         fsck=self.safe("fsck","--no-progress");checks.append(("Object integrity",not fsck.startswith("ERROR"),fsck))
         try:conf=git(self.repo,"diff","--name-only","--diff-filter=U");conflict=conf!="Completed successfully." and bool(conf.strip())
-        except:conflict=False;conf=""
+        except HANDLED_EXCEPTIONS:conflict=False;conf=""
         checks.append(("Merge conflicts",not conflict,conf if conflict else "None"))
         try:a=git(self.repo,"rev-list","--count","@{u}..HEAD");b=git(self.repo,"rev-list","--count","HEAD..@{u}");sync=f"Ahead {a}, behind {b}";ok=not (a!="0" and b!="0")
-        except Exception as e:sync="Unavailable: "+str(e);ok=False
+        except HANDLED_EXCEPTIONS as e:sync="Unavailable: "+str(e);ok=False
         checks.append(("Sync divergence",ok,sync))
         report="REPOSITORY DOCTOR\n"+"="*78+"\n\n"+"\n\n".join(f"[{'PASS' if ok else 'ATTN'}] {name}\n  {detail}" for name,ok,detail in checks)+"\n\nRECOMMENDED ACTIONS\n"
         for name,ok,detail in checks:
@@ -129,7 +114,7 @@ class RepositoryDoctor(tk.Toplevel):
         self.report=report;self.text.delete("1.0","end");self.text.insert("1.0",report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="repository-doctor.txt")
-        if p:Path(p).write_text(self.report)
+        if p:Path(p).write_text(self.report,encoding="utf-8")
 
 class TagReleaseAuditCenter(tk.Toplevel):
     """Audit tags for type, target, date, signature and remote presence."""
@@ -145,7 +130,7 @@ class TagReleaseAuditCenter(tk.Toplevel):
         remote=set()
         try:
             r=git(self.repo,"ls-remote","--tags","origin");remote={x.split("refs/tags/",1)[1].replace("^{}","") for x in r.splitlines() if "refs/tags/" in x}
-        except:pass
+        except HANDLED_EXCEPTIONS:pass
         raw=git(self.repo,"for-each-ref","--sort=-creatordate","--format=%(refname:short)%09%(objecttype)%09%(objectname:short)%09%(creatordate:iso8601)","refs/tags/");self.rows=[];self.tree.delete(*self.tree.get_children())
         for line in raw.splitlines():
             p=line.split("\t",3)
@@ -156,13 +141,13 @@ class TagReleaseAuditCenter(tk.Toplevel):
         t=self.selected()
         if not t:return
         try:v=git(self.repo,"tag","-v",t)
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def push(self):
         t=self.selected()
         if t and messagebox.askyesno("Push tag",f"Push {t} to origin?",parent=self):
             try:messagebox.showinfo("Push tag",git(self.repo,"push","origin",f"refs/tags/{t}"),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Push tag",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Push tag",str(e),parent=self)
 
 class StashManagerPro(tk.Toplevel):
     def __init__(self,parent,repo):
@@ -188,17 +173,17 @@ class StashManagerPro(tk.Toplevel):
         st=self.selected()
         if st:
             try:v=git(self.repo,"stash","show","--stat","--patch",st)
-            except Exception as e:v=str(e)
+            except HANDLED_EXCEPTIONS as e:v=str(e)
             self.text.delete("1.0","end");self.text.insert("1.0",v)
     def save(self,untracked):
         args=["stash","push"]+(["-u"] if untracked else [])+["-m",self.msg.get().strip() or "GitHub Command Center stash"]
         try:messagebox.showinfo("Stash",git(self.repo,*args),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Stash",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Stash",str(e),parent=self)
     def action(self,kind):
         st=self.selected()
         if not st:return
         try:messagebox.showinfo("Stash",git(self.repo,"stash",kind,st),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Stash",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Stash",str(e),parent=self)
     def apply(self):self.action("apply")
     def pop(self):
         st=self.selected()
@@ -212,7 +197,7 @@ class StashManagerPro(tk.Toplevel):
         name=simpledialog.askstring("Stash branch","New branch name:",parent=self)
         if name:
             try:messagebox.showinfo("Stash branch",git(self.repo,"stash","branch",name,st),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Stash branch",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Stash branch",str(e),parent=self)
 
 class CleanPreviewCenter(tk.Toplevel):
     def __init__(self,parent,repo):
@@ -228,7 +213,7 @@ class CleanPreviewCenter(tk.Toplevel):
         return args
     def preview(self):
         try:v=git(self.repo,*self.args(True))
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.preview_text=v;self.text.delete("1.0","end");self.text.insert("1.0",v)
     def clean(self):
         self.preview()
@@ -238,7 +223,7 @@ class CleanPreviewCenter(tk.Toplevel):
             if typed!="CLEAN IGNORED":return
         elif not messagebox.askyesno("Clean",f"Delete the previewed untracked items?\n\n{self.preview_text[:1600]}",parent=self):return
         try:messagebox.showinfo("Clean",git(self.repo,*self.args(False)),parent=self);self.preview()
-        except Exception as e:messagebox.showerror("Clean",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Clean",str(e),parent=self)
 
 class RepositorySizeCenter(tk.Toplevel):
     def __init__(self,parent,repo):
@@ -269,7 +254,7 @@ class RepositorySizeCenter(tk.Toplevel):
         self.report=report;self.text.delete("1.0","end");self.text.insert("1.0",report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="repository-size-report.txt")
-        if p:Path(p).write_text(self.report)
+        if p:Path(p).write_text(self.report,encoding="utf-8")
 
 class ForcePushSafetyCenter(tk.Toplevel):
     """Explicit force-with-lease workflow for rewritten branches; never plain --force."""
@@ -289,16 +274,16 @@ class ForcePushSafetyCenter(tk.Toplevel):
     def refresh(self):
         try:
             b,up,ahead,behind,local,remote=self.snapshot();v=f"FORCE-WITH-LEASE REVIEW\n{'='*72}\nBranch: {b}\nUpstream: {up}\nAhead: {ahead}\nBehind: {behind}\nLocal HEAD: {local}\nObserved upstream: {remote}\n\nUse only when remote history is intentionally being replaced after rebase/amend. Fetch first so lease information is current."
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def fetch(self):
         try:messagebox.showinfo("Fetch",git(self.repo,"fetch","origin","--prune"),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Fetch",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Fetch",str(e),parent=self)
     def push(self):
         try:b,up,ahead,behind,local,remote=self.snapshot()
-        except Exception as e:return messagebox.showerror("Force with lease",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:return messagebox.showerror("Force with lease",str(e),parent=self)
         typed=simpledialog.askstring("Force with lease",f"This may rewrite remote history for {up}.\nType the local branch name exactly to continue:\n{b}",parent=self)
         if typed!=b:return
         if not messagebox.askyesno("Final confirmation",f"Push {b} using --force-with-lease?\nObserved upstream commit:\n{remote}",parent=self):return
         try:messagebox.showinfo("Push",git(self.repo,"push","--force-with-lease"),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Push",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Push",str(e),parent=self)

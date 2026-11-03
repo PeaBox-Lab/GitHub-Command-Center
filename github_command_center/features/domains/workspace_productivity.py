@@ -1,32 +1,17 @@
-"""Bounded feature domain for GitHub Command Center v3.74."""
-import csv
-import datetime
-import hashlib
-import json
-import os
-import platform
-import re
-import shutil
-import subprocess
-import sys
-import tempfile
-import threading
-import time
-import tkinter as tk
-import zipfile
+"""Bounded Git feature domain."""
+import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, tempfile, threading, time, tkinter as tk, zipfile
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
-
 from ...core.command_gateway import GitError, git
-from ...core.process_gateway import run_process, start_process
+from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class RepositoryNotesCenter(tk.Toplevel):
     def __init__(self,parent,repo):
         super().__init__(parent);self.path=Path(repo)/".git"/"gccc-notes.md";self.title("Repository Notes");self.geometry("850x620")
         ttk.Label(self,text="Private local notes stored under .git and excluded from normal commits.",padding=8).pack(fill="x");self.text=tk.Text(self,wrap="word",undo=True);self.text.pack(fill="both",expand=True,padx=8);ttk.Button(self,text="Save",command=self.save).pack(anchor="e",padx=8,pady=8)
-        self.text.insert("1.0",self.path.read_text(encoding="utf-8") if self.path.exists() else "# Repository Notes\n\n## Current focus\n\n## Decisions\n\n## Follow-ups\n\n## Release reminders\n")
+        self.text.insert("1.0",self.path.read_text(encoding="utf-8",errors="replace") if self.path.exists() else "# Repository Notes\n\n## Current focus\n\n## Decisions\n\n## Follow-ups\n\n## Release reminders\n")
     def save(self):
-        self.path.write_text(self.text.get("1.0","end-1c")+"\n");messagebox.showinfo("Notes","Saved under .git/gccc-notes.md",parent=self)
+        self.path.write_text(self.text.get("1.0","end-1c")+"\n",encoding="utf-8");messagebox.showinfo("Notes","Saved under .git/gccc-notes.md",parent=self)
 
 class BranchCleanupCenter(tk.Toplevel):
     """Safe local branch cleanup with merged/stale awareness."""
@@ -50,7 +35,7 @@ class BranchCleanupCenter(tk.Toplevel):
             for line in raw.splitlines():
                 p=line.split("\t");b=p[0];row={"branch":b,"merged":b in merged,"date":p[1] if len(p)>1 else "","upstream":p[2] if len(p)>2 else "","used":b in used,"current":b==current};self.rows.append(row)
                 self.tree.insert("","end",iid=str(len(self.rows)-1),values=(b,"Yes" if row["merged"] else "No",row["date"],row["upstream"] or "-","Yes" if row["used"] else "No"))
-        except Exception as e:messagebox.showerror("Branch Cleanup",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Branch Cleanup",str(e),parent=self)
     def delete_selected(self):
         selected=[self.rows[int(i)] for i in self.tree.selection()]
         eligible=[r for r in selected if r["merged"] and not r["current"] and not r["used"]]
@@ -60,11 +45,11 @@ class BranchCleanupCenter(tk.Toplevel):
             errors=[]
             for r in eligible:
                 try:git(self.repo,"branch","-d",r["branch"])
-                except Exception as e:errors.append(f"{r['branch']}: {e}")
+                except HANDLED_EXCEPTIONS as e:errors.append(f"{r['branch']}: {e}")
             self.refresh();messagebox.showinfo("Branch Cleanup","Completed." if not errors else "Some branches were not deleted:\n"+"\n".join(errors),parent=self)
     def prune(self):
         try:messagebox.showinfo("Prune",git(self.repo,"fetch","--all","--prune"),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Prune",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Prune",str(e),parent=self)
 
 class ProjectSnapshotCenter(tk.Toplevel):
     """Generate a compact local repository handover snapshot."""
@@ -75,10 +60,10 @@ class ProjectSnapshotCenter(tk.Toplevel):
         self.text=tk.Text(self,wrap="word",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
     def safe(self,*args):
         try:return git(self.repo,*args)
-        except Exception as e:return "Unavailable: "+str(e)
+        except HANDLED_EXCEPTIONS as e:return "Unavailable: "+str(e)
     def generate(self):
         branch=self.safe("branch","--show-current");status=self.safe("status","--short","--branch");recent=self.safe("log","-10","--date=short","--pretty=format:- %h %ad %an: %s");tags=self.safe("tag","--sort=-creatordate");remotes=self.safe("remote","-v")
-        notes=Path(self.repo)/".git"/"gccc-notes.md";note_text=notes.read_text(encoding="utf-8") if notes.exists() else "No private repository notes."
+        notes=Path(self.repo)/".git"/"gccc-notes.md";note_text=notes.read_text(encoding="utf-8",errors="replace") if notes.exists() else "No private repository notes."
         key=[]
         for f in ("README.md","CHANGELOG.md","RELEASE_NOTES.md","USER_GUIDE.md","SECURITY.md","CONTRIBUTING.md"):
             if (Path(self.repo)/f).exists():key.append(f)
@@ -86,7 +71,7 @@ class ProjectSnapshotCenter(tk.Toplevel):
         self.text.delete("1.0","end");self.text.insert("1.0",self.snapshot)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".md",initialfile=f"{Path(self.repo).name}-snapshot.md")
-        if p:Path(p).write_text(self.snapshot);messagebox.showinfo("Snapshot",f"Saved {p}",parent=self)
+        if p:Path(p).write_text(self.snapshot,encoding="utf-8");messagebox.showinfo("Snapshot",f"Saved {p}",parent=self)
     def copy(self):self.clipboard_clear();self.clipboard_append(self.snapshot);messagebox.showinfo("Snapshot","Copied to clipboard.",parent=self)
 
 class PatchCenter(tk.Toplevel):
@@ -104,8 +89,8 @@ class PatchCenter(tk.Toplevel):
         try:
             args=["diff"]+(["--cached"] if staged else []);out=git(self.repo,*args)
             if out=="Completed successfully.":return messagebox.showinfo("Patch","There are no changes to export.",parent=self)
-            Path(p).write_text(out+"\n");messagebox.showinfo("Patch",f"Saved {p}",parent=self)
-        except Exception as e:messagebox.showerror("Patch",str(e),parent=self)
+            Path(p).write_text(out+"\n",encoding="utf-8");messagebox.showinfo("Patch",f"Saved {p}",parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Patch",str(e),parent=self)
     def export_working(self):self.save_diff(False)
     def export_staged(self):self.save_diff(True)
     def format_patch(self):
@@ -114,28 +99,28 @@ class PatchCenter(tk.Toplevel):
         folder=filedialog.askdirectory(parent=self,title="Choose output folder")
         if folder:
             try:messagebox.showinfo("Patch series",git(self.repo,"format-patch","-o",folder,f"{base}..HEAD"),parent=self)
-            except Exception as e:messagebox.showerror("Patch series",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Patch series",str(e),parent=self)
     def inspect_patch(self):
         p=filedialog.askopenfilename(parent=self,filetypes=[("Patch","*.patch"),("All files","*")])
         if not p:return
         try:
-            content=Path(p).read_text(encoding="utf-8");check=""
+            content=Path(p).read_text(encoding="utf-8",errors="replace");check=""
             try:check=git(self.repo,"apply","--check",p)
-            except Exception as e:check=str(e)
+            except HANDLED_EXCEPTIONS as e:check=str(e)
             self.text.delete("1.0","end");self.text.insert("1.0",f"APPLY CHECK\n{'='*72}\n{check}\n\nPATCH CONTENT\n{'='*72}\n{content}")
-        except Exception as e:messagebox.showerror("Patch",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Patch",str(e),parent=self)
     def apply_patch(self):
         p=filedialog.askopenfilename(parent=self,filetypes=[("Patch","*.patch"),("All files","*")])
         if not p:return
         try:
             git(self.repo,"apply","--check",p)
             if messagebox.askyesno("Apply patch",f"Patch check passed. Apply?\n{p}",parent=self):messagebox.showinfo("Patch",git(self.repo,"apply",p),parent=self)
-        except Exception as e:messagebox.showerror("Patch",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Patch",str(e),parent=self)
     def apply_mailbox(self):
         files=filedialog.askopenfilenames(parent=self,filetypes=[("Patch","*.patch"),("All files","*")])
         if files and messagebox.askyesno("Apply mailbox",f"Apply {len(files)} patch(es) as commits using git am?",parent=self):
             try:messagebox.showinfo("Mailbox",git(self.repo,"am",*files),parent=self)
-            except Exception as e:messagebox.showerror("Mailbox",str(e)+"\n\nResolve conflicts then run git am --continue, or abort with git am --abort.",parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Mailbox",str(e)+"\n\nResolve conflicts then run git am --continue, or abort with git am --abort.",parent=self)
 
 class BisectCenter(tk.Toplevel):
     """Guided Git bisect for finding the commit that introduced a regression."""
@@ -149,7 +134,7 @@ class BisectCenter(tk.Toplevel):
         self.text=tk.Text(self,wrap="word",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
     def status(self):
         try:return git(self.repo,"status","--short","--branch")+"\n\nCurrent commit:\n"+git(self.repo,"show","-s","--date=short","--pretty=format:%H%n%ad%n%an%n%s","HEAD")
-        except Exception as e:return str(e)
+        except HANDLED_EXCEPTIONS as e:return str(e)
     def refresh(self):self.text.delete("1.0","end");self.text.insert("1.0","GIT BISECT\n"+"="*72+"\n\n"+self.status()+"\n\nWorkflow: start with a known good and bad ref, test the checked-out revision, then mark it Good, Bad, or Skip. Git narrows the regression to one commit.")
     def clean(self):
         s=git(self.repo,"status","--porcelain");return s=="Completed successfully."
@@ -158,13 +143,13 @@ class BisectCenter(tk.Toplevel):
         g=self.good.get().strip();b=self.bad.get().strip()
         if not g or not b:return messagebox.showwarning("Bisect","Enter known good and bad refs.",parent=self)
         try:git(self.repo,"bisect","start",b,g);self.refresh()
-        except Exception as e:messagebox.showerror("Bisect",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Bisect",str(e),parent=self)
     def mark(self,state):
         try:out=git(self.repo,"bisect",state);self.refresh();messagebox.showinfo("Bisect",out,parent=self)
-        except Exception as e:messagebox.showerror("Bisect",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Bisect",str(e),parent=self)
     def reset(self):
         try:messagebox.showinfo("Bisect",git(self.repo,"bisect","reset"),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Bisect",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Bisect",str(e),parent=self)
 
 class TaskCenter(tk.Toplevel):
     """Repository-local checklist for release, refactor and maintenance work."""
@@ -177,7 +162,7 @@ class TaskCenter(tk.Toplevel):
         ttk.Label(self,text="Tasks are private to this local clone and stored under .git/gccc-tasks.txt.",padding=8).pack(fill="x")
     def load(self):
         self.tasks=[]
-        if self.path.exists():self.tasks=[x for x in self.path.read_text(encoding="utf-8").splitlines() if x.strip()]
+        if self.path.exists():self.tasks=[x for x in self.path.read_text(encoding="utf-8",errors="replace").splitlines() if x.strip()]
         self.render()
     def render(self):
         self.list.delete(0,"end")
@@ -192,7 +177,7 @@ class TaskCenter(tk.Toplevel):
         for i in reversed(self.list.curselection()):del self.tasks[i]
         self.render();self.save(False)
     def save(self,notice=True):
-        self.path.write_text("\n".join(self.tasks)+("\n" if self.tasks else ""))
+        self.path.write_text("\n".join(self.tasks)+("\n" if self.tasks else ""),encoding="utf-8")
         if notice:messagebox.showinfo("Tasks","Saved repository tasks.",parent=self)
 
 class ArchiveCenter(tk.Toplevel):
@@ -208,12 +193,12 @@ class ArchiveCenter(tk.Toplevel):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".zip",initialfile=Path(self.repo).name+"-HEAD.zip")
         if p:
             try:messagebox.showinfo("Archive",git(self.repo,"archive","--format=zip",f"--output={p}","HEAD"),parent=self)
-            except Exception as e:messagebox.showerror("Archive",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Archive",str(e),parent=self)
     def bundle(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".bundle",initialfile=Path(self.repo).name+"-full.bundle")
         if p:
             try:messagebox.showinfo("Bundle",git(self.repo,"bundle","create",p,"--all"),parent=self)
-            except Exception as e:messagebox.showerror("Bundle",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Bundle",str(e),parent=self)
     def snapshot(self):ProjectSnapshotCenter(self,self.repo)
     def support_pack(self):
         import platform,sys
@@ -221,9 +206,9 @@ class ArchiveCenter(tk.Toplevel):
         if not p:return
         def safe(*args):
             try:return git(self.repo,*args)
-            except Exception as e:return str(e)
+            except HANDLED_EXCEPTIONS as e:return str(e)
         report=f"GitHub Command Center Support Pack\n{'='*72}\nRepository: {self.repo}\nPython: {sys.version}\nOS: {platform.platform()}\n\nSTATUS\n{safe('status','--short','--branch')}\n\nREMOTES\n{safe('remote','-v')}\n\nRECENT COMMITS\n{safe('log','-20','--oneline','--decorate')}\n\nCONFIG\n{safe('config','--list','--show-origin')}\n\nFSCK\n{safe('fsck','--no-progress')}\n"
-        Path(p).write_text(report);messagebox.showinfo("Support pack",f"Saved {p}",parent=self)
+        Path(p).write_text(report,encoding="utf-8");messagebox.showinfo("Support pack",f"Saved {p}",parent=self)
 
 class CommandPalette(tk.Toplevel):
     """Searchable launcher that keeps the Local Git toolbar usable as features grow."""

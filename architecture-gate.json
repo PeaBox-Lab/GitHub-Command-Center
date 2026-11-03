@@ -1,98 +1,16 @@
 {
-  "version": "3.75.0",
-  "architecture": "focused shell + Git command gateway + process gateway + compatibility facades + bounded domains",
   "metrics": {
-    "shell_lines": 244,
-    "shell_classes": 1,
-    "domain_modules": 18,
-    "largest_domain_lines": 391,
-    "largest_domain_classes": 10,
-    "largest_facade_lines": 11,
-    "direct_domain_subprocess_calls": 0,
+    "legacy_lines": 5133,
+    "legacy_classes": 143,
+    "heavy_sync_calls": 32,
+    "direct_sync_gh_calls": 0,
     "shell_true": 0
   },
-  "modules": {
-    "expert_diagnostics.py": {
-      "lines": 348,
-      "classes": 10
-    },
-    "expert_history.py": {
-      "lines": 287,
-      "classes": 10
-    },
-    "expert_query.py": {
-      "lines": 314,
-      "classes": 10
-    },
-    "expert_refs.py": {
-      "lines": 316,
-      "classes": 10
-    },
-    "expert_revision.py": {
-      "lines": 268,
-      "classes": 9
-    },
-    "expert_storage.py": {
-      "lines": 335,
-      "classes": 10
-    },
-    "repository_governance.py": {
-      "lines": 247,
-      "classes": 8
-    },
-    "repository_history.py": {
-      "lines": 391,
-      "classes": 7
-    },
-    "repository_inspection.py": {
-      "lines": 221,
-      "classes": 7
-    },
-    "repository_productivity.py": {
-      "lines": 265,
-      "classes": 8
-    },
-    "repository_release.py": {
-      "lines": 272,
-      "classes": 7
-    },
-    "repository_safety.py": {
-      "lines": 304,
-      "classes": 8
-    },
-    "workspace_automation.py": {
-      "lines": 307,
-      "classes": 8
-    },
-    "workspace_graph.py": {
-      "lines": 332,
-      "classes": 4
-    },
-    "workspace_operations.py": {
-      "lines": 275,
-      "classes": 7
-    },
-    "workspace_productivity.py": {
-      "lines": 256,
-      "classes": 8
-    },
-    "workspace_repository.py": {
-      "lines": 259,
-      "classes": 6
-    },
-    "workspace_staging.py": {
-      "lines": 236,
-      "classes": 4
-    }
-  },
   "limits": {
-    "shell_lines": 300,
-    "shell_classes": 1,
-    "domain_modules": 18,
-    "largest_domain_lines": 600,
-    "largest_domain_classes": 10,
-    "largest_facade_lines": 20,
-    "direct_domain_subprocess_calls": 0,
+    "legacy_lines": 5150,
+    "legacy_classes": 143,
+    "heavy_sync_calls": 36,
+    "direct_sync_gh_calls": 0,
     "shell_true": 0
   },
   "passed": true,

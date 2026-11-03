@@ -1,4 +1,5 @@
 from __future__ import annotations
+from github_command_center.core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 import json
 import tkinter as tk
@@ -67,6 +68,6 @@ class PluginSecurityCenter(tk.Toplevel):
                 lines.append(f"SHA-256 verification: {'PASS' if self.service.verify_file(self.package_path.get().strip(),manifest.sha256) else 'FAIL'}")
             lines += ["","ERRORS",*(result.errors or ["None"]),"","WARNINGS",*(result.warnings or ["None"]),"","CANONICAL PAYLOAD",manifest.canonical_payload().decode("utf-8")]
             value="\n".join(lines)
-        except Exception as exc:value=str(exc)
+        except HANDLED_EXCEPTIONS as exc:value=str(exc)
         self.out.delete("1.0","end");self.out.insert("1.0",value)
 

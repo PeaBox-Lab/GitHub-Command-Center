@@ -1,8 +1,8 @@
-# GitHub Command Center v3.75.0
+# GitHub Command Center v3.76.0
 
 > A unified Python desktop command center for Git, GitHub, repository engineering, recovery, releases and developer workflows.
 
-Version **3.74.0 continues the architecture-first upgrade of v3.73.0**. It preserves the complete feature set while decomposing three large feature collections into 18 bounded Git-domain modules. No feature reset or scratch rebuild was used.
+Version **3.71.0 is an incremental upgrade of v3.70.0**. It preserves the complete v3.70 application and adds developer-facing Ref Compare and Revision Explain tools. No scratch rebuild or feature reset is used for this release.
 
 ## Highlights
 
@@ -136,34 +136,14 @@ Existing Git, GitHub, release, recovery, developer, accessibility, packaging, an
 v3.72.0 is built directly from the complete v3.71.0 release.
 
 
-## New in v3.75
+## New in v3.76
 
-- Completed the architecture-first refactor started in v3.73 and v3.74.
-- Added `core/process_gateway.py` as the single process-execution boundary for feature-domain tooling.
-- Removed direct `subprocess.run` and `subprocess.Popen` calls from all 18 feature-domain modules.
-- Kept Git operations behind `core/command_gateway.py` / `GitService` and non-Git or byte-oriented processes behind `ProcessGateway`.
-- Preserved the focused application shell, bounded domains, compatibility facades, public class names, command palette routes, user workflows, and complete cumulative functionality.
-- Tightened architecture gates for direct process execution, domain size, facade size, and module boundaries.
-
-## New in v3.74
-
-- Decomposed the three v3.73 feature collections into 18 bounded Git-domain modules.
-- Reduced the largest feature implementation module from 1,752 lines to below 500 lines.
-- Limited every bounded domain to 10 or fewer top-level feature classes.
-- Retained the v3.73 compatibility facades, extension-facing class names, and saved command-palette routes.
-- Preserved the complete v3.72 and v3.73 functionality and familiar user interface.
-- Added dependency-boundary and architecture-budget regression tests.
-- Updated deterministic architecture evidence for the domain-based layout.
-
-## New in v3.73
-
-- Reduced `local_git_gui.py` from more than 5,100 lines to a focused application shell of under 300 lines.
-- Split feature windows into `features/workspace_tools.py`, `features/repository_tools.py`, and `features/expert_tools.py`.
-- Added `core/command_gateway.py` as the single compatibility boundary for UI-triggered Git operations.
-- Preserved all public class names and compatibility aliases for extensions and saved command-palette actions.
-- Retained the streamlined daily-workflow toolbar, repository health badges, grouped navigation, command palette, keyboard access, and responsive table protections.
-- Added architecture regression coverage and deterministic architecture evidence for the new module boundaries.
-- Retained all v0.1-v3.72 functionality.
+- Eliminated all bare `except:` handlers across the application package.
+- Eliminated direct `except Exception` handlers and replaced them with a documented typed recoverable-error boundary.
+- Added structured error logging through `core/error_boundary.py`.
+- Ensured `KeyboardInterrupt`, `SystemExit`, and other `BaseException` control-flow signals are not swallowed.
+- Added automated AST-based error-handling gates to prevent regression.
+- Preserved all cumulative Git, GitHub, recovery, release, developer, graph, stash, worktree, accessibility, and compatibility functionality.
 
 ## New in v3.72
 - Interactive Commit Graph filters by refs, author, dates, message, path, merges and first-parent history.

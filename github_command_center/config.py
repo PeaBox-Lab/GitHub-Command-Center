@@ -1,3 +1,4 @@
+from github_command_center.core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 import json
 import os
@@ -10,7 +11,7 @@ CONFIG_FILE = APP_DIR / "config.json"
 def load_config():
     try:
         return json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
-    except Exception:
+    except HANDLED_EXCEPTIONS:
         return {"workspace": str(Path.home() / "GitHub")}
 
 

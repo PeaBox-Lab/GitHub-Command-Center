@@ -1,24 +1,9 @@
-"""Bounded feature domain for GitHub Command Center v3.74."""
-import csv
-import datetime
-import hashlib
-import json
-import os
-import platform
-import re
-import shutil
-import subprocess
-import sys
-import tempfile
-import threading
-import time
-import tkinter as tk
-import zipfile
+"""Bounded Git feature domain."""
+import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, tempfile, threading, time, tkinter as tk, zipfile
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
-
 from ...core.command_gateway import GitError, git
-from ...core.process_gateway import run_process, start_process
+from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class MergeCommitRevertCenter(tk.Toplevel):
     """Safely revert a merge commit by explicitly selecting its mainline parent."""
@@ -46,7 +31,7 @@ class MergeCommitRevertCenter(tk.Toplevel):
         lines=[f"MERGE: {r[0]}\nSUBJECT: {r[5]}\n"]
         for i,parent in enumerate(r[4].split(),1):
             try:lines.append(f"PARENT {i}\n"+git(self.repo,"show","-s","--date=iso-strict","--pretty=fuller",parent))
-            except Exception as e:lines.append(str(e))
+            except HANDLED_EXCEPTIONS as e:lines.append(str(e))
         self.out.delete("1.0","end");self.out.insert("1.0","\n\n".join(lines))
     def preview(self):
         r=self.selected()
@@ -54,7 +39,7 @@ class MergeCommitRevertCenter(tk.Toplevel):
         m=int(self.mainline.get())
         if m<1 or m>len(r[4].split()):return messagebox.showwarning("Merge revert","Selected mainline parent does not exist.",parent=self)
         try:v=git(self.repo,"diff",f"{r[0]}^{m}",r[0],"--stat")+"\n\nREVERT WOULD INVERT THIS MERGE-SIDE CHANGE\n"+git(self.repo,"diff",f"{r[0]}^{m}",r[0],"--name-status")
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def execute(self):
         import datetime
@@ -66,10 +51,10 @@ class MergeCommitRevertCenter(tk.Toplevel):
         backup=f"gccc-backup/pre-merge-revert-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}";git(self.repo,"branch",backup)
         if not messagebox.askyesno("Revert merge",f"Safety branch: {backup}\n\nRevert merge {r[1]} using mainline parent {m}?",parent=self):return
         try:messagebox.showinfo("Merge revert",git(self.repo,"revert","-m",str(m),"--no-edit",r[0]),parent=self)
-        except Exception as e:messagebox.showwarning("Merge revert",f"Revert paused or failed. Resolve conflicts and Continue, or Abort.\n\n{e}",parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showwarning("Merge revert",f"Revert paused or failed. Resolve conflicts and Continue, or Abort.\n\n{e}",parent=self)
     def control(self,arg):
         try:messagebox.showinfo("Revert",git(self.repo,"revert",arg),parent=self)
-        except Exception as e:messagebox.showerror("Revert",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Revert",str(e),parent=self)
 
 class DiffAlgorithmCenter(tk.Toplevel):
     """Compare Git diff algorithms and word-diff output for a selected ref/path."""
@@ -88,7 +73,7 @@ class DiffAlgorithmCenter(tk.Toplevel):
         p=self.path.get().strip()
         if p:args += ["--",p]
         try:v=git(self.repo,*args)
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
 
 class SubtreeCenter(tk.Toplevel):
@@ -112,7 +97,7 @@ class SubtreeCenter(tk.Toplevel):
         if not self.prefix.get().strip() or (verb in ("add","pull","push") and not self.remote.get().strip()):return
         if not messagebox.askyesno("Git subtree",confirm,parent=self):return
         try:v=git(self.repo,*self.args(verb));self.out.delete("1.0","end");self.out.insert("1.0",v);messagebox.showinfo("Git subtree",v,parent=self)
-        except Exception as e:messagebox.showerror("Git subtree",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Git subtree",str(e),parent=self)
     def add(self):self.run("add",f"Add subtree at {self.prefix.get()} from {self.remote.get()} {self.ref.get()}?")
     def pull(self):self.run("pull",f"Pull subtree updates into {self.prefix.get()}?")
     def push(self):self.run("push",f"Push subtree {self.prefix.get()} to {self.remote.get()} {self.ref.get()}?")
@@ -120,7 +105,7 @@ class SubtreeCenter(tk.Toplevel):
         branch=simpledialog.askstring("Subtree split","New local branch for split history:",parent=self)
         if branch:
             try:v=git(self.repo,"subtree","split",f"--prefix={self.prefix.get().strip()}",f"--branch={branch}");self.out.delete("1.0","end");self.out.insert("1.0",v)
-            except Exception as e:messagebox.showerror("Subtree split",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Subtree split",str(e),parent=self)
 
 class GitFilterRepoAdvisor(tk.Toplevel):
     """Analyze history-rewrite candidates and prepare safe git-filter-repo guidance."""
@@ -137,11 +122,11 @@ class GitFilterRepoAdvisor(tk.Toplevel):
         try:
             log=git(self.repo,"log","--all","--follow","--date=short","--pretty=format:%h%x09%ad%x09%an%x09%s","--",p);sizes=git(self.repo,"rev-list","--objects","--all");hits=[x for x in sizes.splitlines() if x.endswith(" "+p) or (" " in x and x.split(" ",1)[1]==p)]
             v=f"PATH HISTORY ANALYSIS\n{'='*72}\nPath: {p}\nObject references: {len(hits)}\n\nCOMMITS\n{log}\n\nBefore rewriting:\n1. Create and verify a full Git bundle.\n2. Coordinate with collaborators.\n3. Remove/rotate any exposed secret.\n4. Rewrite in a disposable clone.\n5. Verify refs and run fsck.\n6. Push with force-with-lease deliberately."
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def check_tool(self):
-        try:r=run_process(["git-filter-repo","--version"],timeout=30);v=(r.stdout+r.stderr).strip() or f"Exit {r.returncode}"
-        except Exception as e:v="git-filter-repo not found. Install it from its official distribution before using generated commands.\n\n"+str(e)
+        try:r=subprocess.run(["git-filter-repo","--version"],text=True,capture_output=True,timeout=30,encoding="utf-8",errors="replace");v=(r.stdout+r.stderr).strip() or f"Exit {r.returncode}"
+        except HANDLED_EXCEPTIONS as e:v="git-filter-repo not found. Install it from its official distribution before using generated commands.\n\n"+str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def generate(self):
         import shlex
@@ -165,7 +150,7 @@ class AttributesAuditCenter(tk.Toplevel):
         files=git(self.repo,"ls-files").splitlines()[:int(self.limit.get())];self.rows=[];self.tree.delete(*self.tree.get_children());report=[]
         for f in files:
             try:raw=git(self.repo,"check-attr","text","eol","diff","merge","filter","--",f);attrs={}
-            except:continue
+            except HANDLED_EXCEPTIONS:continue
             for line in raw.splitlines():
                 p=line.split(": ",2)
                 if len(p)==3:attrs[p[1]]=p[2]
@@ -175,7 +160,7 @@ class AttributesAuditCenter(tk.Toplevel):
         self.report="ATTRIBUTES AUDIT\n"+"="*72+"\n"+"\n".join(report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="attributes-audit.txt")
-        if p:Path(p).write_text(self.report)
+        if p:Path(p).write_text(self.report,encoding="utf-8")
 
 class GitRangeDiffCenter(tk.Toplevel):
     """Compare two commit series before and after rebase using git range-diff."""
@@ -187,11 +172,11 @@ class GitRangeDiffCenter(tk.Toplevel):
         ttk.Label(self,text="Use range-diff after rebase to compare the old patch series with the rewritten patch series. It compares changes, not only commit hashes.",padding=8).pack(fill="x")
     def run(self):
         try:self.report=git(self.repo,"range-diff",self.old.get().strip(),self.new.get().strip())
-        except Exception as e:self.report=str(e)
+        except HANDLED_EXCEPTIONS as e:self.report=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",self.report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="range-diff.txt")
-        if p:Path(p).write_text(self.report)
+        if p:Path(p).write_text(self.report,encoding="utf-8")
 
 class RefspecLabCenter(tk.Toplevel):
     """Inspect remote refspecs and generate explicit fetch/push commands."""
@@ -203,17 +188,17 @@ class RefspecLabCenter(tk.Toplevel):
         ttk.Label(self,text="Previews use --dry-run. This center does not save custom refspecs automatically; use Git Configuration Center after reviewing the mapping.",padding=8).pack(fill="x")
     def refresh(self):
         try:v=git(self.repo,"config","--get-regexp",r"^remote\..*\.(fetch|push)$")
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0","CONFIGURED REFSPECS\n"+"="*72+"\n"+v)
     def preview_fetch(self):
         spec=f"{self.src.get().strip()}:{self.dst.get().strip()}"
         try:v=git(self.repo,"fetch","--dry-run",self.remote.get().strip(),spec)
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",f"FETCH DRY RUN\n{self.remote.get()} {spec}\n\n{v}")
     def preview_push(self):
         spec=f"{self.src.get().strip()}:{self.dst.get().strip()}"
         try:v=git(self.repo,"push","--dry-run",self.remote.get().strip(),spec)
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",f"PUSH DRY RUN\n{self.remote.get()} {spec}\n\n{v}")
 
 class GitNotesMergeCenter(tk.Toplevel):
@@ -227,17 +212,17 @@ class GitNotesMergeCenter(tk.Toplevel):
         ttk.Label(self,text="Notes merges affect only the selected notes ref, not commit IDs. Manual conflicts may require editing the notes merge worktree before commit/abort.",padding=8).pack(fill="x")
     def refresh(self):
         try:v=git(self.repo,"for-each-ref","--format=%(refname)%09%(objectname:short)%09%(subject)","refs/notes/")
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0","NOTES REFS\n"+"="*72+"\n"+v)
     def merge(self):
         local=self.local.get().strip();other=self.other.get().strip();strategy=self.strategy.get()
         if not local or not other:return
         if not messagebox.askyesno("Merge notes",f"Merge {other} into refs/notes/{local} using {strategy}?",parent=self):return
         try:messagebox.showinfo("Notes merge",git(self.repo,"notes",f"--ref={local}","merge",f"-s{strategy}",other),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Notes merge",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Notes merge",str(e),parent=self)
     def control(self,arg):
         try:messagebox.showinfo("Notes merge",git(self.repo,"notes",f"--ref={self.local.get().strip()}","merge",arg),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Notes merge",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Notes merge",str(e),parent=self)
 
 class MergeStrategyLabCenter(tk.Toplevel):
     """Preview Git merge strategies and strategy options before a real merge."""
@@ -253,7 +238,7 @@ class MergeStrategyLabCenter(tk.Toplevel):
         t=self.target.get().strip()
         if not t:self.out.delete("1.0","end");self.out.insert("1.0","Enter a branch or ref to preview.");return
         try:base=git(self.repo,"merge-base","HEAD",t);v=git(self.repo,"merge-tree",base,"HEAD",t);text=f"MERGE STRATEGY PREVIEW\n{'='*72}\nTarget: {t}\nStrategy: {self.strategy.get()}\nOption: {self.option.get() or 'default'}\nMerge base: {base}\n\n{v}"
-        except Exception as e:text=str(e)
+        except HANDLED_EXCEPTIONS as e:text=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",text)
     def merge(self):
         t=self.target.get().strip()
@@ -264,10 +249,10 @@ class MergeStrategyLabCenter(tk.Toplevel):
         args.append(t)
         if messagebox.askyesno("Merge strategy",f"Start a no-commit merge of {t} using {self.strategy.get()}?",parent=self):
             try:messagebox.showinfo("Merge",git(self.repo,*args),parent=self)
-            except Exception as e:messagebox.showerror("Merge",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Merge",str(e),parent=self)
     def abort(self):
         try:messagebox.showinfo("Merge",git(self.repo,"merge","--abort"),parent=self)
-        except Exception as e:messagebox.showerror("Merge",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Merge",str(e),parent=self)
 
 class ConfigIncludeCenter(tk.Toplevel):
     """Inspect Git config include/includeIf rules and their resolved origins."""
@@ -278,10 +263,10 @@ class ConfigIncludeCenter(tk.Toplevel):
         self.out=tk.Text(self,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.out.pack(fill="both",expand=True,padx=8,pady=5)
     def refresh(self):
         try:incs=git(self.repo,"config","--show-origin","--show-scope","--get-regexp",r"^(include\.path|includeIf\..*\.path)$")
-        except Exception as e:incs="No include rules found or Git returned:\n"+str(e)
+        except HANDLED_EXCEPTIONS as e:incs="No include rules found or Git returned:\n"+str(e)
         try:effective=git(self.repo,"config","--list","--show-origin","--show-scope","--includes")
-        except Exception as e:effective=str(e)
+        except HANDLED_EXCEPTIONS as e:effective=str(e)
         self.report="CONFIG INCLUDE RULES\n"+"="*72+"\n"+incs+"\n\nEFFECTIVE CONFIG WITH INCLUDES\n"+"="*72+"\n"+effective;self.out.delete("1.0","end");self.out.insert("1.0",self.report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="git-config-includes.txt")
-        if p:Path(p).write_text(self.report)
+        if p:Path(p).write_text(self.report,encoding="utf-8")

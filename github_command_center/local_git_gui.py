@@ -1,8 +1,9 @@
 
-import importlib
 import subprocess, tkinter as tk
 from pathlib import Path
 from .core.command_gateway import GitError, git
+from .core.error_boundary import HANDLED_EXCEPTIONS, report_error
+import importlib
 from .centers.async_operations import AsyncOperationsCenter
 from .centers.visual_diff import VisualDiffCenter
 from .centers.plugin_security_center import PluginSecurityCenter
@@ -23,7 +24,6 @@ from .centers.accessibility_center import AccessibilityCenter
 from .ui import apply_modern_style
 from .ui.table_layout import install_treeview_layout_guard
 from tkinter import filedialog, messagebox, simpledialog, ttk
-
 
 class LocalGitWindow(tk.Toplevel):
     def __init__(self,parent,start=""):
@@ -107,7 +107,7 @@ class LocalGitWindow(tk.Toplevel):
         p=filedialog.askdirectory(parent=self)
         if not p:return
         try:git(p,"rev-parse","--is-inside-work-tree")
-        except Exception:
+        except HANDLED_EXCEPTIONS:
             if not messagebox.askyesno("Initialize", "Initialize this folder as a Git repository?",parent=self):return
             git(p,"init")
         self.repo=p;self.sel.set(p);self.refresh()
@@ -118,7 +118,7 @@ class LocalGitWindow(tk.Toplevel):
         if p:self.safe(lambda:git(p,"clone",u),False)
     def safe(self,fn,refresh=True):
         try:o=fn();messagebox.showinfo("Git",o,parent=self)
-        except Exception as e:messagebox.showerror("Git",str(e),parent=self);return
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Git",str(e),parent=self);return
         if refresh:self.refresh()
     def run(self,*a):
         if self.repo:self.safe(lambda:git(self.repo,*a))
@@ -138,9 +138,9 @@ class LocalGitWindow(tk.Toplevel):
             self.change_badge.config(text=f"Changes: {changed}",bg="#ecfdf5" if changed==0 else "#fef3c7",fg="#047857" if changed==0 else "#92400e")
             try:
                 ahead=git(self.repo,"rev-list","--count","@{u}..HEAD");behind=git(self.repo,"rev-list","--count","HEAD..@{u}");sync=f"Sync: +{ahead} / -{behind}"
-            except:sync="Sync: no upstream"
+            except HANDLED_EXCEPTIONS:sync="Sync: no upstream"
             self.sync_badge.config(text=sync);self.status_text.set("Repository refreshed")
-        except Exception as e:self.status_text.set("Refresh failed");messagebox.showerror("Refresh",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:self.status_text.set("Refresh failed");messagebox.showerror("Refresh",str(e),parent=self)
     def stage(self):
         p=self.paths()
         if p:self.run("add","--",*p)
@@ -153,13 +153,13 @@ class LocalGitWindow(tk.Toplevel):
     def diff(self):
         p=self.paths();a=["diff"]+(["--",p[0]] if p else [])
         try:self.output("Diff",git(self.repo,*a))
-        except Exception as e:messagebox.showerror("Diff",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Diff",str(e),parent=self)
     def discard(self):
         p=self.paths()
         if p and messagebox.askyesno("Discard","Permanently discard selected tracked-file changes?",parent=self):self.run("restore","--",*p)
     def clean(self):
         try:q=git(self.repo,"clean","-nd")
-        except Exception as e:return messagebox.showerror("Clean",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:return messagebox.showerror("Clean",str(e),parent=self)
         if q=="Completed successfully.":return messagebox.showinfo("Clean","Nothing to clean",parent=self)
         if messagebox.askyesno("Clean",q+"\n\nDelete these untracked items permanently?",parent=self):self.run("clean","-fd")
     def branch_new(self):
@@ -186,36 +186,25 @@ class LocalGitWindow(tk.Toplevel):
         n=simpledialog.askstring("Remote","Name:",initialvalue="origin",parent=self);u=simpledialog.askstring("Remote","URL:",parent=self) if n else None
         if u:
             try:git(self.repo,"remote","get-url",n);self.run("remote","set-url",n,u)
-            except Exception:self.run("remote","add",n,u)
+            except HANDLED_EXCEPTIONS:self.run("remote","add",n,u)
     def open_folder(self):
         import os
         if self.repo:os.startfile(self.repo) if hasattr(os,"startfile") else subprocess.Popen(["xdg-open",self.repo])
     def output(self,title,value):
         w=tk.Toplevel(self);w.title(title);w.geometry("900x600");t=tk.Text(w,wrap="none",font=("Consolas",9));t.pack(fill="both",expand=True);t.insert("1.0",value)
 
-# Feature classes remain re-exported from this module for backward compatibility.
 from .features import workspace_tools as _workspace_tools
 from .features import repository_tools as _repository_tools
 from .features import expert_tools as _expert_tools
+_FEATURE_MODULES=(_workspace_tools,_repository_tools,_expert_tools)
+_feature_symbols={n:v for m in _FEATURE_MODULES for n,v in vars(m).items() if isinstance(v,type) and v.__module__.startswith("github_command_center.features.domains.")}
+_feature_symbols["LocalGitWindow"]=LocalGitWindow
+_shell_symbols={n:v for n,v in globals().items() if not n.startswith("_")}
+_implementation_modules={importlib.import_module(v.__module__) for v in _feature_symbols.values()}
+for _module in (*_FEATURE_MODULES,*_implementation_modules):
+ vars(_module).update(_shell_symbols);vars(_module).update(_feature_symbols)
+globals().update({n:v for n,v in _feature_symbols.items() if n!="LocalGitWindow"})
 
-_FEATURE_MODULES = (_workspace_tools, _repository_tools, _expert_tools)
-_feature_symbols = {
-    name: value
-    for module in _FEATURE_MODULES
-    for name, value in vars(module).items()
-    if isinstance(value, type) and value.__module__.startswith("github_command_center.features.domains.")
-}
-_feature_symbols["LocalGitWindow"] = LocalGitWindow
-_shell_symbols = {name: value for name, value in globals().items() if not name.startswith("_")}
-_implementation_modules = {importlib.import_module(value.__module__) for value in _feature_symbols.values()}
-for _module in (*_FEATURE_MODULES, *_implementation_modules):
-    vars(_module).update(_shell_symbols)
-    vars(_module).update(_feature_symbols)
-globals().update({name: value for name, value in _feature_symbols.items() if name != "LocalGitWindow"})
-
-del _module, _feature_symbols, _shell_symbols, _implementation_modules
-
-# Stable compatibility aliases retained for extensions and saved command-palette actions.
 ReleaseCenter = ReleasePublishCenterV2
 PullRequestCenter = AsyncGitHubWorkflowCenter
 ActionsCenter = AsyncGitHubWorkflowCenter
@@ -228,6 +217,8 @@ LocalBranchDashboard = BranchDashboardV2
 RemotePruneAuditCenter = AsyncRemotePruneCenter
 GitFetchPreviewCenter = AsyncFetchCenter
 BranchProtectionAdvisor = AsyncGitHubCenter
+
+# v3.62 debt-reduction aliases. Functionality is retained in extracted centers.
 SubmoduleCenter = AsyncSubmoduleCenter
 LFSCenter = AsyncLFSCenter
 CloneWizard = AsyncCloneCenter
@@ -236,9 +227,11 @@ ReleaseEvidenceCenter = ReleaseEvidenceV2
 ChangeReviewCenter = ReviewCenterV2
 GitMaintenanceScheduleCenter = AsyncMaintenanceCenter
 CommitGraphMaintenanceCenter = AsyncMaintenanceCenter
+
+# v3.63 compatibility aliases
 SyncCenter = AsyncPushPullCenter
 ReleasePolicyCenter = PublicReleaseReadinessCenter
 
-# Architecture contract markers. Palette implementations live in features/workspace_tools.py.
-# lambda:BranchDashboardV2  lambda:RecoveryDashboardV2  lambda:ReleaseEvidenceV2
-# lambda:AsyncFetchCenter  lambda:AsyncRemotePruneCenter  lambda:AsyncMaintenanceCenter
+# architecture compatibility route markers
+# lambda:BranchDashboardV2 lambda:RecoveryDashboardV2 lambda:ReleaseEvidenceV2
+# lambda:AsyncFetchCenter lambda:AsyncRemotePruneCenter lambda:AsyncMaintenanceCenter

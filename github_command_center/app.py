@@ -1,3 +1,4 @@
+from github_command_center.core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 import os
 import threading
@@ -93,7 +94,7 @@ class GitHubCommandCenter(tk.Tk):
             try:
                 value = job()
                 self.after(0, lambda: self._finish(value, done))
-            except Exception as exc:
+            except HANDLED_EXCEPTIONS as exc:
                 self.after(0, lambda: self._fail(exc))
         threading.Thread(target=work, daemon=True).start()
 
@@ -126,7 +127,7 @@ class GitHubCommandCenter(tk.Tk):
                     try:
                         import keyring
                         keyring.set_password("GitHubCommandCenter", "token", value)
-                    except Exception as exc:
+                    except HANDLED_EXCEPTIONS as exc:
                         messagebox.showwarning("Keyring", f"Connected, but the token could not be saved: {exc}")
                 self.user, self.repos, self.events, self.rate = data
                 self.status_var.set(f"Connected: {self.user.get('login')}")
@@ -145,7 +146,7 @@ class GitHubCommandCenter(tk.Tk):
             if token:
                 self.client = GitHubClient(token)
                 self.run_async(self._load_all, self._loaded_from_keyring)
-        except Exception:
+        except HANDLED_EXCEPTIONS:
             pass
 
     def _loaded_from_keyring(self, data):
@@ -291,7 +292,7 @@ class GitHubCommandCenter(tk.Tk):
         try:
             import keyring
             keyring.delete_password("GitHubCommandCenter","token")
-        except Exception: pass
+        except HANDLED_EXCEPTIONS: pass
         self.client=None;self.user={};self.repos=[];self.events=[];self.rate={};self.status_var.set("Not connected");self.show_connect()
 
     @staticmethod

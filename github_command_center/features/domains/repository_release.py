@@ -1,24 +1,9 @@
-"""Bounded feature domain for GitHub Command Center v3.74."""
-import csv
-import datetime
-import hashlib
-import json
-import os
-import platform
-import re
-import shutil
-import subprocess
-import sys
-import tempfile
-import threading
-import time
-import tkinter as tk
-import zipfile
+"""Bounded Git feature domain."""
+import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, tempfile, threading, time, tkinter as tk, zipfile
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
-
 from ...core.command_gateway import GitError, git
-from ...core.process_gateway import run_process, start_process
+from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class CherryPickQueueCenter(tk.Toplevel):
     """Build and execute an ordered multi-commit cherry-pick queue with backup protection."""
@@ -60,10 +45,10 @@ class CherryPickQueueCenter(tk.Toplevel):
         if not messagebox.askyesno("Cherry-pick queue",f"Apply {len(self.queue)} commits in the displayed order?",parent=self):return
         backup=f"gccc-backup/pre-cherry-pick-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}"
         try:git(self.repo,"branch",backup);out=git(self.repo,"cherry-pick",*[r[0] for r in self.queue]);messagebox.showinfo("Cherry-pick queue",f"{out}\n\nBackup: {backup}",parent=self);self.queue=[];self.render()
-        except Exception as e:messagebox.showwarning("Cherry-pick paused",f"Backup: {backup}\n\n{e}\n\nResolve conflicts and Continue, or Abort.",parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showwarning("Cherry-pick paused",f"Backup: {backup}\n\n{e}\n\nResolve conflicts and Continue, or Abort.",parent=self)
     def control(self,arg):
         try:messagebox.showinfo("Cherry-pick",git(self.repo,"cherry-pick",arg),parent=self)
-        except Exception as e:messagebox.showerror("Cherry-pick",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Cherry-pick",str(e),parent=self)
 
 class ReleaseAssetIntegrityCenter(tk.Toplevel):
     """Generate and verify SHA-256 manifests for release assets."""
@@ -90,12 +75,12 @@ class ReleaseAssetIntegrityCenter(tk.Toplevel):
         if not self.files:return
         lines=[f"{self.digest(p)}  {Path(p).name}" for p in self.files];self.out.delete("1.0","end");self.out.insert("1.0","\n".join(lines))
         target=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="SHA256SUMS.txt")
-        if target:Path(target).write_text("\n".join(lines)+"\n");messagebox.showinfo("Integrity",f"Saved {target}",parent=self)
+        if target:Path(target).write_text("\n".join(lines)+"\n",encoding="utf-8");messagebox.showinfo("Integrity",f"Saved {target}",parent=self)
     def verify(self):
         manifest=filedialog.askopenfilename(parent=self,filetypes=[("Checksum manifests","*.txt *.sha256"),("All files","*")])
         if not manifest:return
         base=Path(manifest).parent;results=[]
-        for line in Path(manifest).read_text(encoding="utf-8").splitlines():
+        for line in Path(manifest).read_text(encoding="utf-8",errors="replace").splitlines():
             if not line.strip():continue
             parts=line.split(None,1)
             if len(parts)!=2:results.append(f"INVALID LINE: {line}");continue
@@ -132,10 +117,10 @@ class LocalReleaseArchiveCenter(tk.Toplevel):
                     for block in iter(lambda:f.read(1024*1024),b""):h.update(block)
                 return h.hexdigest()
             assets=[zipfile,bundle]+(([folder/"RELEASE_NOTES.md"]) if (folder/"RELEASE_NOTES.md").exists() else [])
-            (folder/"SHA256SUMS.txt").write_text("\n".join(f"{sha(p)}  {p.name}" for p in assets)+"\n")
-            metadata={"repository":Path(self.repo).name,"version":version,"created":datetime.datetime.now().isoformat(),"head":git(self.repo,"rev-parse","HEAD"),"branch":git(self.repo,"branch","--show-current")};(folder/"release-metadata.json").write_text(json.dumps(metadata,indent=2))
+            (folder/"SHA256SUMS.txt").write_text("\n".join(f"{sha(p)}  {p.name}" for p in assets)+"\n",encoding="utf-8")
+            metadata={"repository":Path(self.repo).name,"version":version,"created":datetime.datetime.now().isoformat(),"head":git(self.repo,"rev-parse","HEAD"),"branch":git(self.repo,"branch","--show-current")};(folder/"release-metadata.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
             self.out.delete("1.0","end");self.out.insert("1.0",f"Release archive created:\n{folder}\n\n"+"\n".join(p.name for p in folder.iterdir()));messagebox.showinfo("Release archive",f"Created {folder}",parent=self)
-        except Exception as e:messagebox.showerror("Release archive",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Release archive",str(e),parent=self)
 
 class CommitSignatureAuditCenter(tk.Toplevel):
     """Audit recent commit and tag signature status without changing repository history."""
@@ -161,11 +146,11 @@ class CommitSignatureAuditCenter(tk.Toplevel):
         s=self.tree.selection()
         if not s:return
         try:v=git(self.repo,"show","-s","--show-signature","--date=iso-strict","--pretty=fuller",self.rows[int(s[0])][0])
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="signature-audit.txt")
-        if p:Path(p).write_text(self.report)
+        if p:Path(p).write_text(self.report,encoding="utf-8")
 
 class ReleaseCompareCenter(tk.Toplevel):
     """Compare two release refs with commits, files and compact release statistics."""
@@ -185,12 +170,12 @@ class ReleaseCompareCenter(tk.Toplevel):
             count=git(self.repo,"rev-list","--count",f"{a}..{b}");short=git(self.repo,"diff","--shortstat",a,b);stat=git(self.repo,"diff","--stat",a,b);commits=git(self.repo,"log","--date=short","--pretty=format:- %h %ad %an: %s",f"{a}..{b}");files=git(self.repo,"diff","--name-status",a,b)
             self.md=f"# Release comparison: {a} -> {b}\n\n- Commits: {count}\n- Diff: {short}\n\n## Commits\n{commits}\n\n## Files\n```text\n{files}\n```\n"
             self.summary.delete("1.0","end");self.summary.insert("1.0",f"RELEASE COMPARISON\n{'='*72}\n{a} -> {b}\nCommits: {count}\n{short}\n\n{stat}");self.commits.delete("1.0","end");self.commits.insert("1.0",commits);self.files.delete("1.0","end");self.files.insert("1.0",files)
-        except Exception as e:messagebox.showerror("Release comparison",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Release comparison",str(e),parent=self)
     def export(self):
         if not hasattr(self,"md"):self.compare()
         if not hasattr(self,"md"):return
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".md",initialfile="release-comparison.md")
-        if p:Path(p).write_text(self.md)
+        if p:Path(p).write_text(self.md,encoding="utf-8")
 
 class SafeDeleteBranchWizard(tk.Toplevel):
     """Branch deletion wizard that checks merge, worktree and upstream state first."""
@@ -208,7 +193,7 @@ class SafeDeleteBranchWizard(tk.Toplevel):
             p=line.split("\t",1);b=p[0];up=p[1] if len(p)>1 else "";ahead=behind="-"
             if up:
                 try:ahead=git(self.repo,"rev-list","--count",f"{up}..{b}");behind=git(self.repo,"rev-list","--count",f"{b}..{up}")
-                except:pass
+                except HANDLED_EXCEPTIONS:pass
             r=dict(branch=b,merged=b in merged,used=b in used,current=b==current,up=up,ahead=ahead,behind=behind);self.rows.append(r);self.tree.insert("","end",iid=str(len(self.rows)-1),values=(b,"Yes" if r["merged"] else "No","Yes" if r["used"] else "No",up or "-",ahead,behind))
     def selected(self):
         s=self.tree.selection();return self.rows[int(s[0])] if s else None
@@ -228,7 +213,7 @@ class SafeDeleteBranchWizard(tk.Toplevel):
         if r["current"] or r["used"] or not r["merged"] or str(r["ahead"]) not in ("0","-"):return messagebox.showwarning("Safe delete","This branch does not meet the safe-delete rules. Force deletion is intentionally unavailable here.",parent=self)
         if messagebox.askyesno("Delete local branch",f"Delete merged local branch {r['branch']} with git branch -d?",parent=self):
             try:messagebox.showinfo("Delete",git(self.repo,"branch","-d",r["branch"]),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Delete",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Delete",str(e),parent=self)
 
 class PullRebaseAdvisor(tk.Toplevel):
     """Compare merge, rebase and fast-forward pull outcomes before changing history."""
@@ -248,25 +233,25 @@ class PullRebaseAdvisor(tk.Toplevel):
             elif a!="0" and d=="0":rec="Local branch is ahead only. Push after review."
             elif a!="0" and d!="0":rec="Histories diverged. Choose rebase for a linear private branch, or merge when preserving integration topology is preferable."
             v=f"PULL STRATEGY ANALYSIS\n{'='*74}\nBranch: {b}\nUpstream: {u}\nAhead: {a}\nBehind: {d}\nWorking tree: {'Clean' if git(self.repo,'status','--porcelain')=='Completed successfully.' else 'Changed'}\n\nRecommendation: {rec}"
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.text.delete("1.0","end");self.text.insert("1.0",v)
     def clean(self):return git(self.repo,"status","--porcelain")=="Completed successfully."
     def ff(self):
         if not self.clean():return messagebox.showwarning("Pull","Commit or stash changes first.",parent=self)
         try:messagebox.showinfo("Pull",git(self.repo,"pull","--ff-only"),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Pull",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Pull",str(e),parent=self)
     def rebase(self):
         import datetime
         if not self.clean():return messagebox.showwarning("Rebase","Commit or stash changes first.",parent=self)
         try:b,u,a,d=self.state();backup=f"gccc-backup/pre-pull-rebase-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}";git(self.repo,"branch",backup)
-        except Exception as e:return messagebox.showerror("Rebase",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:return messagebox.showerror("Rebase",str(e),parent=self)
         if messagebox.askyesno("Rebase",f"Safety branch created: {backup}\n\nRebase {b} onto {u}?",parent=self):
             try:messagebox.showinfo("Rebase",git(self.repo,"rebase",u),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Rebase",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Rebase",str(e),parent=self)
     def merge(self):
         if not self.clean():return messagebox.showwarning("Merge","Commit or stash changes first.",parent=self)
         try:b,u,a,d=self.state()
-        except Exception as e:return messagebox.showerror("Merge",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:return messagebox.showerror("Merge",str(e),parent=self)
         if messagebox.askyesno("Merge",f"Merge upstream {u} into {b}?",parent=self):
             try:messagebox.showinfo("Merge",git(self.repo,"merge","--no-edit",u),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Merge",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Merge",str(e),parent=self)

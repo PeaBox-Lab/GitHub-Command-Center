@@ -1,24 +1,9 @@
-"""Bounded feature domain for GitHub Command Center v3.74."""
-import csv
-import datetime
-import hashlib
-import json
-import os
-import platform
-import re
-import shutil
-import subprocess
-import sys
-import tempfile
-import threading
-import time
-import tkinter as tk
-import zipfile
+"""Bounded Git feature domain."""
+import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, tempfile, threading, time, tkinter as tk, zipfile
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
-
 from ...core.command_gateway import GitError, git
-from ...core.process_gateway import run_process, start_process
+from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class RepositoryLocatorCenter(tk.Toplevel):
     """Scan a workspace recursively for Git repositories and open them quickly."""
@@ -40,7 +25,7 @@ class RepositoryLocatorCenter(tk.Toplevel):
                 rel=gitdir.parent.relative_to(root)
                 if len(rel.parts)>maxdepth:continue
                 repo=gitdir.parent;branch=git(repo,"branch","--show-current");st=git(repo,"status","--porcelain");state="Clean" if st=="Completed successfully." else "Changed";r=(repo.name,str(repo),branch,state);self.rows.append(r);self.tree.insert("","end",iid=str(len(self.rows)-1),values=r)
-            except:pass
+            except HANDLED_EXCEPTIONS:pass
     def open(self):
         s=self.tree.selection()
         if s:LocalGitWindow(self,self.rows[int(s[0])][1])
@@ -60,7 +45,7 @@ class BlameExplorerCenter(tk.Toplevel):
         p=self.path.get().strip();ref=self.ref.get().strip() or "HEAD"
         if not p:return
         try:raw=git(self.repo,"blame","--line-porcelain",ref,"--",p)
-        except Exception as e:return messagebox.showerror("Blame",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:return messagebox.showerror("Blame",str(e),parent=self)
         self.rows=[];self.tree.delete(*self.tree.get_children());cur={}
         for line in raw.splitlines():
             if line.startswith("\t"):
@@ -71,14 +56,14 @@ class BlameExplorerCenter(tk.Toplevel):
             elif line.startswith("author-time "):
                 import datetime
                 try:cur["date"]=datetime.datetime.fromtimestamp(int(line.split()[1])).date().isoformat()
-                except:cur["date"]=""
+                except HANDLED_EXCEPTIONS:cur["date"]=""
     def selected(self):
         s=self.tree.selection();return self.rows[int(s[0])] if s else None
     def inspect(self):
         r=self.selected()
         if not r:return
         try:v=git(self.repo,"show","--stat","--patch","--find-renames",r["hash"])
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
 
 class CommitObjectCenter(tk.Toplevel):
@@ -95,15 +80,15 @@ class CommitObjectCenter(tk.Toplevel):
         if not o:return
         try:
             sha=git(self.repo,"rev-parse",o);typ=git(self.repo,"cat-file","-t",sha);size=git(self.repo,"cat-file","-s",sha);content=git(self.repo,"cat-file","-p",sha);self.show(f"Object: {sha}\nType: {typ}\nSize: {size}\n\n{content}")
-        except Exception as e:self.show(str(e))
+        except HANDLED_EXCEPTIONS as e:self.show(str(e))
     def tree(self):
         o=self.obj.get().strip() or "HEAD"
         try:self.show(git(self.repo,"ls-tree","-r","-l",o))
-        except Exception as e:self.show(str(e))
+        except HANDLED_EXCEPTIONS as e:self.show(str(e))
     def verify(self):
         o=self.obj.get().strip()
         try:self.show(git(self.repo,"rev-parse","--verify",o))
-        except Exception as e:self.show(str(e))
+        except HANDLED_EXCEPTIONS as e:self.show(str(e))
 
 class BisectAutomationCenter(tk.Toplevel):
     """Automate regression hunting with git bisect run while keeping reset controls visible."""
@@ -118,7 +103,7 @@ class BisectAutomationCenter(tk.Toplevel):
     def clean(self):return git(self.repo,"status","--porcelain")=="Completed successfully."
     def refresh(self):
         try:v=git(self.repo,"status","--short","--branch")+"\n\n"+git(self.repo,"bisect","log")
-        except Exception as e:v="No active bisect session or log unavailable.\n\n"+str(e)
+        except HANDLED_EXCEPTIONS as e:v="No active bisect session or log unavailable.\n\n"+str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def run(self):
         import shlex
@@ -127,11 +112,11 @@ class BisectAutomationCenter(tk.Toplevel):
         if not good or not bad or not cmd:return messagebox.showwarning("Bisect","Enter known-good, known-bad and a test command.",parent=self)
         try:
             git(self.repo,"rev-parse","--verify",good);git(self.repo,"rev-parse","--verify",bad);git(self.repo,"bisect","start",bad,good)
-            r=run_process(["git","bisect","run",*cmd],cwd=self.repo,timeout=7200);v=(r.stdout+"\n"+r.stderr).strip();self.out.delete("1.0","end");self.out.insert("1.0",v);messagebox.showinfo("Bisect",f"Automated bisect finished with exit code {r.returncode}. Review the output, then Reset bisect when done.",parent=self)
-        except Exception as e:messagebox.showerror("Bisect",str(e),parent=self)
+            r=subprocess.run(["git","bisect","run",*cmd],cwd=self.repo,text=True,capture_output=True,timeout=7200,encoding="utf-8",errors="replace");v=(r.stdout+"\n"+r.stderr).strip();self.out.delete("1.0","end");self.out.insert("1.0",v);messagebox.showinfo("Bisect",f"Automated bisect finished with exit code {r.returncode}. Review the output, then Reset bisect when done.",parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Bisect",str(e),parent=self)
     def reset(self):
         try:messagebox.showinfo("Bisect",git(self.repo,"bisect","reset"),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Bisect",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Bisect",str(e),parent=self)
 
 class RevisionArchiveCenter(tk.Toplevel):
     """Export any revision or subdirectory without checking it out."""
@@ -145,7 +130,7 @@ class RevisionArchiveCenter(tk.Toplevel):
         self.out=tk.Text(f,wrap="word",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.out.grid(row=4,column=0,columnspan=2,sticky="nsew");f.rowconfigure(4,weight=1)
     def preview(self):
         try:v=git(self.repo,"show","-s","--date=iso-strict","--pretty=fuller",self.ref.get().strip() or "HEAD")
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def export(self):
         ref=self.ref.get().strip() or "HEAD";sub=self.path.get().strip().strip("/");name=Path(self.repo).name;safe=ref.replace("/","-").replace("\\","-");dest=filedialog.asksaveasfilename(parent=self,defaultextension=".zip",initialfile=f"{name}-{safe}.zip")
@@ -155,7 +140,7 @@ class RevisionArchiveCenter(tk.Toplevel):
         args.append(ref)
         if sub:args.append(sub)
         try:messagebox.showinfo("Archive",git(self.repo,*args),parent=self)
-        except Exception as e:messagebox.showerror("Archive",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Archive",str(e),parent=self)
 
 class CommitMetadataCenter(tk.Toplevel):
     """Inspect author/committer identity, parents, signature and raw commit metadata."""
@@ -168,7 +153,7 @@ class CommitMetadataCenter(tk.Toplevel):
         r=self.ref.get().strip() or "HEAD"
         try:
             self.report=git(self.repo,"show","-s","--show-signature","--date=iso-strict","--pretty=raw",r)+"\n\nFORMATTED\n"+git(self.repo,"show","-s","--date=iso-strict","--pretty=format:Commit: %H%nTree: %T%nParents: %P%nAuthor: %an <%ae>%nAuthor date: %aI%nCommitter: %cn <%ce>%nCommit date: %cI%nSignature status: %G?%nSigner: %GS%nKey: %GK%n%n%B",r)
-        except Exception as e:self.report=str(e)
+        except HANDLED_EXCEPTIONS as e:self.report=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",self.report)
     def copy(self):self.clipboard_clear();self.clipboard_append(getattr(self,"report",""));messagebox.showinfo("Metadata","Copied to clipboard.",parent=self)
 
@@ -188,7 +173,7 @@ class DanglingObjectRecoveryCenter(tk.Toplevel):
     def scan(self):
         import re
         try:raw=git(self.repo,"fsck","--full","--no-reflogs","--unreachable")
-        except Exception as e:raw=str(e)
+        except HANDLED_EXCEPTIONS as e:raw=str(e)
         self.raw_report=raw;self.rows=[];self.tree.delete(*self.tree.get_children())
         for line in raw.splitlines():
             m=re.search(r"(?:unreachable|dangling) (commit|tree|blob|tag) ([0-9a-f]{40,64})",line)
@@ -197,7 +182,7 @@ class DanglingObjectRecoveryCenter(tk.Toplevel):
             if kind=="commit":
                 try:
                     info=git(self.repo,"show","-s","--date=iso-strict","--pretty=format:%cI%x1f%s",sha).split("\x1f",1);date=info[0];subject=info[1] if len(info)>1 else ""
-                except:pass
+                except HANDLED_EXCEPTIONS:pass
             else:subject=line
             self.rows.append(dict(kind=kind,sha=sha,date=date,subject=subject));self.tree.insert("","end",iid=str(len(self.rows)-1),values=(kind,sha,date,subject))
     def selected(self):
@@ -206,7 +191,7 @@ class DanglingObjectRecoveryCenter(tk.Toplevel):
         r=self.selected()
         if not r:return
         try:v=git(self.repo,"cat-file","-p",r["sha"]) if r["kind"]!="commit" else git(self.repo,"show","--stat","--patch","--find-renames",r["sha"])
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def recover(self):
         import datetime,re
@@ -215,7 +200,7 @@ class DanglingObjectRecoveryCenter(tk.Toplevel):
         default=f"recovery/fsck-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}-{r['sha'][:8]}";name=simpledialog.askstring("Recovery branch","New branch name:",initialvalue=default,parent=self)
         if not name or not re.match(r"^[A-Za-z0-9._/-]+$",name):return
         try:messagebox.showinfo("Recovery",git(self.repo,"branch",name,r["sha"]),parent=self);self.scan()
-        except Exception as e:messagebox.showerror("Recovery",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Recovery",str(e),parent=self)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="dangling-object-report.txt")
-        if p:Path(p).write_text(self.raw_report)
+        if p:Path(p).write_text(self.raw_report,encoding="utf-8")

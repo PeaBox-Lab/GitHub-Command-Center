@@ -1,4 +1,5 @@
 from __future__ import annotations
+from github_command_center.core.error_boundary import HANDLED_EXCEPTIONS, report_error
 import tkinter as tk
 from datetime import datetime
 from tkinter import messagebox,simpledialog,ttk
@@ -35,5 +36,5 @@ class RecoveryDashboardV2(tk.Toplevel):
         decision=choose_recovery(reflog_available=True,commit_known=True,fsck_candidate=False);default=f"recovery/{datetime.now().strftime('%Y%m%d-%H%M%S')}-{r[1][:8]}";name=simpledialog.askstring("Recovery branch",f"Recommended method: {decision.method}\n{decision.rationale}\n\nBranch name:",initialvalue=default,parent=self)
         if name:
             try:messagebox.showinfo("Recovery",self.git.text("branch",name,r[1]),parent=self);self.refresh()
-            except Exception as exc:messagebox.showerror("Recovery",str(exc),parent=self)
+            except HANDLED_EXCEPTIONS as exc:messagebox.showerror("Recovery",str(exc),parent=self)
 

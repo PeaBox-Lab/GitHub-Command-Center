@@ -1,24 +1,9 @@
-"""Bounded feature domain for GitHub Command Center v3.74."""
-import csv
-import datetime
-import hashlib
-import json
-import os
-import platform
-import re
-import shutil
-import subprocess
-import sys
-import tempfile
-import threading
-import time
-import tkinter as tk
-import zipfile
+"""Bounded Git feature domain."""
+import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, tempfile, threading, time, tkinter as tk, zipfile
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
-
 from ...core.command_gateway import GitError, git
-from ...core.process_gateway import run_process, start_process
+from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class SelfTestCenter(tk.Toplevel):
     """Built-in smoke tests for parsers, configuration and command prerequisites."""
@@ -31,17 +16,17 @@ class SelfTestCenter(tk.Toplevel):
         tests=[]
         def record(name,fn):
             try:v=fn();tests.append((name,True,str(v)))
-            except Exception as e:tests.append((name,False,str(e)))
+            except HANDLED_EXCEPTIONS as e:tests.append((name,False,str(e)))
         record("Git available",lambda:git(self.repo,"--version"));record("Repository work tree",lambda:git(self.repo,"rev-parse","--is-inside-work-tree"));record("HEAD resolves",lambda:git(self.repo,"rev-parse","HEAD"));record("Status parser",lambda:len(git(self.repo,"status","--porcelain").splitlines()));record("Log parser",lambda:len(git(self.repo,"log","-5","--pretty=format:%H%x1f%s").splitlines()));record("Config writable",lambda:(Path(self.repo)/".git").is_dir());record("Python source compiles",self.compile_source)
         self.report="SELF-TEST RESULTS\n"+"="*72+"\n\n"+"\n\n".join(f"[{'PASS' if ok else 'FAIL'}] {n}\n  {d}" for n,ok,d in tests)+f"\n\nOVERALL: {'PASS' if all(t[1] for t in tests) else 'FAIL'}"
         self.text.delete("1.0","end");self.text.insert("1.0",self.report)
     def compile_source(self):
-        root=Path(__file__).parent.parent;r=run_process(["python","-m","compileall","-q",str(root)],timeout=180)
+        root=Path(__file__).parent.parent;r=subprocess.run(["python","-m","compileall","-q",str(root)],text=True,capture_output=True,timeout=180,encoding="utf-8",errors="replace")
         if r.returncode:raise RuntimeError((r.stdout+r.stderr).strip())
         return "Compilation passed"
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="gccc-self-test.txt")
-        if p:Path(p).write_text(self.report)
+        if p:Path(p).write_text(self.report,encoding="utf-8")
 
 class PartialStagingCenter(tk.Toplevel):
     """Hunk-level staging UI backed by git diff and git apply --cached."""
@@ -69,7 +54,7 @@ class PartialStagingCenter(tk.Toplevel):
             self.files=self.changed_files();self.file_list.delete(0,"end");self.hunk_list.delete(0,"end");self.preview.delete("1.0","end")
             for state,path in self.files:self.file_list.insert("end",f"{state}  {path}")
             self.status.set(f"{len(self.files)} changed file(s). Select a text file to inspect hunks.")
-        except Exception as e:messagebox.showerror("Partial staging",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Partial staging",str(e),parent=self)
     def parse_patch(self,patch):
         lines=patch.splitlines(keepends=True);header=[];hunks=[];current=[]
         for line in lines:
@@ -94,7 +79,7 @@ class PartialStagingCenter(tk.Toplevel):
                 marker=next((x.strip() for x in h.splitlines() if x.startswith("@@")),f"Hunk {i+1}");self.hunk_list.insert("end",f"{i+1}. {marker}")
             if not self.hunks:self.status.set("No unstaged text hunks. The file may be fully staged, untracked, binary, or unchanged.")
             else:self.status.set(f"{len(self.hunks)} unstaged hunk(s) in {path}")
-        except Exception as e:messagebox.showerror("Partial staging",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Partial staging",str(e),parent=self)
     def show_hunk(self):
         s=self.hunk_list.curselection();self.preview.delete("1.0","end")
         if s:self.preview.insert("1.0",self.hunks[s[0]])
@@ -102,7 +87,7 @@ class PartialStagingCenter(tk.Toplevel):
         import tempfile,os
         fd,name=tempfile.mkstemp(prefix="gccc-hunk-",suffix=".patch");os.close(fd)
         try:
-            Path(name).write_text(patch);args=["apply","--whitespace=nowarn"]
+            Path(name).write_text(patch,encoding="utf-8");args=["apply","--whitespace=nowarn"]
             if cached:args.append("--cached")
             if reverse:args.append("--reverse")
             args.append(name);return git(self.repo,*args)
@@ -113,7 +98,7 @@ class PartialStagingCenter(tk.Toplevel):
         s=self.hunk_list.curselection()
         if not s:return
         try:self.apply_patch(self.hunks[s[0]],True,False);self.status.set("Selected hunk staged.");self.refresh();self.select_file_again()
-        except Exception as e:messagebox.showerror("Stage hunk",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Stage hunk",str(e),parent=self)
     def staged_hunks(self,path):
         p=git(self.repo,"diff","--cached","--no-ext-diff","--binary","--",path);return self.parse_patch("" if p=="Completed successfully." else p)
     def unstage_hunk(self):
@@ -130,12 +115,12 @@ class PartialStagingCenter(tk.Toplevel):
         p=self.selected_file()
         if p:
             try:git(self.repo,"add","--",p);self.refresh()
-            except Exception as e:messagebox.showerror("Stage file",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Stage file",str(e),parent=self)
     def unstage_file(self):
         p=self.selected_file()
         if p:
             try:git(self.repo,"restore","--staged","--",p);self.refresh()
-            except Exception as e:messagebox.showerror("Unstage file",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Unstage file",str(e),parent=self)
 
 class PickHunkDialog(tk.Toplevel):
     def __init__(self,parent,repo,path,hunks,done):
@@ -152,8 +137,8 @@ class PickHunkDialog(tk.Toplevel):
         if not s:return
         fd,name=tempfile.mkstemp(prefix="gccc-unstage-",suffix=".patch");os.close(fd)
         try:
-            Path(name).write_text(self.hunks[s[0]]);git(self.repo,"apply","--cached","--reverse","--whitespace=nowarn",name);self.done();self.destroy()
-        except Exception as e:messagebox.showerror("Unstage hunk",str(e),parent=self)
+            Path(name).write_text(self.hunks[s[0]],encoding="utf-8");git(self.repo,"apply","--cached","--reverse","--whitespace=nowarn",name);self.done();self.destroy()
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Unstage hunk",str(e),parent=self)
         finally:
             try:os.unlink(name)
             except OSError:pass
@@ -183,7 +168,7 @@ class InteractiveRebaseEditor(tk.Toplevel):
                 p=line.split("\x1f",4)
                 if len(p)==5:self.rows.append({"action":"pick","full":p[0],"short":p[1],"date":p[2],"author":p[3],"subject":p[4]})
             self.render();self.update_plan_preview()
-        except Exception as e:messagebox.showerror("Interactive rebase",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Interactive rebase",str(e),parent=self)
     def render(self):
         self.tree.delete(*self.tree.get_children())
         for i,r in enumerate(self.rows):self.tree.insert("","end",iid=str(i),values=(r["action"],r["short"],r["subject"],r["author"],r["date"]))
@@ -207,7 +192,7 @@ class InteractiveRebaseEditor(tk.Toplevel):
         i=self.selected_index()
         if i is None:return
         try:v=git(self.repo,"show","--stat","--oneline",self.rows[i]["full"])
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.preview.delete("1.0","end");self.preview.insert("1.0",v+"\n\nPLAN\n"+"="*72+"\n"+self.plan())
     def execute(self):
         import datetime,tempfile,os,sys
@@ -217,15 +202,15 @@ class InteractiveRebaseEditor(tk.Toplevel):
         backup=f"gccc-backup/pre-rebase-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}"
         try:
             git(self.repo,"branch",backup)
-            todo_fd,todo=tempfile.mkstemp(prefix="gccc-rebase-",suffix=".todo");os.close(todo_fd);Path(todo).write_text(self.plan())
+            todo_fd,todo=tempfile.mkstemp(prefix="gccc-rebase-",suffix=".todo");os.close(todo_fd);Path(todo).write_text(self.plan(),encoding="utf-8")
             editor_fd,editor=tempfile.mkstemp(prefix="gccc-editor-",suffix=".py");os.close(editor_fd)
-            Path(editor).write_text("import shutil,sys\nshutil.copyfile(sys.argv[1],sys.argv[2])\n")
+            Path(editor).write_text("import shutil,sys\nshutil.copyfile(sys.argv[1],sys.argv[2])\n",encoding="utf-8")
             env=os.environ.copy();env["GIT_SEQUENCE_EDITOR"]=f'\"{sys.executable}\" \"{editor}\" \"{todo}\"'
-            r=run_process(["git","rebase","-i",self.base.get().strip()],cwd=self.repo,timeout=1800,env=env)
+            r=subprocess.run(["git","rebase","-i",self.base.get().strip()],cwd=self.repo,text=True,capture_output=True,timeout=1800,env=env,encoding="utf-8",errors="replace")
             out=(r.stdout+"\n"+r.stderr).strip()
             if r.returncode:messagebox.showwarning("Rebase paused or failed",f"Backup: {backup}\n\n{out}\n\nResolve conflicts, then use Continue, Skip, or Abort.",parent=self)
             else:messagebox.showinfo("Rebase complete",f"Rebase completed. Safety branch: {backup}\n\n{out}",parent=self)
-        except Exception as e:messagebox.showerror("Interactive rebase",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Interactive rebase",str(e),parent=self)
         finally:
             for p in (locals().get("todo"),locals().get("editor")):
                 if p:
@@ -233,4 +218,4 @@ class InteractiveRebaseEditor(tk.Toplevel):
                     except OSError:pass
     def rebase_cmd(self,arg):
         try:messagebox.showinfo("Rebase",git(self.repo,"rebase",arg),parent=self);self.load_commits()
-        except Exception as e:messagebox.showerror("Rebase",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Rebase",str(e),parent=self)

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from github_command_center.core.error_boundary import HANDLED_EXCEPTIONS, report_error
 import tkinter as tk
 from tkinter import messagebox,ttk
 from ...services import GitService
@@ -35,7 +36,7 @@ class ChangesCenterV2(tk.Toplevel):
         m=self.message.get().strip()
         if not m:return messagebox.showwarning("Commit","Enter a commit message.",parent=self)
         try:messagebox.showinfo("Commit",self.git.text("commit","-m",m),parent=self);self.message.set("");self.refresh()
-        except Exception as exc:messagebox.showerror("Commit",str(exc),parent=self)
+        except HANDLED_EXCEPTIONS as exc:messagebox.showerror("Commit",str(exc),parent=self)
     def diff(self):
         p=self.selected();result=self.git.execute("diff","--",*p,check=False) if p else self.git.execute("diff",check=False);self.out.delete("1.0","end");self.out.insert("1.0",result.output)
 

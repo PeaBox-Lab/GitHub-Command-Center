@@ -1,4 +1,5 @@
 from __future__ import annotations
+from github_command_center.core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 import tkinter as tk
 from tkinter import messagebox, ttk
@@ -38,7 +39,7 @@ class VisualDiffCenter(tk.Toplevel):
     def refresh(self):
         staged=self.mode.get()=="Staged"
         try:self.files=self.service.files(staged=staged,path=self.path.get().strip(),algorithm=self.algorithm.get())
-        except Exception as exc:messagebox.showerror("Visual diff",str(exc),parent=self);return
+        except HANDLED_EXCEPTIONS as exc:messagebox.showerror("Visual diff",str(exc),parent=self);return
         self.file_list.delete(0,"end")
         for file in self.files:self.file_list.insert("end",f"{file.status} {file.path}  +{file.additions}/-{file.deletions}")
         self.hunks.delete(0,"end");self.diff.clear();self.status.set(f"{len(self.files)} changed file(s)")
@@ -71,5 +72,5 @@ class VisualDiffCenter(tk.Toplevel):
         action="Unstage" if reverse else "Stage"
         if not messagebox.askyesno(action,f"{action} selected hunk in {file.path}?",parent=self):return
         try:self.service.apply_patch(self.service.hunk_patch(file,hunk),cached=True,reverse=reverse);self.refresh()
-        except Exception as exc:messagebox.showerror(action,str(exc),parent=self)
+        except HANDLED_EXCEPTIONS as exc:messagebox.showerror(action,str(exc),parent=self)
 

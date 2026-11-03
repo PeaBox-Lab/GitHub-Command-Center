@@ -1,24 +1,9 @@
-"""Bounded feature domain for GitHub Command Center v3.74."""
-import csv
-import datetime
-import hashlib
-import json
-import os
-import platform
-import re
-import shutil
-import subprocess
-import sys
-import tempfile
-import threading
-import time
-import tkinter as tk
-import zipfile
+"""Bounded Git feature domain."""
+import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, tempfile, threading, time, tkinter as tk, zipfile
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
-
 from ...core.command_gateway import GitError, git
-from ...core.process_gateway import run_process, start_process
+from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class UnifiedRefBrowser(tk.Toplevel):
     """Unified browser for branches, remotes, tags, stash and other refs."""
@@ -46,7 +31,7 @@ class UnifiedRefBrowser(tk.Toplevel):
                 p=line.split("\t",4)
                 if len(p)==5:self.rows.append({"type":self.kind(p[0]),"name":p[0],"full":p[1],"short":p[2],"date":p[3],"subject":p[4]})
             self.render()
-        except Exception as e:messagebox.showerror("Refs",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Refs",str(e),parent=self)
     def render(self):
         q=self.query.get().lower();self.filtered=[r for r in self.rows if not q or q in (r["type"]+" "+r["name"]+" "+r["subject"]).lower()];self.tree.delete(*self.tree.get_children())
         for i,r in enumerate(self.filtered):self.tree.insert("","end",iid=str(i),values=(r["type"],r["name"],r["short"],r["date"],r["subject"]))
@@ -56,7 +41,7 @@ class UnifiedRefBrowser(tk.Toplevel):
         r=self.selected()
         if not r:return
         try:v=git(self.repo,"show","--stat","--decorate","--oneline",r["full"])
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.text.delete("1.0","end");self.text.insert("1.0",v)
     def checkout(self):
         r=self.selected()
@@ -67,7 +52,7 @@ class UnifiedRefBrowser(tk.Toplevel):
                 if not messagebox.askyesno("Checkout",f"Checkout {r['name']} in detached HEAD mode?",parent=self):return
                 out=git(self.repo,"switch","--detach",r["full"])
             messagebox.showinfo("Checkout",out,parent=self)
-        except Exception as e:messagebox.showerror("Checkout",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Checkout",str(e),parent=self)
     def branch(self):
         import re
         r=self.selected()
@@ -75,7 +60,7 @@ class UnifiedRefBrowser(tk.Toplevel):
         n=simpledialog.askstring("Create branch","New branch name:",parent=self)
         if n and re.match(r"^[A-Za-z0-9._/-]+$",n):
             try:messagebox.showinfo("Branch",git(self.repo,"branch",n,r["full"]),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Branch",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Branch",str(e),parent=self)
     def delete(self):
         r=self.selected()
         if not r:return
@@ -88,7 +73,7 @@ class UnifiedRefBrowser(tk.Toplevel):
                 if messagebox.askyesno("Delete tag",f"Delete local tag {n}?",parent=self):messagebox.showinfo("Delete",git(self.repo,"tag","-d",n),parent=self)
             else:return messagebox.showinfo("Delete","Deletion is limited to local branches and local tags.",parent=self)
             self.refresh()
-        except Exception as e:messagebox.showerror("Delete",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Delete",str(e),parent=self)
     def copy_ref(self):
         r=self.selected()
         if r:self.clipboard_clear();self.clipboard_append(r["name"]);messagebox.showinfo("Reference","Copied ref name.",parent=self)
@@ -125,7 +110,7 @@ class RepositoryHistoryBrowser(tk.Toplevel):
             for e in self.entries():
                 iid=self.tree.insert("","end",text=e["name"],values=(e["type"],e["size"]),tags=(e["hash"],e["type"],e["name"]))
                 if e["type"]=="tree":self.tree.insert(iid,"end",text="Loading...")
-        except Exception as e:messagebox.showerror("History browser",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("History browser",str(e),parent=self)
     def node_path(self,iid):
         parts=[]
         while iid:
@@ -141,7 +126,7 @@ class RepositoryHistoryBrowser(tk.Toplevel):
                 for e in self.entries(path):
                     child=self.tree.insert(iid,"end",text=e["name"],values=(e["type"],e["size"]),tags=(e["hash"],e["type"],path+"/"+e["name"]))
                     if e["type"]=="tree":self.tree.insert(child,"end",text="Loading...")
-            except Exception as e:messagebox.showerror("History browser",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("History browser",str(e),parent=self)
     def selected_path(self):
         s=self.tree.selection();return self.node_path(s[0]) if s else None
     def open_selected(self):
@@ -151,7 +136,7 @@ class RepositoryHistoryBrowser(tk.Toplevel):
         if not vals or vals[0]!="blob":return
         path=self.node_path(iid)
         try:v=git(self.repo,"show",f"{self.current_ref}:{path}");self.content.delete("1.0","end");self.content.insert("1.0",v)
-        except Exception as e:self.content.delete("1.0","end");self.content.insert("1.0","Binary or unreadable content.\n\n"+str(e))
+        except HANDLED_EXCEPTIONS as e:self.content.delete("1.0","end");self.content.insert("1.0","Binary or unreadable content.\n\n"+str(e))
     def export_file(self):
         path=self.selected_path()
         if not path:return
@@ -160,10 +145,10 @@ class RepositoryHistoryBrowser(tk.Toplevel):
         target=filedialog.asksaveasfilename(parent=self,initialfile=Path(path).name)
         if target:
             try:
-                r=run_process(["git","show",f"{self.current_ref}:{path}"],cwd=self.repo,timeout=120,binary=True)
-                if r.returncode:raise GitError(r.stderr.decode("utf-8"))
+                r=subprocess.run(["git","show",f"{self.current_ref}:{path}"],cwd=self.repo,capture_output=True,timeout=120)
+                if r.returncode:raise GitError(r.stderr.decode("utf-8",errors="replace"))
                 Path(target).write_bytes(r.stdout);messagebox.showinfo("Export",f"Saved {target}",parent=self)
-            except Exception as e:messagebox.showerror("Export",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Export",str(e),parent=self)
 
 class SparseCheckoutCenter(tk.Toplevel):
     """Configure cone-mode sparse checkout for large repositories."""
@@ -185,16 +170,16 @@ class SparseCheckoutCenter(tk.Toplevel):
             for x in self.all_folders:self.folders.insert("end",x)
             enabled=git(self.repo,"config","--bool","core.sparseCheckout")
             try:spec=git(self.repo,"sparse-checkout","list")
-            except Exception:spec="No sparse paths configured."
+            except HANDLED_EXCEPTIONS:spec="No sparse paths configured."
             self.text.delete("1.0","end");self.text.insert("1.0",f"Enabled: {enabled}\n\n{spec}")
             selected=set(spec.splitlines())
             for i,x in enumerate(self.all_folders):
                 if x in selected:self.folders.selection_set(i)
-        except Exception as e:messagebox.showerror("Sparse checkout",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Sparse checkout",str(e),parent=self)
     def enable(self):
         if not self.clean():return messagebox.showwarning("Sparse checkout","Commit or stash changes first.",parent=self)
         try:messagebox.showinfo("Sparse checkout",git(self.repo,"sparse-checkout","init","--cone"),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Sparse checkout",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Sparse checkout",str(e),parent=self)
     def chosen(self):return [self.all_folders[i] for i in self.folders.curselection()]
     def apply(self):
         paths=self.chosen()
@@ -202,17 +187,17 @@ class SparseCheckoutCenter(tk.Toplevel):
         if not self.clean():return messagebox.showwarning("Sparse checkout","Commit or stash changes first.",parent=self)
         if messagebox.askyesno("Apply sparse checkout","Materialize only the selected folders plus root-level files?",parent=self):
             try:messagebox.showinfo("Sparse checkout",git(self.repo,"sparse-checkout","set",*paths),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Sparse checkout",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Sparse checkout",str(e),parent=self)
     def add(self):
         p=simpledialog.askstring("Sparse checkout","Folder path to add:",parent=self)
         if p:
             try:messagebox.showinfo("Sparse checkout",git(self.repo,"sparse-checkout","add",p),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Sparse checkout",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Sparse checkout",str(e),parent=self)
     def disable(self):
         if not self.clean():return messagebox.showwarning("Sparse checkout","Commit or stash changes first.",parent=self)
         if messagebox.askyesno("Disable sparse checkout","Restore the full working tree?",parent=self):
             try:messagebox.showinfo("Sparse checkout",git(self.repo,"sparse-checkout","disable"),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Sparse checkout",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Sparse checkout",str(e),parent=self)
 
 class GitNotesCenter(tk.Toplevel):
     """Attach non-rewriting annotations to commits using git notes."""
@@ -237,24 +222,24 @@ class GitNotesCenter(tk.Toplevel):
         c=self.selected();self.note.delete("1.0","end")
         if not c:return
         try:v=git(self.repo,"notes",f"--ref={self.notes_name()}","show",c);self.note.insert("1.0","" if v=="Completed successfully." else v)
-        except Exception:self.note.insert("1.0","")
+        except HANDLED_EXCEPTIONS:self.note.insert("1.0","")
     def save_note(self):
         c=self.selected()
         if not c:return
         text=self.note.get("1.0","end-1c").strip()
         if not text:return messagebox.showwarning("Git notes","Enter note text.",parent=self)
         try:messagebox.showinfo("Git notes",git(self.repo,"notes",f"--ref={self.notes_name()}","add","-f","-m",text,c),parent=self)
-        except Exception as e:messagebox.showerror("Git notes",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Git notes",str(e),parent=self)
     def delete_note(self):
         c=self.selected()
         if c and messagebox.askyesno("Delete note","Delete the note from the selected commit?",parent=self):
             try:messagebox.showinfo("Git notes",git(self.repo,"notes",f"--ref={self.notes_name()}","remove",c),parent=self);self.load_note()
-            except Exception as e:messagebox.showerror("Git notes",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Git notes",str(e),parent=self)
     def push_notes(self):
         ref=self.ref.get().strip()
         if messagebox.askyesno("Push notes",f"Push {ref} to origin?",parent=self):
             try:messagebox.showinfo("Push notes",git(self.repo,"push","origin",ref),parent=self)
-            except Exception as e:messagebox.showerror("Push notes",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Push notes",str(e),parent=self)
 
 class DiffMergeToolCenter(tk.Toplevel):
     """Configure and launch common external diff/merge tools."""
@@ -269,25 +254,25 @@ class DiffMergeToolCenter(tk.Toplevel):
     def refresh(self):
         def cfg(k):
             try:return git(self.repo,"config","--get",k)
-            except:return "Not configured"
+            except HANDLED_EXCEPTIONS:return "Not configured"
         v=f"diff.tool: {cfg('diff.tool')}\nmerge.tool: {cfg('merge.tool')}\n\nChoose a known tool or configure custom commands manually in Git if installed under a non-standard executable name."
         self.text.delete("1.0","end");self.text.insert("1.0",v)
     def configure(self):
         name=self.tool.get();key=name.lower().replace(" ","");diff_cmd,merge_cmd=self.TOOLS[name]
         try:
             git(self.repo,"config","diff.tool",key);git(self.repo,"config",f"difftool.{key}.cmd",diff_cmd+' "$LOCAL" "$REMOTE"');git(self.repo,"config","merge.tool",key);git(self.repo,"config",f"mergetool.{key}.cmd",merge_cmd+' "$BASE" "$LOCAL" "$REMOTE" "$MERGED"');git(self.repo,"config","mergetool.keepBackup","false");messagebox.showinfo("Tools",f"Configured {name} for this repository.",parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Tools",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Tools",str(e),parent=self)
     def difftool(self):
         try:messagebox.showinfo("Difftool",git(self.repo,"difftool","--no-prompt"),parent=self)
-        except Exception as e:messagebox.showerror("Difftool",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Difftool",str(e),parent=self)
     def diff_path(self):
         p=self.path.get().strip()
         if p:
             try:messagebox.showinfo("Difftool",git(self.repo,"difftool","--no-prompt","--",p),parent=self)
-            except Exception as e:messagebox.showerror("Difftool",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Difftool",str(e),parent=self)
     def mergetool(self):
         try:messagebox.showinfo("Mergetool",git(self.repo,"mergetool","--no-prompt"),parent=self)
-        except Exception as e:messagebox.showerror("Mergetool",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Mergetool",str(e),parent=self)
 
 class RerereCenter(tk.Toplevel):
     """Recorded-resolution management for recurring merge/rebase conflicts."""
@@ -301,33 +286,33 @@ class RerereCenter(tk.Toplevel):
         ttk.Label(self,text="rerere records conflict resolutions so Git can reuse them later. Clear/forget only affects the resolution cache, not commits.",padding=8).pack(fill="x")
     def cfg(self,key):
         try:return git(self.repo,"config","--get",key)
-        except:return "Not set"
+        except HANDLED_EXCEPTIONS:return "Not set"
     def refresh(self):
         try:status=git(self.repo,"rerere","status")
-        except Exception:status="No recorded conflict currently active."
+        except HANDLED_EXCEPTIONS:status="No recorded conflict currently active."
         try:remaining=git(self.repo,"rerere","remaining")
-        except Exception:remaining="None"
+        except HANDLED_EXCEPTIONS:remaining="None"
         report=f"RERERE CONFIGURATION\n{'='*72}\nrerere.enabled: {self.cfg('rerere.enabled')}\nrerere.autoupdate: {self.cfg('rerere.autoupdate')}\n\nSTATUS\n{status}\n\nREMAINING\n{remaining}"
         self.text.delete("1.0","end");self.text.insert("1.0",report)
     def enable(self):
         try:git(self.repo,"config","rerere.enabled","true");messagebox.showinfo("rerere","Enabled for this repository.",parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("rerere",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("rerere",str(e),parent=self)
     def autoupdate(self):
         try:git(self.repo,"config","rerere.autoupdate","true");messagebox.showinfo("rerere","Autoupdate enabled. Review automatically staged resolutions before committing.",parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("rerere",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("rerere",str(e),parent=self)
     def run_rerere(self):
         try:messagebox.showinfo("rerere",git(self.repo,"rerere"),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("rerere",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("rerere",str(e),parent=self)
     def forget(self):
         paths=[x.strip() for x in self.path.get().split(",") if x.strip()]
         if not paths:return messagebox.showwarning("rerere","Enter one or more comma-separated conflicted paths.",parent=self)
         if messagebox.askyesno("Forget resolution",f"Forget saved resolution for:\n"+"\n".join(paths),parent=self):
             try:messagebox.showinfo("rerere",git(self.repo,"rerere","forget","--",*paths),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("rerere",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("rerere",str(e),parent=self)
     def clear(self):
         if messagebox.askyesno("Clear rerere cache","Clear recorded conflict resolutions for this repository? This does not change commits.",parent=self):
             try:messagebox.showinfo("rerere",git(self.repo,"rerere","clear"),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("rerere",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("rerere",str(e),parent=self)
 
 class RemoteBranchCenter(tk.Toplevel):
     """Explicit remote branch tracking, publish, rename and delete workflows."""
@@ -342,7 +327,7 @@ class RemoteBranchCenter(tk.Toplevel):
         ttk.Label(self,text="Remote deletion requires exact typed confirmation. Tracking creates a local branch from a selected remote-tracking ref.",padding=8).pack(fill="x")
     def safe_count(self,spec):
         try:return git(self.repo,"rev-list","--count",spec)
-        except:return "-"
+        except HANDLED_EXCEPTIONS:return "-"
     def refresh(self):
         self.rows=[];self.tree.delete(*self.tree.get_children())
         try:
@@ -352,12 +337,12 @@ class RemoteBranchCenter(tk.Toplevel):
                 ahead=behind="-"
                 if typ=="Local" and up:ahead=self.safe_count(f"{up}..{name}");behind=self.safe_count(f"{name}..{up}")
                 r=dict(type=typ,name=name,upstream=up,sha=sha,ahead=ahead,behind=behind);self.rows.append(r);self.tree.insert("","end",iid=str(len(self.rows)-1),values=(typ,name,up or "-",ahead,behind,sha))
-        except Exception as e:messagebox.showerror("Remote branches",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Remote branches",str(e),parent=self)
     def selected(self):
         s=self.tree.selection();return self.rows[int(s[0])] if s else None
     def fetch(self):
         try:messagebox.showinfo("Fetch",git(self.repo,"fetch","--all","--prune"),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Fetch",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Fetch",str(e),parent=self)
     def track(self):
         import re
         r=self.selected()
@@ -366,21 +351,21 @@ class RemoteBranchCenter(tk.Toplevel):
         default=r["name"].split("/",1)[1] if "/" in r["name"] else r["name"];name=simpledialog.askstring("Track branch","Local branch name:",initialvalue=default,parent=self)
         if name and re.match(r"^[A-Za-z0-9._/-]+$",name):
             try:messagebox.showinfo("Track",git(self.repo,"switch","-c",name,"--track",r["name"]),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Track",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Track",str(e),parent=self)
     def publish(self):
         try:b=git(self.repo,"branch","--show-current")
-        except Exception as e:return messagebox.showerror("Publish",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:return messagebox.showerror("Publish",str(e),parent=self)
         if not b:return
         if messagebox.askyesno("Publish branch",f"Push {b} to origin and set upstream?",parent=self):
             try:messagebox.showinfo("Publish",git(self.repo,"push","-u","origin",b),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Publish",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Publish",str(e),parent=self)
     def rename(self):
         r=self.selected()
         if not r or r["type"]!="Local":return messagebox.showinfo("Rename","Select a local branch.",parent=self)
         new=simpledialog.askstring("Rename branch",f"New name for {r['name']}:",parent=self)
         if new:
             try:messagebox.showinfo("Rename",git(self.repo,"branch","-m",r["name"],new),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Rename",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Rename",str(e),parent=self)
     def delete_remote(self):
         r=self.selected()
         if not r or r["type"]!="Remote":return messagebox.showinfo("Delete remote branch","Select a remote branch.",parent=self)
@@ -388,4 +373,4 @@ class RemoteBranchCenter(tk.Toplevel):
         remote,branch=r["name"].split("/",1);typed=simpledialog.askstring("Delete remote branch",f"This deletes {remote}/{branch} on the server.\nType the branch name exactly to continue:\n{branch}",parent=self)
         if typed!=branch:return
         try:messagebox.showinfo("Delete remote branch",git(self.repo,"push",remote,"--delete",branch),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Delete remote branch",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Delete remote branch",str(e),parent=self)

@@ -1,24 +1,9 @@
-"""Bounded feature domain for GitHub Command Center v3.74."""
-import csv
-import datetime
-import hashlib
-import json
-import os
-import platform
-import re
-import shutil
-import subprocess
-import sys
-import tempfile
-import threading
-import time
-import tkinter as tk
-import zipfile
+"""Bounded Git feature domain."""
+import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, tempfile, threading, time, tkinter as tk, zipfile
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
-
 from ...core.command_gateway import GitError, git
-from ...core.process_gateway import run_process, start_process
+from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class ConfigSnapshotCompareCenter(tk.Toplevel):
     """Capture and compare effective Git configuration snapshots."""
@@ -32,17 +17,17 @@ class ConfigSnapshotCompareCenter(tk.Toplevel):
         raw=git(self.repo,"config","--list","--show-origin","--show-scope","--includes");return raw.splitlines()
     def capture(self):
         try:self.before=self.snapshot();self.report="BASELINE CONFIG SNAPSHOT\n"+"="*72+"\n"+"\n".join(self.before)
-        except Exception as e:self.before=[];self.report=str(e)
+        except HANDLED_EXCEPTIONS as e:self.before=[];self.report=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",self.report)
     def compare(self):
         import difflib
         if self.before is None:self.capture()
         try:current=self.snapshot();diff=list(difflib.unified_diff(self.before,current,fromfile="baseline",tofile="current",lineterm=""));self.report="CONFIG SNAPSHOT COMPARISON\n"+"="*72+"\n"+("\n".join(diff) if diff else "No effective configuration changes detected.")
-        except Exception as e:self.report=str(e)
+        except HANDLED_EXCEPTIONS as e:self.report=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",self.report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="git-config-comparison.txt")
-        if p:Path(p).write_text(self.report)
+        if p:Path(p).write_text(self.report,encoding="utf-8")
 
 class CommitFixupCenter(tk.Toplevel):
     """Create fixup/squash commits against a selected historical commit."""
@@ -68,7 +53,7 @@ class CommitFixupCenter(tk.Toplevel):
         r=self.selected()
         if not r:return
         try:v=git(self.repo,"show","--stat","--oneline",r[0])
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def staged(self):return git(self.repo,"diff","--cached","--name-only")!="Completed successfully."
     def create(self):
@@ -85,7 +70,7 @@ class CommitFixupCenter(tk.Toplevel):
                 if not messagebox.askyesno("Amend",f"Safety branch created: {backup}\n\nAmend HEAD with staged changes while keeping the message?",parent=self):return
                 out=git(self.repo,"commit","--amend","--no-edit")
             messagebox.showinfo("Commit",out,parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Commit",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Commit",str(e),parent=self)
 
 class TrackedFileFlagsCenter(tk.Toplevel):
     """Inspect and safely manage assume-unchanged and skip-worktree flags."""
@@ -108,7 +93,7 @@ class TrackedFileFlagsCenter(tk.Toplevel):
         if not paths:return
         if not messagebox.askyesno("Tracked file flags",f"Apply {flag} to {len(paths)} selected path(s)?",parent=self):return
         try:messagebox.showinfo("Tracked file flags",git(self.repo,"update-index",flag,"--",*paths),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Tracked file flags",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Tracked file flags",str(e),parent=self)
 
 class RevisionWalkCenter(tk.Toplevel):
     """Compose revision walks with first-parent, ancestry-path, topo/date order and boundary flags."""
@@ -126,7 +111,7 @@ class RevisionWalkCenter(tk.Toplevel):
         if self.boundary.get():args.append("--boundary")
         args.append(self.spec.get().strip() or "HEAD")
         try:v=git(self.repo,*args)
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
 
 class GitShowBranchCenter(tk.Toplevel):
@@ -143,11 +128,11 @@ class GitShowBranchCenter(tk.Toplevel):
         import shlex
         args=["show-branch",f"--more={int(self.more.get())}"]+shlex.split(self.refs.get().strip() or "--all")
         try:self.report=git(self.repo,*args)
-        except Exception as e:self.report=str(e)
+        except HANDLED_EXCEPTIONS as e:self.report=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",self.report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="show-branch.txt")
-        if p:Path(p).write_text(self.report)
+        if p:Path(p).write_text(self.report,encoding="utf-8")
 
 class GitNameRevCenter(tk.Toplevel):
     """Assign human-readable ref-relative names to object IDs and revisions."""
@@ -165,13 +150,13 @@ class GitNameRevCenter(tk.Toplevel):
         return args+shlex.split(self.objects.get().strip() or "HEAD")
     def run(self):
         try:v=git(self.repo,*self.args())
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def all(self):
         args=["name-rev","--all"]
         if self.tags.get():args.append("--tags")
         try:v=git(self.repo,*args)
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
 
 class GitCountObjectsTrendCenter(tk.Toplevel):
@@ -187,10 +172,10 @@ class GitCountObjectsTrendCenter(tk.Toplevel):
     def load(self):
         import json
         try:self.rows=json.loads(self.path.read_text(encoding="utf-8")) if self.path.exists() else []
-        except:self.rows=[]
+        except HANDLED_EXCEPTIONS:self.rows=[]
     def save(self):
         import json
-        self.path.write_text(json.dumps(self.rows,indent=2))
+        self.path.write_text(json.dumps(self.rows,indent=2),encoding="utf-8")
     def parse(self,raw):
         d={}
         for line in raw.splitlines():
@@ -200,7 +185,7 @@ class GitCountObjectsTrendCenter(tk.Toplevel):
     def capture(self):
         import datetime
         try:d=self.parse(git(self.repo,"count-objects","-vH"));d["captured"]=datetime.datetime.now().isoformat(timespec="seconds");self.rows.append(d);self.save();self.render()
-        except Exception as e:messagebox.showerror("Object growth",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Object growth",str(e),parent=self)
     def render(self):
         self.tree.delete(*self.tree.get_children())
         for r in self.rows:self.tree.insert("","end",values=(r.get("captured"),r.get("count"),r.get("size"),r.get("in-pack"),r.get("packs"),r.get("size-pack"),r.get("garbage")))
@@ -215,7 +200,7 @@ class GitCountObjectsTrendCenter(tk.Toplevel):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".csv",initialfile="object-growth.csv")
         if p:
             keys=["captured","count","size","in-pack","packs","size-pack","prune-packable","garbage","size-garbage"]
-            with open(p,"w",newline="") as f:w=csv.DictWriter(f,fieldnames=keys);w.writeheader();w.writerows({k:r.get(k,"") for k in keys} for r in self.rows)
+            with open(p,"w",newline="",encoding="utf-8") as f:w=csv.DictWriter(f,fieldnames=keys);w.writeheader();w.writerows({k:r.get(k,"") for k in keys} for r in self.rows)
 
 class GitVerifyRefCenter(tk.Toplevel):
     """Resolve and verify refs safely, including symbolic refs and peeling."""
@@ -230,20 +215,20 @@ class GitVerifyRefCenter(tk.Toplevel):
     def inspect(self):
         r=self.ref.get().strip() or "HEAD"
         try:v=f"REF VERIFICATION\n{'='*72}\nInput: {r}\nResolved: {git(self.repo,'rev-parse','--verify',r)}\nType: {git(self.repo,'cat-file','-t',r)}\n\nMATCHING REFS\n{git(self.repo,'show-ref',r)}"
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.show(v)
     def peel(self):
         r=self.ref.get().strip() or "HEAD"
         try:self.show(f"Commit: {git(self.repo,'rev-parse','--verify',f'{r}^{{commit}}')}\nPeeled object: {git(self.repo,'rev-parse',f'{r}^{{}}')}")
-        except Exception as e:self.show(str(e))
+        except HANDLED_EXCEPTIONS as e:self.show(str(e))
     def symbolic(self):
         r=self.ref.get().strip() or "HEAD"
         try:self.show(git(self.repo,"symbolic-ref","-q",r))
-        except Exception as e:self.show("Not a symbolic ref or unavailable.\n\n"+str(e))
+        except HANDLED_EXCEPTIONS as e:self.show("Not a symbolic ref or unavailable.\n\n"+str(e))
     def reflog(self):
         r=self.ref.get().strip() or "HEAD"
         try:self.show(git(self.repo,"reflog","show","-10",r))
-        except Exception as e:self.show("No reflog found or unavailable.\n\n"+str(e))
+        except HANDLED_EXCEPTIONS as e:self.show("No reflog found or unavailable.\n\n"+str(e))
 
 class GitCheckIgnoreBatchCenter(tk.Toplevel):
     """Batch-test ignore rules for many paths with verbose provenance."""
@@ -258,11 +243,11 @@ class GitCheckIgnoreBatchCenter(tk.Toplevel):
     def paths(self):return [x.strip() for x in self.input.get("1.0","end-1c").splitlines() if x.strip()]
     def untracked(self):
         try:raw=git(self.repo,"ls-files","--others","--exclude-standard")
-        except Exception as e:raw=str(e)
+        except HANDLED_EXCEPTIONS as e:raw=str(e)
         self.input.delete("1.0","end");self.input.insert("1.0",raw)
     def test(self):
         paths=self.paths();lines=[]
         for p in paths:
             try:v=git(self.repo,"check-ignore","-v","--no-index","--",p);lines.append(f"{p}\n  {v}")
-            except Exception:lines.append(f"{p}\n  NOT IGNORED")
+            except HANDLED_EXCEPTIONS:lines.append(f"{p}\n  NOT IGNORED")
         self.out.delete("1.0","end");self.out.insert("1.0","\n\n".join(lines))

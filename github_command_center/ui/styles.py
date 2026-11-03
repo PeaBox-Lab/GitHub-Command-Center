@@ -1,4 +1,5 @@
 from __future__ import annotations
+from github_command_center.core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 from tkinter import ttk
 
@@ -7,7 +8,7 @@ def apply_modern_style(widget) -> ttk.Style:
     style = ttk.Style(widget)
     try:
         style.theme_use("clam")
-    except Exception:
+    except HANDLED_EXCEPTIONS:
         pass
     style.configure("TButton", font=("Segoe UI", 9), padding=(10, 7), background="#f8fafc")
     style.map("TButton", background=[("active", "#e5e7eb")])

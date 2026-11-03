@@ -1,4 +1,5 @@
 from __future__ import annotations
+from github_command_center.core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 import tkinter as tk
 from tkinter import font as tkfont, ttk
@@ -25,14 +26,14 @@ def _font(widget):
         style = ttk.Style(widget)
         font_name = style.lookup("Treeview", "font") or "TkDefaultFont"
         return tkfont.nametofont(font_name)
-    except Exception:
+    except HANDLED_EXCEPTIONS:
         return tkfont.nametofont("TkDefaultFont")
 
 
 def measure(widget, value) -> int:
     try:
         return _font(widget).measure(display_text(value))
-    except Exception:
+    except HANDLED_EXCEPTIONS:
         return len(display_text(value)) * 8
 
 
@@ -58,7 +59,7 @@ def ensure_horizontal_scrollbar(tree: ttk.Treeview):
             bar.pack(fill="x", side="bottom", before=tree)
         else:
             bar.grid(row=999, column=0, sticky="ew")
-    except Exception:
+    except HANDLED_EXCEPTIONS:
         return None
     tree._gccc_hscroll = bar
     return bar
@@ -80,7 +81,7 @@ def install_treeview_layout_guard():
                 needed = desired_width(self, column)
                 if current < needed:
                     self.column(column, width=needed, minwidth=MIN_WIDTH)
-            except Exception:
+            except HANDLED_EXCEPTIONS:
                 pass
         return result
 
@@ -100,7 +101,7 @@ def install_treeview_layout_guard():
                     self.column(column, width=needed, minwidth=MIN_WIDTH, stretch=True)
             if sum(int(self.column(col, "width")) for col in columns) > max(self.winfo_width(), 700):
                 ensure_horizontal_scrollbar(self)
-        except Exception:
+        except HANDLED_EXCEPTIONS:
             pass
         return result
 

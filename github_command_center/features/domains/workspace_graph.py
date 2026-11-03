@@ -1,24 +1,9 @@
-"""Bounded feature domain for GitHub Command Center v3.74."""
-import csv
-import datetime
-import hashlib
-import json
-import os
-import platform
-import re
-import shutil
-import subprocess
-import sys
-import tempfile
-import threading
-import time
-import tkinter as tk
-import zipfile
+"""Bounded Git feature domain."""
+import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, tempfile, threading, time, tkinter as tk, zipfile
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
-
 from ...core.command_gateway import GitError, git
-from ...core.process_gateway import run_process, start_process
+from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class CommitGraphWindow(tk.Toplevel):
     COLORS=("#60a5fa","#f472b6","#34d399","#fbbf24","#a78bfa","#22d3ee")
@@ -58,7 +43,7 @@ class CommitGraphWindow(tk.Toplevel):
     def checkout(self):
         if self.selected is not None and messagebox.askyesno("Detached checkout",f"Checkout {self.commit[1]} in detached HEAD mode?",parent=self):
             try:git(self.repo,"switch","--detach",self.commit[0]);messagebox.showinfo("Checkout","Completed",parent=self)
-            except Exception as e:messagebox.showerror("Checkout",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Checkout",str(e),parent=self)
 
 class ConflictResolver(tk.Toplevel):
     def __init__(self,parent,repo):
@@ -80,15 +65,15 @@ class ConflictResolver(tk.Toplevel):
         if lock:t.config(state="disabled")
     def version(self,n,p):
         try:return git(self.repo,"show",f":{n}:{p}")
-        except:return "(unavailable)"
+        except HANDLED_EXCEPTIONS:return "(unavailable)"
     def load(self):
         p=self.file.get();self.put(self.ours,self.version(2,p),True);self.put(self.theirs,self.version(3,p),True)
-        try:v=(Path(self.repo)/p).read_text(encoding="utf-8")
-        except:v=""
+        try:v=(Path(self.repo)/p).read_text(encoding="utf-8",errors="replace")
+        except HANDLED_EXCEPTIONS:v=""
         self.put(self.merged,v)
     def use(self,side):
         if messagebox.askyesno("Replace",f"Use {side[2:]} version?",parent=self):git(self.repo,"checkout",side,"--",self.file.get());self.load()
-    def save(self):(Path(self.repo)/self.file.get()).write_text(self.merged[1].get("1.0","end-1c"))
+    def save(self):(Path(self.repo)/self.file.get()).write_text(self.merged[1].get("1.0","end-1c"),encoding="utf-8")
     def resolve(self):
         self.save();git(self.repo,"add","--",self.file.get());self.files.remove(self.file.get())
         if not self.files:messagebox.showinfo("Resolved","All conflicts are staged. Commit to complete the merge.",parent=self);self.destroy()
@@ -177,8 +162,8 @@ class AdvancedGitWindow(tk.Toplevel):
             if branches and not self.branch_var.get(): self.branch_var.set(branches[0])
             path = Path(self.repo) / ".gitignore"
             self.ignore_text.delete("1.0", "end")
-            if path.exists(): self.ignore_text.insert("1.0", path.read_text(encoding="utf-8"))
-        except Exception as exc:
+            if path.exists(): self.ignore_text.insert("1.0", path.read_text(encoding="utf-8", errors="replace"))
+        except HANDLED_EXCEPTIONS as exc:
             messagebox.showerror("Advanced Git", str(exc), parent=self)
 
     def execute(self, args, confirm=None):
@@ -187,7 +172,7 @@ class AdvancedGitWindow(tk.Toplevel):
             out = git(self.repo, *args)
             messagebox.showinfo("Git", out, parent=self)
             self.refresh()
-        except Exception as exc:
+        except HANDLED_EXCEPTIONS as exc:
             messagebox.showerror("Git", str(exc), parent=self)
 
     def backup_branch(self, prefix):
@@ -217,7 +202,7 @@ class AdvancedGitWindow(tk.Toplevel):
             backup = self.backup_branch("pre-rebase")
             if not messagebox.askyesno("Safe rebase", f"Backup branch created:\n{backup}\n\nRebase current branch onto {target}?", parent=self): return
             self.execute(["rebase", target])
-        except Exception as exc: messagebox.showerror("Rebase", str(exc), parent=self)
+        except HANDLED_EXCEPTIONS as exc: messagebox.showerror("Rebase", str(exc), parent=self)
 
     def revert_commit(self):
         value = self.hash_var.get().strip()
@@ -232,7 +217,7 @@ class AdvancedGitWindow(tk.Toplevel):
         try:
             backup = self.backup_branch("pre-reset")
             if messagebox.askyesno("Backup created", f"Created {backup}. Continue with reset?", parent=self): self.execute(["reset", mode, value])
-        except Exception as exc: messagebox.showerror("Reset", str(exc), parent=self)
+        except HANDLED_EXCEPTIONS as exc: messagebox.showerror("Reset", str(exc), parent=self)
 
     def add_ignore(self, value):
         current = self.ignore_text.get("1.0", "end-1c")
@@ -241,9 +226,9 @@ class AdvancedGitWindow(tk.Toplevel):
 
     def save_ignore(self):
         try:
-            (Path(self.repo) / ".gitignore").write_text(self.ignore_text.get("1.0", "end-1c") + "\n")
+            (Path(self.repo) / ".gitignore").write_text(self.ignore_text.get("1.0", "end-1c") + "\n", encoding="utf-8")
             messagebox.showinfo(".gitignore", "Saved. Stage the file when ready.", parent=self)
-        except Exception as exc: messagebox.showerror(".gitignore", str(exc), parent=self)
+        except HANDLED_EXCEPTIONS as exc: messagebox.showerror(".gitignore", str(exc), parent=self)
 
 class RepositoryHealthCenter(tk.Toplevel):
     """Repository hygiene, documentation quality and maintenance dashboard."""
@@ -290,10 +275,10 @@ class RepositoryHealthCenter(tk.Toplevel):
         tests=any((Path(self.repo)/x).exists() for x in ("tests","test","pytest.ini","tox.ini"));add("Tests",10 if tests else 0,10,"Detected" if tests else "Not detected")
         try:
             tags=git(self.repo,"tag","--list");has_tag=tags!="Completed successfully.";add("Version tags",5 if has_tag else 0,5,"Present" if has_tag else "No tags")
-        except:add("Version tags",0,5,"Unable to inspect")
+        except HANDLED_EXCEPTIONS:add("Version tags",0,5,"Unable to inspect")
         try:
             status=git(self.repo,"status","--porcelain");clean=status=="Completed successfully.";add("Clean working tree",5 if clean else 0,5,"Clean" if clean else "Uncommitted changes")
-        except:add("Clean working tree",0,5,"Unable to inspect")
+        except HANDLED_EXCEPTIONS:add("Clean working tree",0,5,"Unable to inspect")
         total=sum(x[1] for x in checks);maximum=sum(x[2] for x in checks);pct=round(total/maximum*100) if maximum else 0
         rating="Excellent" if pct>=90 else "Good" if pct>=75 else "Needs attention" if pct>=55 else "High maintenance risk"
         text=f"REPOSITORY HEALTH SCORE: {pct}/100 - {rating}\n"+"="*78+"\n\n"
@@ -319,7 +304,7 @@ class RepositoryHealthCenter(tk.Toplevel):
     def write_template(self,rel,content):
         p=Path(self.repo)/rel;p.parent.mkdir(parents=True,exist_ok=True)
         if p.exists() and not messagebox.askyesno("Replace file",f"{rel} already exists. Replace it?",parent=self):return
-        p.write_text(content);messagebox.showinfo("Created",f"Created {rel}. Review and commit it when ready.",parent=self);self.refresh()
+        p.write_text(content,encoding="utf-8");messagebox.showinfo("Created",f"Created {rel}. Review and commit it when ready.",parent=self);self.refresh()
     def security_md(self):self.write_template("SECURITY.md","# Security Policy\n\n## Reporting a vulnerability\n\nPlease report suspected vulnerabilities privately to the repository maintainers. Do not open a public issue for an unpatched vulnerability. Include affected versions, reproduction steps, impact, and any proposed remediation.\n\n## Supported versions\n\nThe latest stable release receives security fixes.\n")
     def contributing_md(self):self.write_template("CONTRIBUTING.md","# Contributing\n\n1. Create or link an issue.\n2. Create a focused branch.\n3. Add or update tests and documentation.\n4. Run relevant checks locally.\n5. Open a pull request with a clear summary, validation evidence, and risk notes.\n\nKeep changes small and avoid unrelated formatting changes.\n")
     def issue_templates(self):

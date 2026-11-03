@@ -1,24 +1,9 @@
-"""Bounded feature domain for GitHub Command Center v3.74."""
-import csv
-import datetime
-import hashlib
-import json
-import os
-import platform
-import re
-import shutil
-import subprocess
-import sys
-import tempfile
-import threading
-import time
-import tkinter as tk
-import zipfile
+"""Bounded Git feature domain."""
+import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, tempfile, threading, time, tkinter as tk, zipfile
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
-
 from ...core.command_gateway import GitError, git
-from ...core.process_gateway import run_process, start_process
+from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class FileEvolutionCenter(tk.Toplevel):
     """Trace a file across renames with per-commit stats and historical content."""
@@ -33,7 +18,7 @@ class FileEvolutionCenter(tk.Toplevel):
         p=self.path.get().strip()
         if not p:return
         try:raw=git(self.repo,"log","--follow","--date=short","--pretty=format:%H%x1f%h%x1f%ad%x1f%an%x1f%s","--",p)
-        except Exception as e:return messagebox.showerror("File evolution",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:return messagebox.showerror("File evolution",str(e),parent=self)
         self.rows=[];self.list.delete(0,"end")
         for line in raw.splitlines():
             q=line.split("\x1f",4)
@@ -44,18 +29,18 @@ class FileEvolutionCenter(tk.Toplevel):
         r=self.selected();p=self.path.get().strip()
         if not r:return
         try:
-            stat=git(self.repo,"show","--stat","--find-renames",r[0],"--",p);content=run_process(["git","show",f"{r[0]}:{p}"],cwd=self.repo,timeout=120,binary=True)
-            body=content.stdout.decode("utf-8") if content.returncode==0 and b"\x00" not in content.stdout[:8192] else "(Historical path unavailable at this commit, renamed, deleted, or binary.)"
+            stat=git(self.repo,"show","--stat","--find-renames",r[0],"--",p);content=subprocess.run(["git","show",f"{r[0]}:{p}"],cwd=self.repo,capture_output=True,timeout=120)
+            body=content.stdout.decode("utf-8",errors="replace") if content.returncode==0 and b"\x00" not in content.stdout[:8192] else "(Historical path unavailable at this commit, renamed, deleted, or binary.)"
             v=stat+"\n\nHISTORICAL CONTENT\n"+"="*72+"\n"+body
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def export(self):
         r=self.selected();p=self.path.get().strip()
         if not r:return
         dest=filedialog.asksaveasfilename(parent=self,initialfile=Path(p).name)
         if dest:
-            out=run_process(["git","show",f"{r[0]}:{p}"],cwd=self.repo,timeout=120,binary=True)
-            if out.returncode:messagebox.showerror("Export",out.stderr.decode("utf-8"),parent=self)
+            out=subprocess.run(["git","show",f"{r[0]}:{p}"],cwd=self.repo,capture_output=True,timeout=120)
+            if out.returncode:messagebox.showerror("Export",out.stderr.decode("utf-8",errors="replace"),parent=self)
             else:Path(dest).write_bytes(out.stdout);messagebox.showinfo("Export",f"Saved {dest}",parent=self)
 
 class GitRemoteShowCenter(tk.Toplevel):
@@ -71,7 +56,7 @@ class GitRemoteShowCenter(tk.Toplevel):
         self.cached()
     def show(self,args):
         try:v=git(self.repo,*args)
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def query(self):self.show(["remote","show",self.remote.get().strip()])
     def cached(self):self.show(["remote","show","-n",self.remote.get().strip()])
@@ -94,21 +79,21 @@ class ProtocolDiagnosticsCenter(tk.Toplevel):
         if rem and self.remote.get() not in rem:self.remote.set(rem[0])
         try:
             version=git(self.repo,"--version");proto=git(self.repo,"config","--get","protocol.version")
-        except Exception as e:proto=str(e);version=""
+        except HANDLED_EXCEPTIONS as e:proto=str(e);version=""
         self.show(f"GIT PROTOCOL DIAGNOSTICS\n{'='*72}\n{version}\nConfigured protocol.version: {proto}\nRemote: {self.remote.get()}")
     def show(self,v):self.out.delete("1.0","end");self.out.insert("1.0",self.redact(v))
     def refs(self):
         try:self.show(git(self.repo,"ls-remote","--symref",self.remote.get().strip()))
-        except Exception as e:self.show(str(e))
+        except HANDLED_EXCEPTIONS as e:self.show(str(e))
     def cached(self):
         try:self.show(git(self.repo,"remote","show","-n",self.remote.get().strip()))
-        except Exception as e:self.show(str(e))
+        except HANDLED_EXCEPTIONS as e:self.show(str(e))
     def trace(self):
         import os
         env=os.environ.copy();env["GIT_TRACE_PACKET"]="1";env["GIT_TRACE"]="1";env["GIT_PROTOCOL"]="version=2"
         try:
-            r=run_process(["git","ls-remote",self.remote.get().strip()],cwd=self.repo,env=env,timeout=120);self.show((r.stdout+"\n"+r.stderr).strip())
-        except Exception as e:self.show(str(e))
+            r=subprocess.run(["git","ls-remote",self.remote.get().strip()],cwd=self.repo,env=env,text=True,capture_output=True,timeout=120,encoding="utf-8",errors="replace");self.show((r.stdout+"\n"+r.stderr).strip())
+        except HANDLED_EXCEPTIONS as e:self.show(str(e))
 
 class AlternatesInspectorCenter(tk.Toplevel):
     """Inspect object alternates, shared clones, and linked-object storage."""
@@ -121,16 +106,16 @@ class AlternatesInspectorCenter(tk.Toplevel):
     def gitdir(self):
         p=Path(git(self.repo,"rev-parse","--git-dir"));return (Path(self.repo)/p).resolve() if not p.is_absolute() else p
     def refresh(self):
-        gd=self.gitdir();alt=gd/"objects"/"info"/"alternates";alternates=alt.read_text(encoding="utf-8") if alt.exists() else "None"
+        gd=self.gitdir();alt=gd/"objects"/"info"/"alternates";alternates=alt.read_text(encoding="utf-8",errors="replace") if alt.exists() else "None"
         env=os.environ.get("GIT_ALTERNATE_OBJECT_DIRECTORIES","Not set");objects=git(self.repo,"count-objects","-vH");self.report=f"OBJECT ALTERNATES\n{'='*72}\nGit dir: {gd}\nAlternates file: {alt}\n\nConfigured alternates:\n{alternates}\n\nEnvironment alternates:\n{env}\n\nLOCAL OBJECT STATUS\n{objects}"
         self.out.delete("1.0","end");self.out.insert("1.0",self.report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="object-alternates.txt")
-        if p:Path(p).write_text(self.report)
+        if p:Path(p).write_text(self.report,encoding="utf-8")
     def dissociate(self):
         if not messagebox.askyesno("Dissociate objects","Copy all reachable objects into this repository with `git repack -a -d`? This may consume significant disk space.",parent=self):return
         try:messagebox.showinfo("Dissociate",git(self.repo,"repack","-a","-d"),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Dissociate",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Dissociate",str(e),parent=self)
 
 class EolNormalizationCenter(tk.Toplevel):
     """Audit line-ending behavior and preview repository normalization."""
@@ -143,27 +128,27 @@ class EolNormalizationCenter(tk.Toplevel):
         ttk.Label(self,text="Renormalization can stage many files. Review `.gitattributes`, use Preview, and commit normalization separately from functional changes.",padding=8).pack(fill="x")
     def safe(self,*a):
         try:return git(self.repo,*a)
-        except Exception as e:return "Unavailable: "+str(e)
+        except HANDLED_EXCEPTIONS as e:return "Unavailable: "+str(e)
     def refresh(self):
         v=f"EOL CONFIGURATION\n{'='*72}\ncore.autocrlf: {self.safe('config','--get','core.autocrlf')}\ncore.eol: {self.safe('config','--get','core.eol')}\ncore.safecrlf: {self.safe('config','--get','core.safecrlf')}\n\nATTRIBUTES FILE\n"
-        p=Path(self.repo)/".gitattributes";v+=p.read_text(encoding="utf-8") if p.exists() else "Missing .gitattributes"
+        p=Path(self.repo)/".gitattributes";v+=p.read_text(encoding="utf-8",errors="replace") if p.exists() else "Missing .gitattributes"
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def attributes(self):
         p=self.path.get().strip() or "."
         try:v=git(self.repo,"check-attr","text","eol","working-tree-encoding","--",p)
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def preview(self):
         p=self.path.get().strip() or "."
         try:v=git(self.repo,"add","--renormalize","--dry-run","--",p)
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0","RENORMALIZE PREVIEW\n"+"="*72+"\n"+v)
     def renormalize(self):
         p=self.path.get().strip() or "."
         if git(self.repo,"status","--porcelain")!="Completed successfully.":return messagebox.showwarning("Renormalize","Start from a clean working tree so normalization remains isolated.",parent=self)
         if messagebox.askyesno("Renormalize",f"Stage line-ending normalization for pathspec `{p}`? Review the staged diff before committing.",parent=self):
             try:messagebox.showinfo("Renormalize",git(self.repo,"add","--renormalize","--",p),parent=self)
-            except Exception as e:messagebox.showerror("Renormalize",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Renormalize",str(e),parent=self)
 
 class CommitMessageAuditCenter(tk.Toplevel):
     """Audit commit-message quality and Conventional Commit coverage over a selected range."""
@@ -181,7 +166,7 @@ class CommitMessageAuditCenter(tk.Toplevel):
         import re
         spec=self.range.get().strip() or "HEAD~100..HEAD"
         try:raw=git(self.repo,"log","--date=short","--pretty=format:%h%x1f%ad%x1f%an%x1f%s",spec)
-        except Exception as e:raw="";self.report=str(e)
+        except HANDLED_EXCEPTIONS as e:raw="";self.report=str(e)
         conv=re.compile(r"^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([^)]*\))?!?: .+")
         self.tree.delete(*self.tree.get_children());rows=[];good=short=generic=merge=0
         for line in raw.splitlines():
@@ -199,7 +184,7 @@ class CommitMessageAuditCenter(tk.Toplevel):
         self.summary.delete("1.0","end");self.summary.insert("1.0",self.report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="commit-message-audit.txt")
-        if p:Path(p).write_text(self.report)
+        if p:Path(p).write_text(self.report,encoding="utf-8")
 
 class GitArchiveManifestCenter(tk.Toplevel):
     """Create and verify a tracked-file manifest for a selected revision."""
@@ -218,16 +203,16 @@ class GitArchiveManifestCenter(tk.Toplevel):
                 meta,path=line.split("\t",1);p=meta.split()
                 if len(p)>=3:lines.append(f"{p[0]} {p[1]} {p[2]}  {path}")
             self.manifest="\n".join(lines)+"\n"
-        except Exception as e:self.manifest=str(e)
+        except HANDLED_EXCEPTIONS as e:self.manifest=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",self.manifest)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="revision-manifest.txt")
-        if p:Path(p).write_text(self.manifest)
+        if p:Path(p).write_text(self.manifest,encoding="utf-8")
     def verify(self):
         p=filedialog.askopenfilename(parent=self,filetypes=[("Manifest","*.txt"),("All files","*")])
         if not p:return
         expected={}
-        for line in Path(p).read_text(encoding="utf-8").splitlines():
+        for line in Path(p).read_text(encoding="utf-8",errors="replace").splitlines():
             if not line or line.startswith("#") or "  " not in line:continue
             meta,path=line.split("  ",1);parts=meta.split()
             if len(parts)>=3:expected[path]=parts[2]
@@ -239,7 +224,7 @@ class GitArchiveManifestCenter(tk.Toplevel):
                     meta,path=line.split("\t",1);parts=meta.split()
                     if len(parts)>=3:actual[path]=parts[2]
             added=sorted(set(actual)-set(expected));missing=sorted(set(expected)-set(actual));changed=sorted(p for p in set(actual)&set(expected) if actual[p]!=expected[p]);v=f"MANIFEST VERIFICATION\n{'='*72}\nRevision: {ref}\nExpected paths: {len(expected)}\nActual paths: {len(actual)}\nAdded: {len(added)}\nMissing: {len(missing)}\nChanged blobs: {len(changed)}\n\nADDED\n"+"\n".join(added)+"\n\nMISSING\n"+"\n".join(missing)+"\n\nCHANGED\n"+"\n".join(changed)
-        except Exception as e:v=str(e)
+        except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
 
 class BranchDescriptionCenter(tk.Toplevel):
@@ -256,7 +241,7 @@ class BranchDescriptionCenter(tk.Toplevel):
         branches=[x for x in git(self.repo,"for-each-ref","--format=%(refname:short)","refs/heads/").splitlines() if x];self.rows=[];self.tree.delete(*self.tree.get_children())
         for b in branches:
             try:d=git(self.repo,"config","--get",f"branch.{b}.description")
-            except:d=""
+            except HANDLED_EXCEPTIONS:d=""
             if d=="Completed successfully.":d=""
             self.rows.append((b,d));self.tree.insert("","end",iid=str(len(self.rows)-1),values=(b,d.replace("\n"," ")[:200]))
     def selected(self):
@@ -269,12 +254,12 @@ class BranchDescriptionCenter(tk.Toplevel):
         if not r:return
         d=self.editor.get("1.0","end-1c").strip()
         try:git(self.repo,"config",f"branch.{r[0]}.description",d);messagebox.showinfo("Branch description","Saved locally.",parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Branch description",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Branch description",str(e),parent=self)
     def clear(self):
         r=self.selected()
         if r and messagebox.askyesno("Branch description",f"Clear description for {r[0]}?",parent=self):
             try:git(self.repo,"config","--unset",f"branch.{r[0]}.description");self.refresh();self.editor.delete("1.0","end")
-            except Exception as e:messagebox.showerror("Branch description",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Branch description",str(e),parent=self)
 
 class SelectiveStashCenter(tk.Toplevel):
     """Create a stash from selected tracked paths using Git pathspecs."""
@@ -304,7 +289,7 @@ class SelectiveStashCenter(tk.Toplevel):
         args += ["--",*paths]
         if not messagebox.askyesno("Selective stash",f"Stash {len(paths)} selected path(s)?",parent=self):return
         try:v=git(self.repo,*args);messagebox.showinfo("Selective stash",v,parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Selective stash",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Selective stash",str(e),parent=self)
 
 class WorktreeMoveCenter(tk.Toplevel):
     """Move a linked worktree to a new folder and repair its metadata."""
@@ -339,10 +324,10 @@ class WorktreeMoveCenter(tk.Toplevel):
         try:
             state=git(src,"status","--porcelain")
             if state!="Completed successfully.":return messagebox.showwarning("Worktree move","Commit or stash changes in the selected worktree first.",parent=self)
-        except Exception as e:return messagebox.showerror("Worktree move",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:return messagebox.showerror("Worktree move",str(e),parent=self)
         if messagebox.askyesno("Move worktree",f"Move worktree from:\n{src}\n\nto:\n{dest}?",parent=self):
             try:messagebox.showinfo("Worktree move",git(self.repo,"worktree","move",src,dest),parent=self);self.refresh()
-            except Exception as e:messagebox.showerror("Worktree move",str(e),parent=self)
+            except HANDLED_EXCEPTIONS as e:messagebox.showerror("Worktree move",str(e),parent=self)
     def repair(self):
         try:messagebox.showinfo("Worktree repair",git(self.repo,"worktree","repair"),parent=self);self.refresh()
-        except Exception as e:messagebox.showerror("Worktree repair",str(e),parent=self)
+        except HANDLED_EXCEPTIONS as e:messagebox.showerror("Worktree repair",str(e),parent=self)
