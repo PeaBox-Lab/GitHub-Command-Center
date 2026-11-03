@@ -29,7 +29,7 @@ jobs:
       - uses: actions/attest@v4
         with:
           subject-path: dist/github_command_center_python_v3.82.0.zip
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: release-security-evidence
           path: |
