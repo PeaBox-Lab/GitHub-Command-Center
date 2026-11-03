@@ -1,0 +1,18 @@
+{
+  "version": "3.79.0",
+  "checks": {
+    "pyproject_version": true,
+    "package_version": true,
+    "console_entry_point": true,
+    "coverage_gate": true,
+    "architecture_gate": true,
+    "security_gate": true,
+    "packaging_gate": true,
+    "ci": true,
+    "codeql": true,
+    "dependency_review": true,
+    "release_security": true
+  },
+  "passed": true,
+  "failures": []
+}

@@ -2,7 +2,8 @@ from __future__ import annotations
 import argparse, hashlib, json, os, shutil, subprocess, sys, tempfile, tomllib, zipfile
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
-VERSION='3.78.0'
+from version_info import project_version
+VERSION=project_version()
 NAME=f'github_command_center_python_v{VERSION}'
 EXCLUDES={'.git','.venv','.pytest_cache','__pycache__','build','dist','.coverage'}
 

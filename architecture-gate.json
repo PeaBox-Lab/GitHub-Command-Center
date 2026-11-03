@@ -1,18 +1,101 @@
 {
+  "version": "3.79.0",
   "metrics": {
-    "legacy_lines": 237,
-    "legacy_classes": 1,
-    "heavy_sync_calls": 0,
-    "direct_sync_gh_calls": 0,
+    "shell_lines": 237,
+    "shell_classes": 1,
+    "domain_modules": 18,
+    "largest_domain_lines": 376,
+    "largest_domain_classes": 10,
+    "largest_facade_lines": 8,
+    "direct_domain_subprocess_calls": 21,
     "shell_true": 0
   },
   "limits": {
-    "legacy_lines": 5150,
-    "legacy_classes": 143,
-    "heavy_sync_calls": 36,
-    "direct_sync_gh_calls": 0,
+    "shell_lines": 300,
+    "shell_classes": 1,
+    "domain_modules": 18,
+    "largest_domain_lines": 600,
+    "largest_domain_classes": 10,
+    "largest_facade_lines": 20,
+    "direct_domain_subprocess_calls": 0,
     "shell_true": 0
   },
-  "passed": true,
-  "failures": []
+  "passed": false,
+  "failures": [
+    "direct_domain_subprocess_calls: 21 > 0"
+  ],
+  "modules": {
+    "expert_diagnostics.py": {
+      "lines": 333,
+      "classes": 10
+    },
+    "expert_history.py": {
+      "lines": 272,
+      "classes": 10
+    },
+    "expert_query.py": {
+      "lines": 299,
+      "classes": 10
+    },
+    "expert_refs.py": {
+      "lines": 301,
+      "classes": 10
+    },
+    "expert_revision.py": {
+      "lines": 253,
+      "classes": 9
+    },
+    "expert_storage.py": {
+      "lines": 320,
+      "classes": 10
+    },
+    "repository_governance.py": {
+      "lines": 232,
+      "classes": 8
+    },
+    "repository_history.py": {
+      "lines": 376,
+      "classes": 7
+    },
+    "repository_inspection.py": {
+      "lines": 206,
+      "classes": 7
+    },
+    "repository_productivity.py": {
+      "lines": 250,
+      "classes": 8
+    },
+    "repository_release.py": {
+      "lines": 257,
+      "classes": 7
+    },
+    "repository_safety.py": {
+      "lines": 289,
+      "classes": 8
+    },
+    "workspace_automation.py": {
+      "lines": 292,
+      "classes": 8
+    },
+    "workspace_graph.py": {
+      "lines": 317,
+      "classes": 4
+    },
+    "workspace_operations.py": {
+      "lines": 260,
+      "classes": 7
+    },
+    "workspace_productivity.py": {
+      "lines": 241,
+      "classes": 8
+    },
+    "workspace_repository.py": {
+      "lines": 244,
+      "classes": 6
+    },
+    "workspace_staging.py": {
+      "lines": 221,
+      "classes": 4
+    }
+  }
 }

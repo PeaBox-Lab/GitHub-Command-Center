@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.79.0
+- Tightened architecture gates to the refactored shell/domain model.
+- Added consolidated release-readiness validation and centralized artifact version discovery.
+- Preserved deterministic packaging, security gates, compatibility, and cumulative functionality.
+
 ## v3.78.0
 - Fixed release ZIP self-inclusion and added deterministic packaging gates.
 - Added installable Python project metadata and console entry point.

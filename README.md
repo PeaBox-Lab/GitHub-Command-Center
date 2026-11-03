@@ -1,4 +1,4 @@
-# GitHub Command Center v3.78.0
+# GitHub Command Center v3.79.0
 
 > A unified Python desktop command center for Git, GitHub, repository engineering, recovery, releases and developer workflows.
 
@@ -137,6 +137,15 @@ v3.72.0 is built directly from the complete v3.71.0 release.
 
 
 
+
+
+## New in v3.79
+
+- Replaced the obsolete legacy architecture thresholds with strict post-refactor architecture gates.
+- Added a consolidated release-readiness gate covering version consistency, packaging, security, CI, coverage policy, and release workflows.
+- Centralized release version discovery for packaging so artifact names follow project metadata automatically.
+- Kept the v3.78 deterministic packaging and audit-evidence pipeline, including self-inclusion prevention and SHA-256 manifests.
+- Preserved all cumulative Git/GitHub functionality and the user-friendly interface.
 
 ## New in v3.78
 
