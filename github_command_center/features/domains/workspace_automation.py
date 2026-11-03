@@ -18,6 +18,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 
 class HooksCenter(tk.Toplevel):
     """Manage repository-local Git hooks with templates and executable-bit handling."""
@@ -37,11 +38,11 @@ class HooksCenter(tk.Toplevel):
     def refresh(self):self.status.set("Select a hook. Hooks are local to this clone and are not committed by default.");self.load()
     def load(self):
         p=self.path();self.text.delete("1.0","end")
-        if p.exists():self.text.insert("1.0",p.read_text(encoding="utf-8",errors="replace"));self.status.set(f"Loaded {p.name}")
+        if p.exists():self.text.insert("1.0",p.read_text(encoding="utf-8"));self.status.set(f"Loaded {p.name}")
         else:self.status.set(f"{p.name} is not installed")
     def template(self):self.text.delete("1.0","end");self.text.insert("1.0",self.TEMPLATES[self.kind.get()])
     def save(self):
-        p=self.path();p.parent.mkdir(parents=True,exist_ok=True);p.write_text(self.text.get("1.0","end-1c")+"\n",encoding="utf-8");p.chmod(p.stat().st_mode|0o111);self.status.set(f"Saved and enabled {p.name}")
+        p=self.path();p.parent.mkdir(parents=True,exist_ok=True);p.write_text(self.text.get("1.0","end-1c")+"\n");p.chmod(p.stat().st_mode|0o111);self.status.set(f"Saved and enabled {p.name}")
     def disable(self):
         p=self.path()
         if p.exists():p.chmod(p.stat().st_mode&~0o111);self.status.set(f"Disabled {p.name}")
@@ -49,7 +50,7 @@ class HooksCenter(tk.Toplevel):
         p=self.path()
         if not p.exists():return messagebox.showwarning("Hook","Save the hook first.",parent=self)
         try:
-            r=subprocess.run([str(p)],cwd=self.repo,text=True,capture_output=True,timeout=120,encoding="utf-8",errors="replace");messagebox.showinfo("Hook test",f"Exit code: {r.returncode}\n\n{r.stdout}\n{r.stderr}",parent=self)
+            r=run_process([str(p)],cwd=self.repo,timeout=120);messagebox.showinfo("Hook test",f"Exit code: {r.returncode}\n\n{r.stdout}\n{r.stderr}",parent=self)
         except Exception as e:messagebox.showerror("Hook test",str(e),parent=self)
 
 class AutomationCenter(tk.Toplevel):
@@ -82,14 +83,14 @@ class AutomationCenter(tk.Toplevel):
     def defaults(self):self.recipes=self.base();self.render();self.save(False)
     def save(self,notice=True):
         import json
-        self.path.write_text(json.dumps(self.recipes,indent=2),encoding="utf-8")
+        self.path.write_text(json.dumps(self.recipes,indent=2))
         if notice:messagebox.showinfo("Recipes","Saved under .git/gccc-recipes.json",parent=self)
     def run_selected(self):
         s=self.list.curselection()
         if not s:return
         r=self.recipes[s[0]]
         try:
-            p=subprocess.run(r["command"],cwd=self.repo,text=True,capture_output=True,timeout=900,encoding="utf-8",errors="replace");v=f"Recipe: {r['name']}\nExit code: {p.returncode}\n\n{p.stdout}\n{p.stderr}"
+            p=run_process(r["command"],cwd=self.repo,timeout=900);v=f"Recipe: {r['name']}\nExit code: {p.returncode}\n\n{p.stdout}\n{p.stderr}"
         except Exception as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
 
@@ -121,7 +122,7 @@ class IdentitySigningCenter(tk.Toplevel):
         except Exception as e:messagebox.showerror("Identity",str(e),parent=self)
     def keys(self):
         try:
-            r=subprocess.run(["gpg","--list-secret-keys","--keyid-format=long"],text=True,capture_output=True,timeout=60,encoding="utf-8",errors="replace");v=(r.stdout+r.stderr).strip()
+            r=run_process(["gpg","--list-secret-keys","--keyid-format=long"],timeout=60);v=(r.stdout+r.stderr).strip()
         except Exception as e:v="GPG unavailable: "+str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def verify(self):
@@ -196,13 +197,13 @@ class ChangelogStudio(tk.Toplevel):
             self.text.delete("1.0","end");self.text.insert("1.0",section)
         except Exception as e:messagebox.showerror("Changelog",str(e),parent=self)
     def prepend(self):
-        p=Path(self.repo)/"CHANGELOG.md";section=self.text.get("1.0","end-1c").strip()+"\n\n";old=p.read_text(encoding="utf-8",errors="replace") if p.exists() else "# Changelog\n\n"
+        p=Path(self.repo)/"CHANGELOG.md";section=self.text.get("1.0","end-1c").strip()+"\n\n";old=p.read_text(encoding="utf-8") if p.exists() else "# Changelog\n\n"
         if old.startswith("# Changelog"):new="# Changelog\n\n"+section+old[len("# Changelog"):].lstrip()
         else:new=section+old
-        p.write_text(new,encoding="utf-8");messagebox.showinfo("Changelog","CHANGELOG.md updated. Review and commit it.",parent=self)
+        p.write_text(new);messagebox.showinfo("Changelog","CHANGELOG.md updated. Review and commit it.",parent=self)
     def save(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".md",initialfile="changelog-section.md")
-        if p:Path(p).write_text(self.text.get("1.0","end-1c")+"\n",encoding="utf-8")
+        if p:Path(p).write_text(self.text.get("1.0","end-1c")+"\n")
     def copy(self):self.clipboard_clear();self.clipboard_append(self.text.get("1.0","end-1c"));messagebox.showinfo("Changelog","Copied to clipboard.",parent=self)
 
 class RemoteMigrationCenter(tk.Toplevel):
@@ -303,4 +304,4 @@ class RepositoryMetricsCenter(tk.Toplevel):
         self.report=report;self.text.delete("1.0","end");self.text.insert("1.0",report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile=Path(self.repo).name+"-metrics.txt")
-        if p:Path(p).write_text(self.report,encoding="utf-8")
+        if p:Path(p).write_text(self.report)

@@ -18,6 +18,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 
 class DetachedHeadRecoveryCenter(tk.Toplevel):
     """Detect detached HEAD and preserve work through a new branch."""
@@ -62,11 +63,11 @@ class RepositoryStateExportCenter(tk.Toplevel):
     def export_json(self):
         import json
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".json",initialfile=Path(self.repo).name+"-state.json")
-        if p:Path(p).write_text(json.dumps(self.data,indent=2),encoding="utf-8")
+        if p:Path(p).write_text(json.dumps(self.data,indent=2))
     def export_md(self):
         d=self.data;md=f"# Repository state: {d['repository']}\n\n- Captured: {d['captured']}\n- Branch: `{d['branch'] or 'detached'}`\n- HEAD: `{d['head']}`\n- Upstream: `{d['upstream'] or 'none'}`\n\n## Changes\n```text\n"+"\n".join(d["changes"])+"\n```\n\n## Remotes\n```text\n"+"\n".join(d["remotes"])+"\n```\n"
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".md",initialfile=Path(self.repo).name+"-state.md")
-        if p:Path(p).write_text(md,encoding="utf-8")
+        if p:Path(p).write_text(md)
 
 class RepositoryRulesCenter(tk.Toplevel):
     """Audit essential repository engineering and governance controls."""
@@ -87,7 +88,7 @@ class RepositoryRulesCenter(tk.Toplevel):
         self.text.delete("1.0","end");self.text.insert("1.0",self.report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="repository-rules-audit.txt")
-        if p:Path(p).write_text(self.report,encoding="utf-8")
+        if p:Path(p).write_text(self.report)
 
 class CommitRangeExporter(tk.Toplevel):
     """Export a selected commit range as patches, bundle, or Markdown."""
@@ -114,7 +115,7 @@ class CommitRangeExporter(tk.Toplevel):
             except Exception as e:messagebox.showerror("Export",str(e),parent=self)
     def markdown(self):
         self.preview();p=filedialog.asksaveasfilename(parent=self,defaultextension=".md",initialfile="commit-range.md")
-        if p:Path(p).write_text(f"# Commit range {self.spec()}\n\n```text\n{self.report}\n```\n",encoding="utf-8")
+        if p:Path(p).write_text(f"# Commit range {self.spec()}\n\n```text\n{self.report}\n```\n")
 
 class RepositoryOnboardingCenter(tk.Toplevel):
     """Turn an existing folder/repository into a collaboration-ready project."""
@@ -136,7 +137,7 @@ class RepositoryOnboardingCenter(tk.Toplevel):
         except Exception as e:messagebox.showerror("Onboarding",str(e),parent=self)
     def write_if_missing(self,name,text):
         p=Path(self.repo)/name
-        if not p.exists():p.parent.mkdir(parents=True,exist_ok=True);p.write_text(text,encoding="utf-8");return True
+        if not p.exists():p.parent.mkdir(parents=True,exist_ok=True);p.write_text(text);return True
         return False
     def create_basics(self):
         created=[]
@@ -168,7 +169,7 @@ class RepositoryAuditPackCenter(tk.Toplevel):
         self.text.delete("1.0","end");self.text.insert("1.0",self.report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".md",initialfile=f"{Path(self.repo).name}-audit-pack.md")
-        if p:Path(p).write_text(self.report,encoding="utf-8")
+        if p:Path(p).write_text(self.report)
 
 class BackupBranchManager(tk.Toplevel):
     """Inventory and clean old gccc-backup branches conservatively."""

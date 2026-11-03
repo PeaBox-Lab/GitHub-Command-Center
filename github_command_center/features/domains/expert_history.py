@@ -18,6 +18,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 
 class MergeCommitRevertCenter(tk.Toplevel):
     """Safely revert a merge commit by explicitly selecting its mainline parent."""
@@ -139,7 +140,7 @@ class GitFilterRepoAdvisor(tk.Toplevel):
         except Exception as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def check_tool(self):
-        try:r=subprocess.run(["git-filter-repo","--version"],text=True,capture_output=True,timeout=30,encoding="utf-8",errors="replace");v=(r.stdout+r.stderr).strip() or f"Exit {r.returncode}"
+        try:r=run_process(["git-filter-repo","--version"],timeout=30);v=(r.stdout+r.stderr).strip() or f"Exit {r.returncode}"
         except Exception as e:v="git-filter-repo not found. Install it from its official distribution before using generated commands.\n\n"+str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def generate(self):
@@ -174,7 +175,7 @@ class AttributesAuditCenter(tk.Toplevel):
         self.report="ATTRIBUTES AUDIT\n"+"="*72+"\n"+"\n".join(report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="attributes-audit.txt")
-        if p:Path(p).write_text(self.report,encoding="utf-8")
+        if p:Path(p).write_text(self.report)
 
 class GitRangeDiffCenter(tk.Toplevel):
     """Compare two commit series before and after rebase using git range-diff."""
@@ -190,7 +191,7 @@ class GitRangeDiffCenter(tk.Toplevel):
         self.out.delete("1.0","end");self.out.insert("1.0",self.report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="range-diff.txt")
-        if p:Path(p).write_text(self.report,encoding="utf-8")
+        if p:Path(p).write_text(self.report)
 
 class RefspecLabCenter(tk.Toplevel):
     """Inspect remote refspecs and generate explicit fetch/push commands."""
@@ -283,4 +284,4 @@ class ConfigIncludeCenter(tk.Toplevel):
         self.report="CONFIG INCLUDE RULES\n"+"="*72+"\n"+incs+"\n\nEFFECTIVE CONFIG WITH INCLUDES\n"+"="*72+"\n"+effective;self.out.delete("1.0","end");self.out.insert("1.0",self.report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="git-config-includes.txt")
-        if p:Path(p).write_text(self.report,encoding="utf-8")
+        if p:Path(p).write_text(self.report)

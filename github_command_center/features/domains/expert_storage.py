@@ -18,6 +18,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 
 class PackInventoryCenter(tk.Toplevel):
     """Inspect pack indexes, object counts and largest packed blobs without modifying history."""
@@ -43,7 +44,7 @@ class PackInventoryCenter(tk.Toplevel):
         self.report=report;self.out.delete("1.0","end");self.out.insert("1.0",report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="pack-inventory.txt")
-        if p:Path(p).write_text(self.report,encoding="utf-8")
+        if p:Path(p).write_text(self.report)
 
 class ChangeStatisticsCenter(tk.Toplevel):
     """Analyze change volume, file types, authors, and churn for a revision range."""
@@ -70,7 +71,7 @@ class ChangeStatisticsCenter(tk.Toplevel):
         self.out.delete("1.0","end");self.out.insert("1.0",self.report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="change-statistics.txt")
-        if p:Path(p).write_text(self.report,encoding="utf-8")
+        if p:Path(p).write_text(self.report)
 
 class ConflictStageExplorer(tk.Toplevel):
     """Inspect stage-1/base, stage-2/ours, and stage-3/theirs blobs for unresolved paths."""
@@ -92,13 +93,13 @@ class ConflictStageExplorer(tk.Toplevel):
     def selected(self):
         s=self.list.curselection();return self.paths[s[0]] if s else None
     def blob(self,stage,path):
-        r=subprocess.run(["git","show",f":{stage}:{path}"],cwd=self.repo,capture_output=True,timeout=120)
-        return r.stdout.decode("utf-8",errors="replace") if r.returncode==0 else "(stage unavailable or binary)"
+        r=run_process(["git","show",f":{stage}:{path}"],cwd=self.repo,timeout=120,binary=True)
+        return r.stdout.decode("utf-8") if r.returncode==0 else "(stage unavailable or binary)"
     def load(self):
         p=self.selected()
         if not p:return
         values={"BASE stage 1":self.blob(1,p),"OURS stage 2":self.blob(2,p),"THEIRS stage 3":self.blob(3,p)}
-        try:values["WORKTREE"]=(Path(self.repo)/p).read_text(encoding="utf-8",errors="replace")
+        try:values["WORKTREE"]=(Path(self.repo)/p).read_text(encoding="utf-8")
         except:values["WORKTREE"]="(working file unavailable or binary)"
         for n,v in values.items():self.views[n].delete("1.0","end");self.views[n].insert("1.0",v)
     def use(self,side):
@@ -193,7 +194,7 @@ class LostFoundCenter(tk.Toplevel):
             except Exception as e:messagebox.showerror("Recovery",str(e),parent=self)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="lost-found-inventory.txt")
-        if p:Path(p).write_text(self.report,encoding="utf-8")
+        if p:Path(p).write_text(self.report)
 
 class ShallowRepositoryCenter(tk.Toplevel):
     """Inspect and deepen shallow repositories deliberately."""
@@ -249,7 +250,7 @@ class StatusPorcelainCenter(tk.Toplevel):
     def copy(self):self.clipboard_clear();self.clipboard_append(self.raw);messagebox.showinfo("Status","Copied raw porcelain output.",parent=self)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="status-porcelain-v2.txt")
-        if p:Path(p).write_text(self.raw,encoding="utf-8")
+        if p:Path(p).write_text(self.raw)
 
 class GitSparseIndexCenter(tk.Toplevel):
     """Inspect and toggle sparse-index support for sparse-checkout repositories."""
@@ -298,7 +299,7 @@ class ObjectFormatCenter(tk.Toplevel):
         self.out.delete("1.0","end");self.out.insert("1.0",self.report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="repository-format.txt")
-        if p:Path(p).write_text(self.report,encoding="utf-8")
+        if p:Path(p).write_text(self.report)
 
 class GitCleanInteractiveCenter(tk.Toplevel):
     """Selective untracked-file cleanup with mandatory preview and explicit selection."""

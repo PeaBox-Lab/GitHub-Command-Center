@@ -18,6 +18,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 
 class FileEvolutionCenter(tk.Toplevel):
     """Trace a file across renames with per-commit stats and historical content."""
@@ -43,8 +44,8 @@ class FileEvolutionCenter(tk.Toplevel):
         r=self.selected();p=self.path.get().strip()
         if not r:return
         try:
-            stat=git(self.repo,"show","--stat","--find-renames",r[0],"--",p);content=subprocess.run(["git","show",f"{r[0]}:{p}"],cwd=self.repo,capture_output=True,timeout=120)
-            body=content.stdout.decode("utf-8",errors="replace") if content.returncode==0 and b"\x00" not in content.stdout[:8192] else "(Historical path unavailable at this commit, renamed, deleted, or binary.)"
+            stat=git(self.repo,"show","--stat","--find-renames",r[0],"--",p);content=run_process(["git","show",f"{r[0]}:{p}"],cwd=self.repo,timeout=120,binary=True)
+            body=content.stdout.decode("utf-8") if content.returncode==0 and b"\x00" not in content.stdout[:8192] else "(Historical path unavailable at this commit, renamed, deleted, or binary.)"
             v=stat+"\n\nHISTORICAL CONTENT\n"+"="*72+"\n"+body
         except Exception as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
@@ -53,8 +54,8 @@ class FileEvolutionCenter(tk.Toplevel):
         if not r:return
         dest=filedialog.asksaveasfilename(parent=self,initialfile=Path(p).name)
         if dest:
-            out=subprocess.run(["git","show",f"{r[0]}:{p}"],cwd=self.repo,capture_output=True,timeout=120)
-            if out.returncode:messagebox.showerror("Export",out.stderr.decode("utf-8",errors="replace"),parent=self)
+            out=run_process(["git","show",f"{r[0]}:{p}"],cwd=self.repo,timeout=120,binary=True)
+            if out.returncode:messagebox.showerror("Export",out.stderr.decode("utf-8"),parent=self)
             else:Path(dest).write_bytes(out.stdout);messagebox.showinfo("Export",f"Saved {dest}",parent=self)
 
 class GitRemoteShowCenter(tk.Toplevel):
@@ -106,7 +107,7 @@ class ProtocolDiagnosticsCenter(tk.Toplevel):
         import os
         env=os.environ.copy();env["GIT_TRACE_PACKET"]="1";env["GIT_TRACE"]="1";env["GIT_PROTOCOL"]="version=2"
         try:
-            r=subprocess.run(["git","ls-remote",self.remote.get().strip()],cwd=self.repo,env=env,text=True,capture_output=True,timeout=120,encoding="utf-8",errors="replace");self.show((r.stdout+"\n"+r.stderr).strip())
+            r=run_process(["git","ls-remote",self.remote.get().strip()],cwd=self.repo,env=env,timeout=120);self.show((r.stdout+"\n"+r.stderr).strip())
         except Exception as e:self.show(str(e))
 
 class AlternatesInspectorCenter(tk.Toplevel):
@@ -120,12 +121,12 @@ class AlternatesInspectorCenter(tk.Toplevel):
     def gitdir(self):
         p=Path(git(self.repo,"rev-parse","--git-dir"));return (Path(self.repo)/p).resolve() if not p.is_absolute() else p
     def refresh(self):
-        gd=self.gitdir();alt=gd/"objects"/"info"/"alternates";alternates=alt.read_text(encoding="utf-8",errors="replace") if alt.exists() else "None"
+        gd=self.gitdir();alt=gd/"objects"/"info"/"alternates";alternates=alt.read_text(encoding="utf-8") if alt.exists() else "None"
         env=os.environ.get("GIT_ALTERNATE_OBJECT_DIRECTORIES","Not set");objects=git(self.repo,"count-objects","-vH");self.report=f"OBJECT ALTERNATES\n{'='*72}\nGit dir: {gd}\nAlternates file: {alt}\n\nConfigured alternates:\n{alternates}\n\nEnvironment alternates:\n{env}\n\nLOCAL OBJECT STATUS\n{objects}"
         self.out.delete("1.0","end");self.out.insert("1.0",self.report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="object-alternates.txt")
-        if p:Path(p).write_text(self.report,encoding="utf-8")
+        if p:Path(p).write_text(self.report)
     def dissociate(self):
         if not messagebox.askyesno("Dissociate objects","Copy all reachable objects into this repository with `git repack -a -d`? This may consume significant disk space.",parent=self):return
         try:messagebox.showinfo("Dissociate",git(self.repo,"repack","-a","-d"),parent=self);self.refresh()
@@ -145,7 +146,7 @@ class EolNormalizationCenter(tk.Toplevel):
         except Exception as e:return "Unavailable: "+str(e)
     def refresh(self):
         v=f"EOL CONFIGURATION\n{'='*72}\ncore.autocrlf: {self.safe('config','--get','core.autocrlf')}\ncore.eol: {self.safe('config','--get','core.eol')}\ncore.safecrlf: {self.safe('config','--get','core.safecrlf')}\n\nATTRIBUTES FILE\n"
-        p=Path(self.repo)/".gitattributes";v+=p.read_text(encoding="utf-8",errors="replace") if p.exists() else "Missing .gitattributes"
+        p=Path(self.repo)/".gitattributes";v+=p.read_text(encoding="utf-8") if p.exists() else "Missing .gitattributes"
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def attributes(self):
         p=self.path.get().strip() or "."
@@ -198,7 +199,7 @@ class CommitMessageAuditCenter(tk.Toplevel):
         self.summary.delete("1.0","end");self.summary.insert("1.0",self.report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="commit-message-audit.txt")
-        if p:Path(p).write_text(self.report,encoding="utf-8")
+        if p:Path(p).write_text(self.report)
 
 class GitArchiveManifestCenter(tk.Toplevel):
     """Create and verify a tracked-file manifest for a selected revision."""
@@ -221,12 +222,12 @@ class GitArchiveManifestCenter(tk.Toplevel):
         self.out.delete("1.0","end");self.out.insert("1.0",self.manifest)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="revision-manifest.txt")
-        if p:Path(p).write_text(self.manifest,encoding="utf-8")
+        if p:Path(p).write_text(self.manifest)
     def verify(self):
         p=filedialog.askopenfilename(parent=self,filetypes=[("Manifest","*.txt"),("All files","*")])
         if not p:return
         expected={}
-        for line in Path(p).read_text(encoding="utf-8",errors="replace").splitlines():
+        for line in Path(p).read_text(encoding="utf-8").splitlines():
             if not line or line.startswith("#") or "  " not in line:continue
             meta,path=line.split("  ",1);parts=meta.split()
             if len(parts)>=3:expected[path]=parts[2]

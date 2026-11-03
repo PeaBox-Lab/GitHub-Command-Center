@@ -18,14 +18,15 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 
 class RepositoryNotesCenter(tk.Toplevel):
     def __init__(self,parent,repo):
         super().__init__(parent);self.path=Path(repo)/".git"/"gccc-notes.md";self.title("Repository Notes");self.geometry("850x620")
         ttk.Label(self,text="Private local notes stored under .git and excluded from normal commits.",padding=8).pack(fill="x");self.text=tk.Text(self,wrap="word",undo=True);self.text.pack(fill="both",expand=True,padx=8);ttk.Button(self,text="Save",command=self.save).pack(anchor="e",padx=8,pady=8)
-        self.text.insert("1.0",self.path.read_text(encoding="utf-8",errors="replace") if self.path.exists() else "# Repository Notes\n\n## Current focus\n\n## Decisions\n\n## Follow-ups\n\n## Release reminders\n")
+        self.text.insert("1.0",self.path.read_text(encoding="utf-8") if self.path.exists() else "# Repository Notes\n\n## Current focus\n\n## Decisions\n\n## Follow-ups\n\n## Release reminders\n")
     def save(self):
-        self.path.write_text(self.text.get("1.0","end-1c")+"\n",encoding="utf-8");messagebox.showinfo("Notes","Saved under .git/gccc-notes.md",parent=self)
+        self.path.write_text(self.text.get("1.0","end-1c")+"\n");messagebox.showinfo("Notes","Saved under .git/gccc-notes.md",parent=self)
 
 class BranchCleanupCenter(tk.Toplevel):
     """Safe local branch cleanup with merged/stale awareness."""
@@ -77,7 +78,7 @@ class ProjectSnapshotCenter(tk.Toplevel):
         except Exception as e:return "Unavailable: "+str(e)
     def generate(self):
         branch=self.safe("branch","--show-current");status=self.safe("status","--short","--branch");recent=self.safe("log","-10","--date=short","--pretty=format:- %h %ad %an: %s");tags=self.safe("tag","--sort=-creatordate");remotes=self.safe("remote","-v")
-        notes=Path(self.repo)/".git"/"gccc-notes.md";note_text=notes.read_text(encoding="utf-8",errors="replace") if notes.exists() else "No private repository notes."
+        notes=Path(self.repo)/".git"/"gccc-notes.md";note_text=notes.read_text(encoding="utf-8") if notes.exists() else "No private repository notes."
         key=[]
         for f in ("README.md","CHANGELOG.md","RELEASE_NOTES.md","USER_GUIDE.md","SECURITY.md","CONTRIBUTING.md"):
             if (Path(self.repo)/f).exists():key.append(f)
@@ -85,7 +86,7 @@ class ProjectSnapshotCenter(tk.Toplevel):
         self.text.delete("1.0","end");self.text.insert("1.0",self.snapshot)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".md",initialfile=f"{Path(self.repo).name}-snapshot.md")
-        if p:Path(p).write_text(self.snapshot,encoding="utf-8");messagebox.showinfo("Snapshot",f"Saved {p}",parent=self)
+        if p:Path(p).write_text(self.snapshot);messagebox.showinfo("Snapshot",f"Saved {p}",parent=self)
     def copy(self):self.clipboard_clear();self.clipboard_append(self.snapshot);messagebox.showinfo("Snapshot","Copied to clipboard.",parent=self)
 
 class PatchCenter(tk.Toplevel):
@@ -103,7 +104,7 @@ class PatchCenter(tk.Toplevel):
         try:
             args=["diff"]+(["--cached"] if staged else []);out=git(self.repo,*args)
             if out=="Completed successfully.":return messagebox.showinfo("Patch","There are no changes to export.",parent=self)
-            Path(p).write_text(out+"\n",encoding="utf-8");messagebox.showinfo("Patch",f"Saved {p}",parent=self)
+            Path(p).write_text(out+"\n");messagebox.showinfo("Patch",f"Saved {p}",parent=self)
         except Exception as e:messagebox.showerror("Patch",str(e),parent=self)
     def export_working(self):self.save_diff(False)
     def export_staged(self):self.save_diff(True)
@@ -118,7 +119,7 @@ class PatchCenter(tk.Toplevel):
         p=filedialog.askopenfilename(parent=self,filetypes=[("Patch","*.patch"),("All files","*")])
         if not p:return
         try:
-            content=Path(p).read_text(encoding="utf-8",errors="replace");check=""
+            content=Path(p).read_text(encoding="utf-8");check=""
             try:check=git(self.repo,"apply","--check",p)
             except Exception as e:check=str(e)
             self.text.delete("1.0","end");self.text.insert("1.0",f"APPLY CHECK\n{'='*72}\n{check}\n\nPATCH CONTENT\n{'='*72}\n{content}")
@@ -176,7 +177,7 @@ class TaskCenter(tk.Toplevel):
         ttk.Label(self,text="Tasks are private to this local clone and stored under .git/gccc-tasks.txt.",padding=8).pack(fill="x")
     def load(self):
         self.tasks=[]
-        if self.path.exists():self.tasks=[x for x in self.path.read_text(encoding="utf-8",errors="replace").splitlines() if x.strip()]
+        if self.path.exists():self.tasks=[x for x in self.path.read_text(encoding="utf-8").splitlines() if x.strip()]
         self.render()
     def render(self):
         self.list.delete(0,"end")
@@ -191,7 +192,7 @@ class TaskCenter(tk.Toplevel):
         for i in reversed(self.list.curselection()):del self.tasks[i]
         self.render();self.save(False)
     def save(self,notice=True):
-        self.path.write_text("\n".join(self.tasks)+("\n" if self.tasks else ""),encoding="utf-8")
+        self.path.write_text("\n".join(self.tasks)+("\n" if self.tasks else ""))
         if notice:messagebox.showinfo("Tasks","Saved repository tasks.",parent=self)
 
 class ArchiveCenter(tk.Toplevel):
@@ -222,7 +223,7 @@ class ArchiveCenter(tk.Toplevel):
             try:return git(self.repo,*args)
             except Exception as e:return str(e)
         report=f"GitHub Command Center Support Pack\n{'='*72}\nRepository: {self.repo}\nPython: {sys.version}\nOS: {platform.platform()}\n\nSTATUS\n{safe('status','--short','--branch')}\n\nREMOTES\n{safe('remote','-v')}\n\nRECENT COMMITS\n{safe('log','-20','--oneline','--decorate')}\n\nCONFIG\n{safe('config','--list','--show-origin')}\n\nFSCK\n{safe('fsck','--no-progress')}\n"
-        Path(p).write_text(report,encoding="utf-8");messagebox.showinfo("Support pack",f"Saved {p}",parent=self)
+        Path(p).write_text(report);messagebox.showinfo("Support pack",f"Saved {p}",parent=self)
 
 class CommandPalette(tk.Toplevel):
     """Searchable launcher that keeps the Local Git toolbar usable as features grow."""

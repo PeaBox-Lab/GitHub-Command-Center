@@ -18,6 +18,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 
 class CherryPickQueueCenter(tk.Toplevel):
     """Build and execute an ordered multi-commit cherry-pick queue with backup protection."""
@@ -89,12 +90,12 @@ class ReleaseAssetIntegrityCenter(tk.Toplevel):
         if not self.files:return
         lines=[f"{self.digest(p)}  {Path(p).name}" for p in self.files];self.out.delete("1.0","end");self.out.insert("1.0","\n".join(lines))
         target=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="SHA256SUMS.txt")
-        if target:Path(target).write_text("\n".join(lines)+"\n",encoding="utf-8");messagebox.showinfo("Integrity",f"Saved {target}",parent=self)
+        if target:Path(target).write_text("\n".join(lines)+"\n");messagebox.showinfo("Integrity",f"Saved {target}",parent=self)
     def verify(self):
         manifest=filedialog.askopenfilename(parent=self,filetypes=[("Checksum manifests","*.txt *.sha256"),("All files","*")])
         if not manifest:return
         base=Path(manifest).parent;results=[]
-        for line in Path(manifest).read_text(encoding="utf-8",errors="replace").splitlines():
+        for line in Path(manifest).read_text(encoding="utf-8").splitlines():
             if not line.strip():continue
             parts=line.split(None,1)
             if len(parts)!=2:results.append(f"INVALID LINE: {line}");continue
@@ -131,8 +132,8 @@ class LocalReleaseArchiveCenter(tk.Toplevel):
                     for block in iter(lambda:f.read(1024*1024),b""):h.update(block)
                 return h.hexdigest()
             assets=[zipfile,bundle]+(([folder/"RELEASE_NOTES.md"]) if (folder/"RELEASE_NOTES.md").exists() else [])
-            (folder/"SHA256SUMS.txt").write_text("\n".join(f"{sha(p)}  {p.name}" for p in assets)+"\n",encoding="utf-8")
-            metadata={"repository":Path(self.repo).name,"version":version,"created":datetime.datetime.now().isoformat(),"head":git(self.repo,"rev-parse","HEAD"),"branch":git(self.repo,"branch","--show-current")};(folder/"release-metadata.json").write_text(json.dumps(metadata,indent=2),encoding="utf-8")
+            (folder/"SHA256SUMS.txt").write_text("\n".join(f"{sha(p)}  {p.name}" for p in assets)+"\n")
+            metadata={"repository":Path(self.repo).name,"version":version,"created":datetime.datetime.now().isoformat(),"head":git(self.repo,"rev-parse","HEAD"),"branch":git(self.repo,"branch","--show-current")};(folder/"release-metadata.json").write_text(json.dumps(metadata,indent=2))
             self.out.delete("1.0","end");self.out.insert("1.0",f"Release archive created:\n{folder}\n\n"+"\n".join(p.name for p in folder.iterdir()));messagebox.showinfo("Release archive",f"Created {folder}",parent=self)
         except Exception as e:messagebox.showerror("Release archive",str(e),parent=self)
 
@@ -164,7 +165,7 @@ class CommitSignatureAuditCenter(tk.Toplevel):
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="signature-audit.txt")
-        if p:Path(p).write_text(self.report,encoding="utf-8")
+        if p:Path(p).write_text(self.report)
 
 class ReleaseCompareCenter(tk.Toplevel):
     """Compare two release refs with commits, files and compact release statistics."""
@@ -189,7 +190,7 @@ class ReleaseCompareCenter(tk.Toplevel):
         if not hasattr(self,"md"):self.compare()
         if not hasattr(self,"md"):return
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".md",initialfile="release-comparison.md")
-        if p:Path(p).write_text(self.md,encoding="utf-8")
+        if p:Path(p).write_text(self.md)
 
 class SafeDeleteBranchWizard(tk.Toplevel):
     """Branch deletion wizard that checks merge, worktree and upstream state first."""

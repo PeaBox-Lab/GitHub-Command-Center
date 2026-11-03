@@ -18,6 +18,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 
 class SelfTestCenter(tk.Toplevel):
     """Built-in smoke tests for parsers, configuration and command prerequisites."""
@@ -35,12 +36,12 @@ class SelfTestCenter(tk.Toplevel):
         self.report="SELF-TEST RESULTS\n"+"="*72+"\n\n"+"\n\n".join(f"[{'PASS' if ok else 'FAIL'}] {n}\n  {d}" for n,ok,d in tests)+f"\n\nOVERALL: {'PASS' if all(t[1] for t in tests) else 'FAIL'}"
         self.text.delete("1.0","end");self.text.insert("1.0",self.report)
     def compile_source(self):
-        root=Path(__file__).parent.parent;r=subprocess.run(["python","-m","compileall","-q",str(root)],text=True,capture_output=True,timeout=180,encoding="utf-8",errors="replace")
+        root=Path(__file__).parent.parent;r=run_process(["python","-m","compileall","-q",str(root)],timeout=180)
         if r.returncode:raise RuntimeError((r.stdout+r.stderr).strip())
         return "Compilation passed"
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="gccc-self-test.txt")
-        if p:Path(p).write_text(self.report,encoding="utf-8")
+        if p:Path(p).write_text(self.report)
 
 class PartialStagingCenter(tk.Toplevel):
     """Hunk-level staging UI backed by git diff and git apply --cached."""
@@ -101,7 +102,7 @@ class PartialStagingCenter(tk.Toplevel):
         import tempfile,os
         fd,name=tempfile.mkstemp(prefix="gccc-hunk-",suffix=".patch");os.close(fd)
         try:
-            Path(name).write_text(patch,encoding="utf-8");args=["apply","--whitespace=nowarn"]
+            Path(name).write_text(patch);args=["apply","--whitespace=nowarn"]
             if cached:args.append("--cached")
             if reverse:args.append("--reverse")
             args.append(name);return git(self.repo,*args)
@@ -151,7 +152,7 @@ class PickHunkDialog(tk.Toplevel):
         if not s:return
         fd,name=tempfile.mkstemp(prefix="gccc-unstage-",suffix=".patch");os.close(fd)
         try:
-            Path(name).write_text(self.hunks[s[0]],encoding="utf-8");git(self.repo,"apply","--cached","--reverse","--whitespace=nowarn",name);self.done();self.destroy()
+            Path(name).write_text(self.hunks[s[0]]);git(self.repo,"apply","--cached","--reverse","--whitespace=nowarn",name);self.done();self.destroy()
         except Exception as e:messagebox.showerror("Unstage hunk",str(e),parent=self)
         finally:
             try:os.unlink(name)
@@ -216,11 +217,11 @@ class InteractiveRebaseEditor(tk.Toplevel):
         backup=f"gccc-backup/pre-rebase-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}"
         try:
             git(self.repo,"branch",backup)
-            todo_fd,todo=tempfile.mkstemp(prefix="gccc-rebase-",suffix=".todo");os.close(todo_fd);Path(todo).write_text(self.plan(),encoding="utf-8")
+            todo_fd,todo=tempfile.mkstemp(prefix="gccc-rebase-",suffix=".todo");os.close(todo_fd);Path(todo).write_text(self.plan())
             editor_fd,editor=tempfile.mkstemp(prefix="gccc-editor-",suffix=".py");os.close(editor_fd)
-            Path(editor).write_text("import shutil,sys\nshutil.copyfile(sys.argv[1],sys.argv[2])\n",encoding="utf-8")
+            Path(editor).write_text("import shutil,sys\nshutil.copyfile(sys.argv[1],sys.argv[2])\n")
             env=os.environ.copy();env["GIT_SEQUENCE_EDITOR"]=f'\"{sys.executable}\" \"{editor}\" \"{todo}\"'
-            r=subprocess.run(["git","rebase","-i",self.base.get().strip()],cwd=self.repo,text=True,capture_output=True,timeout=1800,env=env,encoding="utf-8",errors="replace")
+            r=run_process(["git","rebase","-i",self.base.get().strip()],cwd=self.repo,timeout=1800,env=env)
             out=(r.stdout+"\n"+r.stderr).strip()
             if r.returncode:messagebox.showwarning("Rebase paused or failed",f"Backup: {backup}\n\n{out}\n\nResolve conflicts, then use Continue, Skip, or Abort.",parent=self)
             else:messagebox.showinfo("Rebase complete",f"Rebase completed. Safety branch: {backup}\n\n{out}",parent=self)

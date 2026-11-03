@@ -18,6 +18,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 
 class GitPathspecCenter(tk.Toplevel):
     """Preview Git pathspec selection before using it in other workflows."""
@@ -78,7 +79,7 @@ class ArchiveCompareCenter(tk.Toplevel):
         self.out.delete("1.0","end");self.out.insert("1.0",self.report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="tree-comparison.txt")
-        if p:Path(p).write_text(self.report,encoding="utf-8")
+        if p:Path(p).write_text(self.report)
 
 class RemoteUrlAuditCenter(tk.Toplevel):
     """Audit fetch/push URLs independently and safely update them."""
@@ -275,7 +276,7 @@ class GitLogQueryCenter(tk.Toplevel):
         self.out.delete("1.0","end");self.out.insert("1.0",self.report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="git-log-query.txt")
-        if p:Path(p).write_text(self.report,encoding="utf-8")
+        if p:Path(p).write_text(self.report)
 
 class IndexInspectorCenter(tk.Toplevel):
     """Inspect index entries, stages, flags and staged blob metadata."""

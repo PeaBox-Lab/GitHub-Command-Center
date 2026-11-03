@@ -18,6 +18,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 
 class CommitSearchPro(tk.Toplevel):
     """Advanced content/history search with pickaxe, regex and path filters."""
@@ -84,7 +85,7 @@ class RepositoryFavoritesCenter(tk.Toplevel):
         if r:self.rows=[x for x in self.rows if x.get("path")!=r.get("path")];self.save(False);self.render()
     def save(self,notice=True):
         import json
-        self.path.write_text(json.dumps(self.rows,indent=2),encoding="utf-8")
+        self.path.write_text(json.dumps(self.rows,indent=2))
         if notice:messagebox.showinfo("Favorites",f"Saved {self.path}",parent=self)
 
 class CommitTemplateCenter(tk.Toplevel):
@@ -98,14 +99,14 @@ class CommitTemplateCenter(tk.Toplevel):
         ttk.Label(self,text="The template is local to this clone under .git. It is used by Git commit editors but does not force a message format.",padding=8).pack(fill="x")
     def load(self):
         self.text.delete("1.0","end")
-        if self.path.exists():self.text.insert("1.0",self.path.read_text(encoding="utf-8",errors="replace"))
+        if self.path.exists():self.text.insert("1.0",self.path.read_text(encoding="utf-8"))
         else:self.defaults()
     def defaults(self):
         value="<type>(<scope>): <short summary>\n\nWhy:\n\nWhat changed:\n- \n\nValidation:\n- \n\nRefs: \n"
         self.text.delete("1.0","end");self.text.insert("1.0",value)
     def save(self):
         try:
-            self.path.write_text(self.text.get("1.0","end-1c")+"\n",encoding="utf-8");git(self.repo,"config","commit.template",str(self.path));messagebox.showinfo("Commit template",f"Saved and configured {self.path}",parent=self)
+            self.path.write_text(self.text.get("1.0","end-1c")+"\n");git(self.repo,"config","commit.template",str(self.path));messagebox.showinfo("Commit template",f"Saved and configured {self.path}",parent=self)
         except Exception as e:messagebox.showerror("Commit template",str(e),parent=self)
     def disable(self):
         try:git(self.repo,"config","--unset","commit.template");messagebox.showinfo("Commit template","Repository commit template configuration removed.",parent=self)
@@ -162,12 +163,12 @@ class HookAuditCenter(tk.Toplevel):
         s=self.tree.selection();return self.rows[int(s[0])] if s else None
     def preview(self):
         r=self.selected();self.text.delete("1.0","end")
-        if r:self.text.insert("1.0",r[4].read_text(encoding="utf-8",errors="replace"))
+        if r:self.text.insert("1.0",r[4].read_text(encoding="utf-8"))
     def open_hook(self):
         r=self.selected()
         if not r:return
         import os
-        try:os.startfile(r[4]) if hasattr(os,"startfile") else subprocess.Popen(["xdg-open",str(r[4])])
+        try:os.startfile(r[4]) if hasattr(os,"startfile") else start_process(["xdg-open",str(r[4])])
         except Exception as e:messagebox.showerror("Hook",str(e),parent=self)
 
 class MergePreviewCenter(tk.Toplevel):

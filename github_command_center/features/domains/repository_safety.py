@@ -18,6 +18,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 
 class IgnoreAttributesStudio(tk.Toplevel):
     """Unified editor and tester for .gitignore and .gitattributes."""
@@ -32,9 +33,9 @@ class IgnoreAttributesStudio(tk.Toplevel):
         self.out=tk.Text(c,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.out.pack(fill="both",expand=True)
     def load(self):
         for widget,name in ((self.ignore,".gitignore"),(self.attrs,".gitattributes")):
-            p=Path(self.repo)/name;widget.delete("1.0","end");widget.insert("1.0",p.read_text(encoding="utf-8",errors="replace") if p.exists() else "")
+            p=Path(self.repo)/name;widget.delete("1.0","end");widget.insert("1.0",p.read_text(encoding="utf-8") if p.exists() else "")
     def save(self):
-        (Path(self.repo)/".gitignore").write_text(self.ignore.get("1.0","end-1c")+"\n",encoding="utf-8");(Path(self.repo)/".gitattributes").write_text(self.attrs.get("1.0","end-1c")+"\n",encoding="utf-8");messagebox.showinfo("Ignore & Attributes","Saved both files. Review and stage them when ready.",parent=self)
+        (Path(self.repo)/".gitignore").write_text(self.ignore.get("1.0","end-1c")+"\n");(Path(self.repo)/".gitattributes").write_text(self.attrs.get("1.0","end-1c")+"\n");messagebox.showinfo("Ignore & Attributes","Saved both files. Review and stage them when ready.",parent=self)
     def result(self,v):self.out.delete("1.0","end");self.out.insert("1.0",v)
     def test_ignore(self):
         p=self.path.get().strip()
@@ -81,7 +82,7 @@ class WorktreeSafetyCenter(tk.Toplevel):
         r=self.selected()
         if r:
             p=r.get("worktree")
-            try:os.startfile(p) if hasattr(os,"startfile") else subprocess.Popen(["xdg-open",p])
+            try:os.startfile(p) if hasattr(os,"startfile") else start_process(["xdg-open",p])
             except Exception as e:messagebox.showerror("Worktree",str(e),parent=self)
     def worktree_cmd(self,action):
         r=self.selected()
@@ -128,7 +129,7 @@ class RepositoryDoctor(tk.Toplevel):
         self.report=report;self.text.delete("1.0","end");self.text.insert("1.0",report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="repository-doctor.txt")
-        if p:Path(p).write_text(self.report,encoding="utf-8")
+        if p:Path(p).write_text(self.report)
 
 class TagReleaseAuditCenter(tk.Toplevel):
     """Audit tags for type, target, date, signature and remote presence."""
@@ -268,7 +269,7 @@ class RepositorySizeCenter(tk.Toplevel):
         self.report=report;self.text.delete("1.0","end");self.text.insert("1.0",report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="repository-size-report.txt")
-        if p:Path(p).write_text(self.report,encoding="utf-8")
+        if p:Path(p).write_text(self.report)
 
 class ForcePushSafetyCenter(tk.Toplevel):
     """Explicit force-with-lease workflow for rewritten branches; never plain --force."""

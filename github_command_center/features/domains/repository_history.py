@@ -18,6 +18,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 
 class UnifiedRefBrowser(tk.Toplevel):
     """Unified browser for branches, remotes, tags, stash and other refs."""
@@ -159,8 +160,8 @@ class RepositoryHistoryBrowser(tk.Toplevel):
         target=filedialog.asksaveasfilename(parent=self,initialfile=Path(path).name)
         if target:
             try:
-                r=subprocess.run(["git","show",f"{self.current_ref}:{path}"],cwd=self.repo,capture_output=True,timeout=120)
-                if r.returncode:raise GitError(r.stderr.decode("utf-8",errors="replace"))
+                r=run_process(["git","show",f"{self.current_ref}:{path}"],cwd=self.repo,timeout=120,binary=True)
+                if r.returncode:raise GitError(r.stderr.decode("utf-8"))
                 Path(target).write_bytes(r.stdout);messagebox.showinfo("Export",f"Saved {target}",parent=self)
             except Exception as e:messagebox.showerror("Export",str(e),parent=self)
 

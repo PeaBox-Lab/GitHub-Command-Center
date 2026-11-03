@@ -18,6 +18,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 
 class PluginManager(tk.Toplevel):
     """Manage local JSON command plugins without importing arbitrary Python modules."""
@@ -51,26 +52,26 @@ class PluginManager(tk.Toplevel):
         if not cmd:return
         slug=re.sub(r"[^a-z0-9_-]+","-",name.lower()).strip("-") or "plugin"
         d={"name":name,"description":"Local command plugin","command":shlex.split(cmd),"enabled":True}
-        (self.dir/f"{slug}.json").write_text(json.dumps(d,indent=2),encoding="utf-8");self.load()
+        (self.dir/f"{slug}.json").write_text(json.dumps(d,indent=2));self.load()
     def run(self):
         p=self.selected()
         if not p or not p.get("enabled",True):return
         command=p.get("command")
         if not isinstance(command,list) or not command:return messagebox.showerror("Plugin","Plugin command must be a JSON array.",parent=self)
         if not messagebox.askyesno("Run plugin",f"Run {p.get('name')}?\n\n{' '.join(command)}",parent=self):return
-        try:r=subprocess.run(command,cwd=self.repo,text=True,capture_output=True,timeout=1800,encoding="utf-8",errors="replace");v=f"Exit code: {r.returncode}\n\n{r.stdout}\n{r.stderr}"
+        try:r=run_process(command,cwd=self.repo,timeout=1800);v=f"Exit code: {r.returncode}\n\n{r.stdout}\n{r.stderr}"
         except Exception as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def toggle(self):
         import json
         p=self.selected()
-        if p:p["enabled"]=not p.get("enabled",True);p["_path"].write_text(json.dumps({k:v for k,v in p.items() if k!="_path"},indent=2),encoding="utf-8");self.load()
+        if p:p["enabled"]=not p.get("enabled",True);p["_path"].write_text(json.dumps({k:v for k,v in p.items() if k!="_path"},indent=2));self.load()
     def delete(self):
         p=self.selected()
         if p and messagebox.askyesno("Delete plugin",f"Delete {p.get('name')}?",parent=self):p["_path"].unlink();self.load()
     def open_folder(self):
         import os
-        os.startfile(self.dir) if hasattr(os,"startfile") else subprocess.Popen(["xdg-open",str(self.dir)])
+        os.startfile(self.dir) if hasattr(os,"startfile") else start_process(["xdg-open",str(self.dir)])
 
 class BatchOperationsCenter(tk.Toplevel):
     """Portfolio operations with dry-run and per-repository results."""
@@ -105,7 +106,7 @@ class BatchOperationsCenter(tk.Toplevel):
                 elif op=="Status":out=git(p,"status","--short","--branch")
                 elif op=="Integrity check":out=git(p,"fsck","--no-progress")
                 elif op=="Python compile":
-                    x=subprocess.run(["python","-m","compileall","-q","."],cwd=p,text=True,capture_output=True,timeout=900,encoding="utf-8",errors="replace");out=f"Exit {x.returncode}: {(x.stdout+x.stderr).strip()}"
+                    x=run_process(["python","-m","compileall","-q","."],cwd=p,timeout=900);out=f"Exit {x.returncode}: {(x.stdout+x.stderr).strip()}"
                 elif r["state"]!="Clean":out="SKIPPED: local changes"
                 else:out=git(p,"pull","--ff-only")
             except Exception as e:out="ERROR: "+str(e)
@@ -161,12 +162,12 @@ class DataExportCenter(tk.Toplevel):
     def json_export(self):
         import json
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".json",initialfile=Path(self.repo).name+"-repository-data.json")
-        if p:Path(p).write_text(json.dumps(self.collect(),indent=2),encoding="utf-8")
+        if p:Path(p).write_text(json.dumps(self.collect(),indent=2))
     def csv_export(self):
         import csv
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".csv",initialfile=Path(self.repo).name+"-commits.csv")
         if p:
-            with open(p,"w",newline="",encoding="utf-8") as f:
+            with open(p,"w",newline="") as f:
                 w=csv.DictWriter(f,fieldnames=["hash","short","date","author","email","subject"]);w.writeheader();w.writerows(self.collect()["commits"])
 
 class BackgroundJobsCenter(tk.Toplevel):
@@ -191,7 +192,7 @@ class BackgroundJobsCenter(tk.Toplevel):
         def worker():
             job["status"]="Running";self.after(0,lambda:self.update_row(job))
             try:
-                p=subprocess.Popen(args,cwd=self.repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,encoding="utf-8",errors="replace");self.processes[job["id"]]=p
+                p=start_process(args,cwd=self.repo);self.processes[job["id"]]=p
                 for line in iter(p.stdout.readline,""):
                     job["log"]+=line
                     self.after(0,self.show_log)
@@ -231,7 +232,7 @@ class PreferencesCenter(tk.Toplevel):
             except:pass
     def save(self):
         import json
-        p={"theme":self.theme.get(),"font_size":self.font.get(),"history_limit":self.limit.get(),"confirm_destructive":self.confirm.get(),"default_branch":self.default_branch.get()};self.path.write_text(json.dumps(p,indent=2),encoding="utf-8")
+        p={"theme":self.theme.get(),"font_size":self.font.get(),"history_limit":self.limit.get(),"confirm_destructive":self.confirm.get(),"default_branch":self.default_branch.get()};self.path.write_text(json.dumps(p,indent=2))
         try:ttk.Style().theme_use(self.theme.get())
         except:pass
         messagebox.showinfo("Preferences",f"Saved {self.path}",parent=self)
@@ -271,4 +272,4 @@ class PortfolioHistoryCenter(tk.Toplevel):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".csv",initialfile="portfolio-history.csv")
         if not p:return
         with sqlite3.connect(self.db) as c:rows=c.execute("select captured,path,repo,branch,state,ahead,behind from snapshots order by captured").fetchall()
-        with open(p,"w",newline="",encoding="utf-8") as f:w=csv.writer(f);w.writerow(["captured","path","repo","branch","state","ahead","behind"]);w.writerows(rows)
+        with open(p,"w",newline="") as f:w=csv.writer(f);w.writerow(["captured","path","repo","branch","state","ahead","behind"]);w.writerows(rows)

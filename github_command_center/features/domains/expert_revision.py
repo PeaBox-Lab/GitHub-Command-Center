@@ -18,6 +18,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 
 class ConfigSnapshotCompareCenter(tk.Toplevel):
     """Capture and compare effective Git configuration snapshots."""
@@ -41,7 +42,7 @@ class ConfigSnapshotCompareCenter(tk.Toplevel):
         self.out.delete("1.0","end");self.out.insert("1.0",self.report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="git-config-comparison.txt")
-        if p:Path(p).write_text(self.report,encoding="utf-8")
+        if p:Path(p).write_text(self.report)
 
 class CommitFixupCenter(tk.Toplevel):
     """Create fixup/squash commits against a selected historical commit."""
@@ -146,7 +147,7 @@ class GitShowBranchCenter(tk.Toplevel):
         self.out.delete("1.0","end");self.out.insert("1.0",self.report)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="show-branch.txt")
-        if p:Path(p).write_text(self.report,encoding="utf-8")
+        if p:Path(p).write_text(self.report)
 
 class GitNameRevCenter(tk.Toplevel):
     """Assign human-readable ref-relative names to object IDs and revisions."""
@@ -189,7 +190,7 @@ class GitCountObjectsTrendCenter(tk.Toplevel):
         except:self.rows=[]
     def save(self):
         import json
-        self.path.write_text(json.dumps(self.rows,indent=2),encoding="utf-8")
+        self.path.write_text(json.dumps(self.rows,indent=2))
     def parse(self,raw):
         d={}
         for line in raw.splitlines():
@@ -214,7 +215,7 @@ class GitCountObjectsTrendCenter(tk.Toplevel):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".csv",initialfile="object-growth.csv")
         if p:
             keys=["captured","count","size","in-pack","packs","size-pack","prune-packable","garbage","size-garbage"]
-            with open(p,"w",newline="",encoding="utf-8") as f:w=csv.DictWriter(f,fieldnames=keys);w.writeheader();w.writerows({k:r.get(k,"") for k in keys} for r in self.rows)
+            with open(p,"w",newline="") as f:w=csv.DictWriter(f,fieldnames=keys);w.writeheader();w.writerows({k:r.get(k,"") for k in keys} for r in self.rows)
 
 class GitVerifyRefCenter(tk.Toplevel):
     """Resolve and verify refs safely, including symbolic refs and peeling."""

@@ -18,6 +18,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 
 class CommitGraphWindow(tk.Toplevel):
     COLORS=("#60a5fa","#f472b6","#34d399","#fbbf24","#a78bfa","#22d3ee")
@@ -82,12 +83,12 @@ class ConflictResolver(tk.Toplevel):
         except:return "(unavailable)"
     def load(self):
         p=self.file.get();self.put(self.ours,self.version(2,p),True);self.put(self.theirs,self.version(3,p),True)
-        try:v=(Path(self.repo)/p).read_text(encoding="utf-8",errors="replace")
+        try:v=(Path(self.repo)/p).read_text(encoding="utf-8")
         except:v=""
         self.put(self.merged,v)
     def use(self,side):
         if messagebox.askyesno("Replace",f"Use {side[2:]} version?",parent=self):git(self.repo,"checkout",side,"--",self.file.get());self.load()
-    def save(self):(Path(self.repo)/self.file.get()).write_text(self.merged[1].get("1.0","end-1c"),encoding="utf-8")
+    def save(self):(Path(self.repo)/self.file.get()).write_text(self.merged[1].get("1.0","end-1c"))
     def resolve(self):
         self.save();git(self.repo,"add","--",self.file.get());self.files.remove(self.file.get())
         if not self.files:messagebox.showinfo("Resolved","All conflicts are staged. Commit to complete the merge.",parent=self);self.destroy()
@@ -176,7 +177,7 @@ class AdvancedGitWindow(tk.Toplevel):
             if branches and not self.branch_var.get(): self.branch_var.set(branches[0])
             path = Path(self.repo) / ".gitignore"
             self.ignore_text.delete("1.0", "end")
-            if path.exists(): self.ignore_text.insert("1.0", path.read_text(encoding="utf-8", errors="replace"))
+            if path.exists(): self.ignore_text.insert("1.0", path.read_text(encoding="utf-8"))
         except Exception as exc:
             messagebox.showerror("Advanced Git", str(exc), parent=self)
 
@@ -240,7 +241,7 @@ class AdvancedGitWindow(tk.Toplevel):
 
     def save_ignore(self):
         try:
-            (Path(self.repo) / ".gitignore").write_text(self.ignore_text.get("1.0", "end-1c") + "\n", encoding="utf-8")
+            (Path(self.repo) / ".gitignore").write_text(self.ignore_text.get("1.0", "end-1c") + "\n")
             messagebox.showinfo(".gitignore", "Saved. Stage the file when ready.", parent=self)
         except Exception as exc: messagebox.showerror(".gitignore", str(exc), parent=self)
 
@@ -318,7 +319,7 @@ class RepositoryHealthCenter(tk.Toplevel):
     def write_template(self,rel,content):
         p=Path(self.repo)/rel;p.parent.mkdir(parents=True,exist_ok=True)
         if p.exists() and not messagebox.askyesno("Replace file",f"{rel} already exists. Replace it?",parent=self):return
-        p.write_text(content,encoding="utf-8");messagebox.showinfo("Created",f"Created {rel}. Review and commit it when ready.",parent=self);self.refresh()
+        p.write_text(content);messagebox.showinfo("Created",f"Created {rel}. Review and commit it when ready.",parent=self);self.refresh()
     def security_md(self):self.write_template("SECURITY.md","# Security Policy\n\n## Reporting a vulnerability\n\nPlease report suspected vulnerabilities privately to the repository maintainers. Do not open a public issue for an unpatched vulnerability. Include affected versions, reproduction steps, impact, and any proposed remediation.\n\n## Supported versions\n\nThe latest stable release receives security fixes.\n")
     def contributing_md(self):self.write_template("CONTRIBUTING.md","# Contributing\n\n1. Create or link an issue.\n2. Create a focused branch.\n3. Add or update tests and documentation.\n4. Run relevant checks locally.\n5. Open a pull request with a clear summary, validation evidence, and risk notes.\n\nKeep changes small and avoid unrelated formatting changes.\n")
     def issue_templates(self):

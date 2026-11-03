@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.75.0
+- Completed the v3.73-v3.75 architecture refactor.
+- Introduced a centralized process gateway for external command execution.
+- Removed direct subprocess execution from feature-domain modules while preserving behavior.
+- Retained 18 bounded domains, three compatibility facades, the focused UI shell, and all cumulative features.
+- Added v3.75 dependency and process-boundary regression tests and stricter architecture gates.
+
 ## v3.74.0
 - Split workspace, repository, and expert feature collections into 18 bounded domain modules.
 - Kept each domain module below 600 lines and at or below 10 top-level feature classes.

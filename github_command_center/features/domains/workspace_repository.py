@@ -18,6 +18,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 
 class WorktreeCenter(tk.Toplevel):
     def __init__(self,parent,repo):
@@ -112,7 +113,7 @@ class RepositoryCompareCenter(tk.Toplevel):
         if not self.report:self.run_compare()
         if not self.report:return
         path=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="repository-comparison.txt")
-        if path:Path(path).write_text(self.report,encoding="utf-8");messagebox.showinfo("Export",f"Saved {path}",parent=self)
+        if path:Path(path).write_text(self.report);messagebox.showinfo("Export",f"Saved {path}",parent=self)
 
 class BackupRestoreCenter(tk.Toplevel):
     """Local recovery checkpoints using refs, stashes and bundles."""
@@ -211,7 +212,7 @@ class SettingsDiagnosticsCenter(tk.Toplevel):
         self.text=tk.Text(self,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
     def cmdver(self,cmd,args):
         try:
-            r=subprocess.run([cmd,*args],text=True,capture_output=True,timeout=20,encoding="utf-8",errors="replace")
+            r=run_process([cmd,*args],timeout=20)
             return (r.returncode==0,(r.stdout or r.stderr).strip().splitlines()[0] if (r.stdout or r.stderr).strip() else "Available")
         except Exception as e:return False,str(e)
     def refresh(self):

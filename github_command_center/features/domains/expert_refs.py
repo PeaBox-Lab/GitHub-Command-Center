@@ -18,6 +18,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 
 class MailmapCenter(tk.Toplevel):
     """Audit contributor identities and maintain a repository .mailmap file."""
@@ -36,9 +37,9 @@ class MailmapCenter(tk.Toplevel):
         except Exception as e:v=str(e)
         unique=sorted(set(v.splitlines()),key=str.lower);self.ids.delete("1.0","end");self.ids.insert("1.0","\n".join(unique));self.load()
     def load(self):
-        self.editor.delete("1.0","end");self.editor.insert("1.0",self.mailmap.read_text(encoding="utf-8",errors="replace") if self.mailmap.exists() else "# Canonical Name <canonical@email> <alternate@email>\n")
+        self.editor.delete("1.0","end");self.editor.insert("1.0",self.mailmap.read_text(encoding="utf-8") if self.mailmap.exists() else "# Canonical Name <canonical@email> <alternate@email>\n")
     def save(self):
-        self.mailmap.write_text(self.editor.get("1.0","end-1c")+"\n",encoding="utf-8");messagebox.showinfo("Mailmap","Saved .mailmap. Review and commit it for shared canonical reporting.",parent=self);self.preview()
+        self.mailmap.write_text(self.editor.get("1.0","end-1c")+"\n");messagebox.showinfo("Mailmap","Saved .mailmap. Review and commit it for shared canonical reporting.",parent=self);self.preview()
     def preview(self):
         try:v=git(self.repo,"shortlog","-sne","--all","--use-mailmap")
         except Exception as e:v=str(e)
@@ -53,11 +54,11 @@ class PatchIdCenter(tk.Toplevel):
         self.out=tk.Text(self,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.out.pack(fill="both",expand=True,padx=8,pady=5)
         ttk.Label(self,text="Patch IDs compare the introduced change while ignoring commit metadata. Equivalent patch IDs can reveal duplicate cherry-picks or rebased equivalents.",padding=8).pack(fill="x")
     def patch_id(self,ref):
-        show=subprocess.run(["git","show","--pretty=format:",ref],cwd=self.repo,capture_output=True,timeout=120)
-        if show.returncode:raise GitError(show.stderr.decode("utf-8",errors="replace"))
-        pid=subprocess.run(["git","patch-id","--stable"],cwd=self.repo,input=show.stdout,capture_output=True,timeout=120)
-        if pid.returncode:raise GitError(pid.stderr.decode("utf-8",errors="replace"))
-        return pid.stdout.decode("utf-8",errors="replace").split()[0]
+        show=run_process(["git","show","--pretty=format:",ref],cwd=self.repo,timeout=120,binary=True)
+        if show.returncode:raise GitError(show.stderr.decode("utf-8"))
+        pid=run_process(["git","patch-id","--stable"],cwd=self.repo,input_bytes=show.stdout_bytes,timeout=120,binary=True)
+        if pid.returncode:raise GitError(pid.stderr.decode("utf-8"))
+        return pid.stdout.decode("utf-8").split()[0]
     def compare(self):
         try:
             pa=self.patch_id(self.a.get().strip());pb=self.patch_id(self.b.get().strip());v=f"PATCH ID COMPARISON\n{'='*72}\n{self.a.get()}: {pa}\n{self.b.get()}: {pb}\n\nResult: {'EQUIVALENT CHANGES' if pa==pb else 'DIFFERENT CHANGES'}"
@@ -101,7 +102,7 @@ class CredentialRedactionAuditCenter(tk.Toplevel):
         self.report="CREDENTIAL REDACTION AUDIT\n"+"="*72+f"\nFindings: {len(self.findings)}\n\n"+"\n".join(f"{k} | {f}:{n} | {p}" for k,f,n,p in self.findings)
     def export(self):
         p=filedialog.asksaveasfilename(parent=self,defaultextension=".txt",initialfile="credential-redaction-audit.txt")
-        if p:Path(p).write_text(self.report,encoding="utf-8")
+        if p:Path(p).write_text(self.report)
 
 class RefConsistencyCenter(tk.Toplevel):
     """Validate local refs and detect broken symbolic refs or missing upstream targets."""
@@ -208,8 +209,8 @@ class RebaseStateCenter(tk.Toplevel):
     def todo(self):
         gd=self.gitdir();p=gd/"rebase-merge"/"git-rebase-todo"
         if not p.exists():return messagebox.showinfo("Rebase","No editable interactive-rebase todo file found.",parent=self)
-        w=tk.Toplevel(self);w.title("Rebase todo");w.geometry("900x600");t=tk.Text(w,wrap="none",font=("Consolas",9));t.pack(fill="both",expand=True);t.insert("1.0",p.read_text(encoding="utf-8",errors="replace"))
-        def save():p.write_text(t.get("1.0","end-1c")+"\n",encoding="utf-8");messagebox.showinfo("Rebase todo","Saved. Review carefully before continuing.",parent=w)
+        w=tk.Toplevel(self);w.title("Rebase todo");w.geometry("900x600");t=tk.Text(w,wrap="none",font=("Consolas",9));t.pack(fill="both",expand=True);t.insert("1.0",p.read_text(encoding="utf-8"))
+        def save():p.write_text(t.get("1.0","end-1c")+"\n");messagebox.showinfo("Rebase todo","Saved. Review carefully before continuing.",parent=w)
         ttk.Button(w,text="Save todo",command=save).pack(anchor="e",padx=8,pady=8)
 
 class GitDescribeCenter(tk.Toplevel):
