@@ -3,6 +3,7 @@ import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, 
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class HooksCenter(tk.Toplevel):
@@ -35,7 +36,7 @@ class HooksCenter(tk.Toplevel):
         p=self.path()
         if not p.exists():return messagebox.showwarning("Hook","Save the hook first.",parent=self)
         try:
-            r=subprocess.run([str(p)],cwd=self.repo,text=True,capture_output=True,timeout=120,encoding="utf-8",errors="replace");messagebox.showinfo("Hook test",f"Exit code: {r.returncode}\n\n{r.stdout}\n{r.stderr}",parent=self)
+            r=run_process([str(p)],cwd=self.repo,text=True,capture_output=True,timeout=120,encoding="utf-8",errors="replace");messagebox.showinfo("Hook test",f"Exit code: {r.returncode}\n\n{r.stdout}\n{r.stderr}",parent=self)
         except HANDLED_EXCEPTIONS as e:messagebox.showerror("Hook test",str(e),parent=self)
 
 class AutomationCenter(tk.Toplevel):
@@ -75,7 +76,7 @@ class AutomationCenter(tk.Toplevel):
         if not s:return
         r=self.recipes[s[0]]
         try:
-            p=subprocess.run(r["command"],cwd=self.repo,text=True,capture_output=True,timeout=900,encoding="utf-8",errors="replace");v=f"Recipe: {r['name']}\nExit code: {p.returncode}\n\n{p.stdout}\n{p.stderr}"
+            p=run_process(r["command"],cwd=self.repo,text=True,capture_output=True,timeout=900,encoding="utf-8",errors="replace");v=f"Recipe: {r['name']}\nExit code: {p.returncode}\n\n{p.stdout}\n{p.stderr}"
         except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
 
@@ -107,7 +108,7 @@ class IdentitySigningCenter(tk.Toplevel):
         except HANDLED_EXCEPTIONS as e:messagebox.showerror("Identity",str(e),parent=self)
     def keys(self):
         try:
-            r=subprocess.run(["gpg","--list-secret-keys","--keyid-format=long"],text=True,capture_output=True,timeout=60,encoding="utf-8",errors="replace");v=(r.stdout+r.stderr).strip()
+            r=run_process(["gpg","--list-secret-keys","--keyid-format=long"],text=True,capture_output=True,timeout=60,encoding="utf-8",errors="replace");v=(r.stdout+r.stderr).strip()
         except HANDLED_EXCEPTIONS as e:v="GPG unavailable: "+str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def verify(self):

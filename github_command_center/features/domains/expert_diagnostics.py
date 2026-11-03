@@ -3,6 +3,7 @@ import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, 
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class FileEvolutionCenter(tk.Toplevel):
@@ -29,7 +30,7 @@ class FileEvolutionCenter(tk.Toplevel):
         r=self.selected();p=self.path.get().strip()
         if not r:return
         try:
-            stat=git(self.repo,"show","--stat","--find-renames",r[0],"--",p);content=subprocess.run(["git","show",f"{r[0]}:{p}"],cwd=self.repo,capture_output=True,timeout=120)
+            stat=git(self.repo,"show","--stat","--find-renames",r[0],"--",p);content=run_process(["git","show",f"{r[0]}:{p}"],cwd=self.repo,capture_output=True,timeout=120)
             body=content.stdout.decode("utf-8",errors="replace") if content.returncode==0 and b"\x00" not in content.stdout[:8192] else "(Historical path unavailable at this commit, renamed, deleted, or binary.)"
             v=stat+"\n\nHISTORICAL CONTENT\n"+"="*72+"\n"+body
         except HANDLED_EXCEPTIONS as e:v=str(e)
@@ -39,7 +40,7 @@ class FileEvolutionCenter(tk.Toplevel):
         if not r:return
         dest=filedialog.asksaveasfilename(parent=self,initialfile=Path(p).name)
         if dest:
-            out=subprocess.run(["git","show",f"{r[0]}:{p}"],cwd=self.repo,capture_output=True,timeout=120)
+            out=run_process(["git","show",f"{r[0]}:{p}"],cwd=self.repo,capture_output=True,timeout=120)
             if out.returncode:messagebox.showerror("Export",out.stderr.decode("utf-8",errors="replace"),parent=self)
             else:Path(dest).write_bytes(out.stdout);messagebox.showinfo("Export",f"Saved {dest}",parent=self)
 
@@ -92,7 +93,7 @@ class ProtocolDiagnosticsCenter(tk.Toplevel):
         import os
         env=os.environ.copy();env["GIT_TRACE_PACKET"]="1";env["GIT_TRACE"]="1";env["GIT_PROTOCOL"]="version=2"
         try:
-            r=subprocess.run(["git","ls-remote",self.remote.get().strip()],cwd=self.repo,env=env,text=True,capture_output=True,timeout=120,encoding="utf-8",errors="replace");self.show((r.stdout+"\n"+r.stderr).strip())
+            r=run_process(["git","ls-remote",self.remote.get().strip()],cwd=self.repo,env=env,text=True,capture_output=True,timeout=120,encoding="utf-8",errors="replace");self.show((r.stdout+"\n"+r.stderr).strip())
         except HANDLED_EXCEPTIONS as e:self.show(str(e))
 
 class AlternatesInspectorCenter(tk.Toplevel):

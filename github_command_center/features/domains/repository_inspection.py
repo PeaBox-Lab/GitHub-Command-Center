@@ -3,6 +3,7 @@ import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, 
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class RepositoryLocatorCenter(tk.Toplevel):
@@ -112,7 +113,7 @@ class BisectAutomationCenter(tk.Toplevel):
         if not good or not bad or not cmd:return messagebox.showwarning("Bisect","Enter known-good, known-bad and a test command.",parent=self)
         try:
             git(self.repo,"rev-parse","--verify",good);git(self.repo,"rev-parse","--verify",bad);git(self.repo,"bisect","start",bad,good)
-            r=subprocess.run(["git","bisect","run",*cmd],cwd=self.repo,text=True,capture_output=True,timeout=7200,encoding="utf-8",errors="replace");v=(r.stdout+"\n"+r.stderr).strip();self.out.delete("1.0","end");self.out.insert("1.0",v);messagebox.showinfo("Bisect",f"Automated bisect finished with exit code {r.returncode}. Review the output, then Reset bisect when done.",parent=self)
+            r=run_process(["git","bisect","run",*cmd],cwd=self.repo,text=True,capture_output=True,timeout=7200,encoding="utf-8",errors="replace");v=(r.stdout+"\n"+r.stderr).strip();self.out.delete("1.0","end");self.out.insert("1.0",v);messagebox.showinfo("Bisect",f"Automated bisect finished with exit code {r.returncode}. Review the output, then Reset bisect when done.",parent=self)
         except HANDLED_EXCEPTIONS as e:messagebox.showerror("Bisect",str(e),parent=self)
     def reset(self):
         try:messagebox.showinfo("Bisect",git(self.repo,"bisect","reset"),parent=self);self.refresh()

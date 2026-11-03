@@ -3,6 +3,7 @@ import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, 
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class MergeCommitRevertCenter(tk.Toplevel):
@@ -125,7 +126,7 @@ class GitFilterRepoAdvisor(tk.Toplevel):
         except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def check_tool(self):
-        try:r=subprocess.run(["git-filter-repo","--version"],text=True,capture_output=True,timeout=30,encoding="utf-8",errors="replace");v=(r.stdout+r.stderr).strip() or f"Exit {r.returncode}"
+        try:r=run_process(["git-filter-repo","--version"],text=True,capture_output=True,timeout=30,encoding="utf-8",errors="replace");v=(r.stdout+r.stderr).strip() or f"Exit {r.returncode}"
         except HANDLED_EXCEPTIONS as e:v="git-filter-repo not found. Install it from its official distribution before using generated commands.\n\n"+str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def generate(self):

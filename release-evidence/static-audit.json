@@ -1,9 +1,9 @@
 {
-  "version": "3.79.0",
+  "version": "3.80.0",
   "python": "3.12.15",
   "platform": "Linux-6.1.158.2-microsoft-standard-x86_64-with-glibc2.38",
-  "python_files": 106,
-  "python_lines": 8468,
+  "python_files": 107,
+  "python_lines": 8488,
   "bare_exception_handlers": 0,
   "broad_exception_handlers": 0,
   "shell_true": 0,

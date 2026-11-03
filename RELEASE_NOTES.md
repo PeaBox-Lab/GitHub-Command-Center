@@ -1,16 +1,14 @@
-# GitHub Command Center 3.79.0 Release Notes
+# GitHub Command Center 3.80.0 Release Notes
 
-Release-readiness and architecture-gate hardening release.
+Architecture-boundary completion release.
 
 ## Improvements
-- Strict shell/domain/facade architecture budgets replace obsolete legacy thresholds.
-- Release readiness now verifies package version, console entry point, coverage policy, architecture/security/packaging gates, and required GitHub workflows.
-- Packaging derives the artifact version from project metadata to reduce version drift.
-- v3.78 deterministic ZIP, checksum, manifest, CI packaging, and audit evidence are retained.
+- All 18 feature domains now use the centralized process gateway instead of invoking `subprocess.run` or `subprocess.Popen` directly.
+- The strict post-refactor architecture gate is now enforced with zero direct domain process calls.
+- Existing Git/GitHub workflows, UI behavior, error handling, CI/security gates, deterministic packaging, manifests, and release-readiness controls remain intact.
 
 ## Cumulative compatibility
-- v3.71-v3.72 developer, graph, stash, and conflict tooling retained.
-- v3.73-v3.75 architecture improvements retained.
-- v3.76 error handling retained.
-- v3.77 CI/security gates retained.
-- v3.78 packaging and evidence gates retained.
+All v3.71-v3.79 functionality is retained.
+
+## Historical compatibility
+v3.72 commit graph filters and stash diff/conflict previews remain retained, together with every subsequent cumulative release improvement.

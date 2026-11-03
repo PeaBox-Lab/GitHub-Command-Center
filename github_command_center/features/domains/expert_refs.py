@@ -3,6 +3,7 @@ import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, 
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class MailmapCenter(tk.Toplevel):
@@ -39,9 +40,9 @@ class PatchIdCenter(tk.Toplevel):
         self.out=tk.Text(self,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.out.pack(fill="both",expand=True,padx=8,pady=5)
         ttk.Label(self,text="Patch IDs compare the introduced change while ignoring commit metadata. Equivalent patch IDs can reveal duplicate cherry-picks or rebased equivalents.",padding=8).pack(fill="x")
     def patch_id(self,ref):
-        show=subprocess.run(["git","show","--pretty=format:",ref],cwd=self.repo,capture_output=True,timeout=120)
+        show=run_process(["git","show","--pretty=format:",ref],cwd=self.repo,capture_output=True,timeout=120)
         if show.returncode:raise GitError(show.stderr.decode("utf-8",errors="replace"))
-        pid=subprocess.run(["git","patch-id","--stable"],cwd=self.repo,input=show.stdout,capture_output=True,timeout=120)
+        pid=run_process(["git","patch-id","--stable"],cwd=self.repo,input=show.stdout,capture_output=True,timeout=120)
         if pid.returncode:raise GitError(pid.stderr.decode("utf-8",errors="replace"))
         return pid.stdout.decode("utf-8",errors="replace").split()[0]
     def compare(self):

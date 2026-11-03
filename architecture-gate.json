@@ -1,13 +1,13 @@
 {
-  "version": "3.79.0",
+  "version": "3.80.0",
   "metrics": {
     "shell_lines": 237,
     "shell_classes": 1,
     "domain_modules": 18,
-    "largest_domain_lines": 376,
+    "largest_domain_lines": 377,
     "largest_domain_classes": 10,
     "largest_facade_lines": 8,
-    "direct_domain_subprocess_calls": 21,
+    "direct_domain_subprocess_calls": 0,
     "shell_true": 0
   },
   "limits": {
@@ -20,17 +20,15 @@
     "direct_domain_subprocess_calls": 0,
     "shell_true": 0
   },
-  "passed": false,
-  "failures": [
-    "direct_domain_subprocess_calls: 21 > 0"
-  ],
+  "passed": true,
+  "failures": [],
   "modules": {
     "expert_diagnostics.py": {
-      "lines": 333,
+      "lines": 334,
       "classes": 10
     },
     "expert_history.py": {
-      "lines": 272,
+      "lines": 273,
       "classes": 10
     },
     "expert_query.py": {
@@ -38,7 +36,7 @@
       "classes": 10
     },
     "expert_refs.py": {
-      "lines": 301,
+      "lines": 302,
       "classes": 10
     },
     "expert_revision.py": {
@@ -46,7 +44,7 @@
       "classes": 9
     },
     "expert_storage.py": {
-      "lines": 320,
+      "lines": 321,
       "classes": 10
     },
     "repository_governance.py": {
@@ -54,15 +52,15 @@
       "classes": 8
     },
     "repository_history.py": {
-      "lines": 376,
+      "lines": 377,
       "classes": 7
     },
     "repository_inspection.py": {
-      "lines": 206,
+      "lines": 207,
       "classes": 7
     },
     "repository_productivity.py": {
-      "lines": 250,
+      "lines": 251,
       "classes": 8
     },
     "repository_release.py": {
@@ -70,11 +68,11 @@
       "classes": 7
     },
     "repository_safety.py": {
-      "lines": 289,
+      "lines": 290,
       "classes": 8
     },
     "workspace_automation.py": {
-      "lines": 292,
+      "lines": 293,
       "classes": 8
     },
     "workspace_graph.py": {
@@ -82,7 +80,7 @@
       "classes": 4
     },
     "workspace_operations.py": {
-      "lines": 260,
+      "lines": 261,
       "classes": 7
     },
     "workspace_productivity.py": {
@@ -90,11 +88,11 @@
       "classes": 8
     },
     "workspace_repository.py": {
-      "lines": 244,
+      "lines": 245,
       "classes": 6
     },
     "workspace_staging.py": {
-      "lines": 221,
+      "lines": 222,
       "classes": 4
     }
   }

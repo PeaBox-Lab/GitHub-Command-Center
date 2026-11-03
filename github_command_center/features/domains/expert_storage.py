@@ -3,6 +3,7 @@ import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, 
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class PackInventoryCenter(tk.Toplevel):
@@ -78,7 +79,7 @@ class ConflictStageExplorer(tk.Toplevel):
     def selected(self):
         s=self.list.curselection();return self.paths[s[0]] if s else None
     def blob(self,stage,path):
-        r=subprocess.run(["git","show",f":{stage}:{path}"],cwd=self.repo,capture_output=True,timeout=120)
+        r=run_process(["git","show",f":{stage}:{path}"],cwd=self.repo,capture_output=True,timeout=120)
         return r.stdout.decode("utf-8",errors="replace") if r.returncode==0 else "(stage unavailable or binary)"
     def load(self):
         p=self.selected()

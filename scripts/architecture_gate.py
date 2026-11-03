@@ -14,5 +14,5 @@ for k,v in limits.items():
  if k=='domain_modules':
   if metrics[k]!=v:fail.append(f'{k}: {metrics[k]} != {v}')
  elif metrics[k]>v:fail.append(f'{k}: {metrics[k]} > {v}')
-report={'version':'3.79.0','metrics':metrics,'limits':limits,'passed':not fail,'failures':fail,'modules':dm}
+report={'version':'3.80.0','metrics':metrics,'limits':limits,'passed':not fail,'failures':fail,'modules':dm}
 (ROOT/'architecture-gate.json').write_text(json.dumps(report,indent=2));print(json.dumps(report,indent=2));raise SystemExit(bool(fail))

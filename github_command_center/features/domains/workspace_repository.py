@@ -3,6 +3,7 @@ import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, 
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class WorktreeCenter(tk.Toplevel):
@@ -197,7 +198,7 @@ class SettingsDiagnosticsCenter(tk.Toplevel):
         self.text=tk.Text(self,wrap="none",font=("Consolas",9),bg="#0f172a",fg="#e2e8f0");self.text.pack(fill="both",expand=True,padx=8,pady=5)
     def cmdver(self,cmd,args):
         try:
-            r=subprocess.run([cmd,*args],text=True,capture_output=True,timeout=20,encoding="utf-8",errors="replace")
+            r=run_process([cmd,*args],text=True,capture_output=True,timeout=20,encoding="utf-8",errors="replace")
             return (r.returncode==0,(r.stdout or r.stderr).strip().splitlines()[0] if (r.stdout or r.stderr).strip() else "Available")
         except HANDLED_EXCEPTIONS as e:return False,str(e)
     def refresh(self):

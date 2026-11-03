@@ -3,6 +3,7 @@ import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, 
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class CommitSearchPro(tk.Toplevel):
@@ -153,7 +154,7 @@ class HookAuditCenter(tk.Toplevel):
         r=self.selected()
         if not r:return
         import os
-        try:os.startfile(r[4]) if hasattr(os,"startfile") else subprocess.Popen(["xdg-open",str(r[4])])
+        try:os.startfile(r[4]) if hasattr(os,"startfile") else start_process(["xdg-open",str(r[4])])
         except HANDLED_EXCEPTIONS as e:messagebox.showerror("Hook",str(e),parent=self)
 
 class MergePreviewCenter(tk.Toplevel):

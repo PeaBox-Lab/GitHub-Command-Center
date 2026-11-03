@@ -3,6 +3,7 @@ import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, 
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class PluginManager(tk.Toplevel):
@@ -44,7 +45,7 @@ class PluginManager(tk.Toplevel):
         command=p.get("command")
         if not isinstance(command,list) or not command:return messagebox.showerror("Plugin","Plugin command must be a JSON array.",parent=self)
         if not messagebox.askyesno("Run plugin",f"Run {p.get('name')}?\n\n{' '.join(command)}",parent=self):return
-        try:r=subprocess.run(command,cwd=self.repo,text=True,capture_output=True,timeout=1800,encoding="utf-8",errors="replace");v=f"Exit code: {r.returncode}\n\n{r.stdout}\n{r.stderr}"
+        try:r=run_process(command,cwd=self.repo,text=True,capture_output=True,timeout=1800,encoding="utf-8",errors="replace");v=f"Exit code: {r.returncode}\n\n{r.stdout}\n{r.stderr}"
         except HANDLED_EXCEPTIONS as e:v=str(e)
         self.out.delete("1.0","end");self.out.insert("1.0",v)
     def toggle(self):
@@ -56,7 +57,7 @@ class PluginManager(tk.Toplevel):
         if p and messagebox.askyesno("Delete plugin",f"Delete {p.get('name')}?",parent=self):p["_path"].unlink();self.load()
     def open_folder(self):
         import os
-        os.startfile(self.dir) if hasattr(os,"startfile") else subprocess.Popen(["xdg-open",str(self.dir)])
+        os.startfile(self.dir) if hasattr(os,"startfile") else start_process(["xdg-open",str(self.dir)])
 
 class BatchOperationsCenter(tk.Toplevel):
     """Portfolio operations with dry-run and per-repository results."""
@@ -91,7 +92,7 @@ class BatchOperationsCenter(tk.Toplevel):
                 elif op=="Status":out=git(p,"status","--short","--branch")
                 elif op=="Integrity check":out=git(p,"fsck","--no-progress")
                 elif op=="Python compile":
-                    x=subprocess.run(["python","-m","compileall","-q","."],cwd=p,text=True,capture_output=True,timeout=900,encoding="utf-8",errors="replace");out=f"Exit {x.returncode}: {(x.stdout+x.stderr).strip()}"
+                    x=run_process(["python","-m","compileall","-q","."],cwd=p,text=True,capture_output=True,timeout=900,encoding="utf-8",errors="replace");out=f"Exit {x.returncode}: {(x.stdout+x.stderr).strip()}"
                 elif r["state"]!="Clean":out="SKIPPED: local changes"
                 else:out=git(p,"pull","--ff-only")
             except HANDLED_EXCEPTIONS as e:out="ERROR: "+str(e)
@@ -177,7 +178,7 @@ class BackgroundJobsCenter(tk.Toplevel):
         def worker():
             job["status"]="Running";self.after(0,lambda:self.update_row(job))
             try:
-                p=subprocess.Popen(args,cwd=self.repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,encoding="utf-8",errors="replace");self.processes[job["id"]]=p
+                p=start_process(args,cwd=self.repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,encoding="utf-8",errors="replace");self.processes[job["id"]]=p
                 for line in iter(p.stdout.readline,""):
                     job["log"]+=line
                     self.after(0,self.show_log)

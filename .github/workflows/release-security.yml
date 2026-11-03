@@ -25,16 +25,16 @@ jobs:
       - run: python -m cyclonedx_py requirements requirements.txt --output-file release-evidence/sbom.cdx.json
       - run: python scripts/packaging_gate.py
       - name: Verify release checksum
-        run: sha256sum -c dist/github_command_center_python_v3.79.0.sha256
+        run: sha256sum -c dist/github_command_center_python_v3.80.0.sha256
       - uses: actions/attest@v4
         with:
-          subject-path: dist/github_command_center_python_v3.79.0.zip
+          subject-path: dist/github_command_center_python_v3.80.0.zip
       - uses: actions/upload-artifact@v4
         with:
           name: release-security-evidence
           path: |
-            dist/github_command_center_python_v3.79.0.zip
-            dist/github_command_center_python_v3.79.0.sha256
+            dist/github_command_center_python_v3.80.0.zip
+            dist/github_command_center_python_v3.80.0.sha256
             dist/*.whl
             dist/*.tar.gz
             release-evidence/

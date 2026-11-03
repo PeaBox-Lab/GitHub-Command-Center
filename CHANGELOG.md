@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.80.0
+- Routed all feature-domain process execution through the centralized process gateway.
+- Closed the strict architecture gate with zero direct domain subprocess calls.
+- Added process-boundary regression coverage and retained all cumulative functionality.
+
 ## v3.79.0
 - Tightened architecture gates to the refactored shell/domain model.
 - Added consolidated release-readiness validation and centralized artifact version discovery.

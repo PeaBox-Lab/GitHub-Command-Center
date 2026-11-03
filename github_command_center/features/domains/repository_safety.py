@@ -3,6 +3,7 @@ import csv, datetime, hashlib, json, os, platform, re, shutil, subprocess, sys, 
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 from ...core.command_gateway import GitError, git
+from ...core.process_gateway import run_process, start_process
 from ...core.error_boundary import HANDLED_EXCEPTIONS, report_error
 
 class IgnoreAttributesStudio(tk.Toplevel):
@@ -67,7 +68,7 @@ class WorktreeSafetyCenter(tk.Toplevel):
         r=self.selected()
         if r:
             p=r.get("worktree")
-            try:os.startfile(p) if hasattr(os,"startfile") else subprocess.Popen(["xdg-open",p])
+            try:os.startfile(p) if hasattr(os,"startfile") else start_process(["xdg-open",p])
             except HANDLED_EXCEPTIONS as e:messagebox.showerror("Worktree",str(e),parent=self)
     def worktree_cmd(self,action):
         r=self.selected()

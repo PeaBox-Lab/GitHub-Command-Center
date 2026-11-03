@@ -1,4 +1,4 @@
-# GitHub Command Center v3.79.0
+# GitHub Command Center v3.80.0
 
 > A unified Python desktop command center for Git, GitHub, repository engineering, recovery, releases and developer workflows.
 
@@ -138,6 +138,15 @@ v3.72.0 is built directly from the complete v3.71.0 release.
 
 
 
+
+
+## New in v3.80
+
+- Closed the remaining architecture-gate defect by routing all feature-domain process execution through `core/process_gateway.py`.
+- Removed direct `subprocess.run` and `subprocess.Popen` calls from all 18 bounded feature domains.
+- Kept process execution centralized while preserving existing command behavior, timeouts, environment handling, and background-job semantics.
+- Added v3.80 regression tests requiring zero direct feature-domain subprocess calls.
+- Preserved the full v3.71-v3.79 feature, security, packaging, and release-readiness baseline.
 
 ## New in v3.79
 
