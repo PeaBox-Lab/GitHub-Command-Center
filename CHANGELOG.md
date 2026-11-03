@@ -1,5 +1,11 @@
 # Changelog
 
+## v3.82.0
+- Added Workspace Profile filtering and read-only health checks.
+- Added Ready, Missing, Not a Git repository, and Branch missing statuses.
+- Rebuilt README as a complete product, installation, help, architecture, safety, troubleshooting, validation, and contribution guide.
+- Retained all cumulative features and release gates.
+
 ## v3.81.0
 - Added Workspace Profiles for named repository/branch contexts with notes.
 - Added JSON import/export and local atomic profile persistence.

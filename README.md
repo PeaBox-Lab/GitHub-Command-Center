@@ -1,60 +1,110 @@
-# GitHub Command Center v3.81.0
+# GitHub Command Center v3.82.0
 
-> A unified Python desktop command center for Git, GitHub, repository engineering, recovery, releases and developer workflows.
+A Python desktop application that brings everyday Git work, advanced repository engineering, GitHub workflows, recovery, release tooling, and developer utilities into one user-friendly command center.
 
-Version **3.71.0 is an incremental upgrade of v3.70.0**. It preserves the complete v3.70 application and adds developer-facing Ref Compare and Revision Explain tools. No scratch rebuild or feature reset is used for this release.
+## What the app does
 
-## Highlights
+GitHub Command Center helps developers and repository maintainers complete common and advanced Git tasks without memorizing every command. It combines a streamlined Local Git workspace with specialist tools available through grouped navigation and the `Ctrl+K` command palette.
 
-- Full cumulative Git and GitHub feature set from v3.70 retained
-- Workspace UX with nine user-oriented task areas
-- Home Dashboard and Universal Search
-- Visual Diff, partial staging and pre-commit review
-- Branch, tag, stash, worktree, submodule and Git LFS management
-- Interactive rebase, cherry-pick, bisect, reflog and recovery tooling
-- Pull requests, GitHub Actions, releases and security workflows
-- Repository health, metrics, insights and developer quality checks
-- Windows packaging, validation and UI regression infrastructure
-- Verified-update foundation and plugin-security controls
+### Core capabilities
 
-## New in v3.71
+- Review working-tree changes, stage files or hunks, write commits, and inspect diffs.
+- Browse commit history, compare refs, inspect objects, search revisions, and visualize the commit graph.
+- Create, rename, compare, clean up, and safely delete branches and tags.
+- Fetch, pull, push, prune, inspect remotes, and diagnose upstream configuration.
+- Manage stashes and worktrees, including stash diff and conflict previews.
+- Run interactive rebase, cherry-pick queues, bisect workflows, revert queues, and merge previews.
+- Recover through reflog, dangling-object, detached-HEAD, lost-and-found, and reset recovery tools.
+- Work with GitHub pull requests, Actions, releases, security workflows, and repository readiness checks.
+- Use developer tooling for code search, patch series, quality checks, build validation, Git objects, and revision explanation.
+- Create release evidence, checksums, manifests, SBOM-ready outputs, and deterministic archives.
 
-### Ref Compare
-Compare two refs, tags, branches or commits using:
+## New in v3.82
 
-- left/right commit history
-- graphical one-line history
-- diff statistics
-- changed-file status
+### Workspace Profile Health and Filtering
 
-### Revision Explain
-Explain any Git revision using:
+Workspace Profiles now include:
 
-- `git rev-parse --verify`
-- `git cat-file -t`
-- `git name-rev`
-- full commit metadata
+- Real-time filtering by profile name, repository path, branch, or note.
+- A **Check health** action for one selected profile or all visible profiles.
+- Statuses for `Ready`, `Missing`, `Not a Git repository`, and `Branch missing`.
+- Read-only repository checks that do not change the working tree.
 
-Both tools are read-only and live under the extracted developer-tooling architecture.
+The v3.81 Workspace Profiles feature remains available for saving a friendly name, repository, preferred branch, and note, and for importing or exporting profiles as JSON.
 
-## Developer tooling
+## Requirements
 
-The cumulative developer suite now includes:
+- Python 3.10 or newer.
+- Git installed and available on `PATH`.
+- Tkinter, normally included with standard Windows Python installations.
+- A GitHub CLI or GitHub authentication setup only for features that interact with GitHub.
 
-- Developer Toolbox
-- Git Object Query
-- Developer Quality
-- Code Search
-- Patch Series
-- Repository Metrics
-- Build & Validation Runner
-- Developer Artifacts
-- Ref Compare
-- Revision Explain
+### Linux Tkinter packages
 
-## Everyday workflow
+On Debian or Ubuntu:
 
-Use the simplified workspace groups:
+```bash
+sudo apt update
+sudo apt install python3-tk git
+```
+
+On Fedora:
+
+```bash
+sudo dnf install python3-tkinter git
+```
+
+## Installation
+
+### Option 1: Run from the release archive
+
+1. Download `github_command_center_python_v3.82.0.zip`.
+2. Verify its SHA-256 checksum against `github_command_center_python_v3.82.0.sha256`.
+3. Extract the archive.
+4. Open a terminal in the extracted folder.
+5. Start the app:
+
+```bash
+python app.py
+```
+
+Windows users can also run:
+
+```bat
+run_windows.bat
+```
+
+Linux users can run:
+
+```bash
+chmod +x run_linux.sh
+./run_linux.sh
+```
+
+### Option 2: Install as a Python package
+
+```bash
+python -m pip install .
+github-command-center
+```
+
+For contributors and validation tooling:
+
+```bash
+python -m pip install -e ".[dev]"
+```
+
+## Quick start
+
+1. Start the application.
+2. Select **Choose Repository** and open an existing Git repository.
+3. Use the daily-action toolbar for refresh, fetch, pull, push, commit, history, branches, stash, and worktrees.
+4. Press `Ctrl+K` to open the complete specialist-tool catalog.
+5. Select **Workspaces** to save or reopen frequently used repository and branch contexts.
+
+## Main navigation
+
+The interface groups work into nine areas:
 
 1. Changes
 2. History
@@ -66,136 +116,167 @@ Use the simplified workspace groups:
 8. Recover
 9. Advanced
 
-Press **Ctrl+K** for the complete specialist toolset.
+The goal is to keep daily actions visible while keeping specialist tools discoverable without overcrowding the main screen.
 
-## Safety principles
+## Workspace Profiles help
 
-- No `shell=True` command execution
-- GitHub workflows use asynchronous/background execution where migrated
-- Destructive workflows use confirmations and recovery controls
-- Safety branches are created before selected history-rewriting operations
-- Force operations prefer `--force-with-lease`
-- Recovery favors reflog/recovery branches and verified backups before destructive resets
+- Select **Workspaces** in the Local Git header.
+- Choose **Save current** to store the current repository and branch.
+- Add an optional note such as `release workspace` or `customer hotfix`.
+- Use the filter box to narrow profiles.
+- Select a profile and choose **Check health**, or clear the selection to check all visible profiles.
+- Double-click a profile or choose **Open** to open the repository and switch to its preferred branch.
+- Use **Export** and **Import** to back up or move profiles.
 
-## Windows
+Profiles are stored at:
 
-Run from source with `run_windows.bat`, or use the packaging infrastructure for:
-
-- PyInstaller executable
-- Portable ZIP
-- Inno Setup installer
-- SHA-256 checksums
-- Windows validation
-- UI regression testing
-- Optional Authenticode signing hooks
-
-## Requirements
-
-- Python 3.10+
-- Git
-- Tkinter
-- GitHub CLI (`gh`) for GitHub-hosted workflows
-- Optional Git LFS, GPG, Ruff, Bandit and pip-audit for their associated centers
-
-## Run from source
-
-```bash
-python app.py
+```text
+~/.github_command_center/workspace_profiles.json
 ```
 
-## Validation
+## Keyboard shortcuts
+
+| Shortcut | Action |
+|---|---|
+| `Ctrl+K` | Open command palette |
+| `F5` | Refresh repository |
+| `Ctrl+Enter` | Commit |
+| `Tab` / `Shift+Tab` | Move keyboard focus |
+| `Enter` / `Space` | Activate the focused control |
+
+## Safety and security
+
+- No `shell=True` command execution.
+- Feature domains cannot invoke subprocesses directly and must use the process gateway.
+- Zero bare exception handlers and zero direct broad `except Exception` handlers.
+- Destructive operations use confirmations, previews, policies, or recovery guidance where appropriate.
+- Plugin trust and plugin-security checks are included.
+- CI includes Ruff, Bandit, pip-audit, CodeQL, dependency review, test, architecture, coverage, and packaging gates.
+- Release archives include deterministic packaging, SHA-256 checksums, file manifests, and integrity validation.
+
+## Architecture
+
+The application uses a focused UI shell, bounded feature domains, compatibility facades, services, and centralized command/process gateways.
+
+```text
+UI shell
+  -> centers and bounded feature domains
+      -> services and policy boundaries
+          -> Git command gateway / process gateway / GitHub integrations
+```
+
+Architecture limits are enforced automatically for shell size, domain size, class count, facade size, subprocess boundaries, and unsafe shell execution.
+
+See `ARCHITECTURE.md` for details.
+
+## Configuration and local data
+
+User preferences and Workspace Profiles are stored under:
+
+```text
+~/.github_command_center/
+```
+
+The application does not store repository contents in this folder. Export important workspace profiles before replacing or resetting your user configuration.
+
+## Troubleshooting
+
+### Git is not found
+
+Confirm:
+
+```bash
+git --version
+```
+
+If this fails, install Git and restart the terminal or application.
+
+### Tkinter is missing
+
+On Linux, install the platform Tkinter package. On Windows, rerun the official Python installer and enable Tcl/Tk support.
+
+### A saved workspace is missing
+
+Open **Workspaces**, select the profile, and run **Check health**. If the folder moved, delete the old profile and save the repository again from its new path.
+
+### A preferred branch cannot be opened
+
+The repository still opens, but the app shows a warning. Verify that the branch exists locally, fetch the repository, or update the saved profile.
+
+### GitHub features are unavailable
+
+Verify network access and the relevant GitHub authentication or GitHub CLI setup. Local Git functionality remains available independently.
+
+## Validation and release gates
+
+Run the standard local validation:
 
 ```bash
 python -m compileall -q .
-python -m unittest discover -s tests -v
+python -m pytest -q
 python scripts/architecture_gate.py
+python scripts/security_gate.py
+python scripts/release_readiness_gate.py
+python scripts/packaging_gate.py
 ```
 
-## Documentation policy
+CI additionally runs supported Python/OS matrices, coverage, Ruff, Bandit, pip-audit, CodeQL, dependency review, package build, clean installation, SBOM generation, and artifact attestation.
 
-Every release must update at least:
+## Development
 
-- `README.md`
-- `CHANGELOG.md`
-- `RELEASE_NOTES.md`
-- `USER_GUIDE.md`
+```bash
+git clone <repository-url>
+cd <repository-folder>
+python -m venv .venv
+```
 
-`ROADMAP.md` and architecture/security documentation are updated whenever the corresponding scope changes.
+Activate the environment and install development dependencies:
 
-## v3.71 Git productivity additions
+```bash
+python -m pip install -e ".[dev]"
+python -m pytest -q
+```
 
-- **Git Log Visualizer**: searchable branch-aware graph, ref decorations, commit inspection, and selected-commit comparison to HEAD.
-- **Stash Workbench**: create, preview, selectively stash paths, apply, pop, branch, and drop stashes with background mutation jobs.
-- **Worktree Workbench**: inventory, add, lock/unlock, move, remove, dry-run prune, and prune linked worktrees.
-- **Ref Compare** and **Revision Explain** remain available from the v3.71 developer tooling.
+When adding a feature:
 
-Existing Git, GitHub, release, recovery, developer, accessibility, packaging, and validation functionality from v3.70 is retained.
+- Keep UI code in a center or bounded feature domain.
+- Put reusable logic in a service.
+- Route Git and external commands through the approved gateways.
+- Add tests and update README, changelog, release notes, and user guidance.
+- Run every release gate before packaging.
 
-## Release lineage
+## Project documentation
 
-v3.72.0 is built directly from the complete v3.71.0 release.
+- `USER_GUIDE.md`: user workflows and operating guidance.
+- `ARCHITECTURE.md`: application structure and boundaries.
+- `SECURITY.md`: vulnerability reporting and security practices.
+- `ACCESSIBILITY.md`: keyboard and accessibility design rules.
+- `CONTRIBUTING.md`: contributor expectations.
+- `CHANGELOG.md`: cumulative release history.
+- `RELEASE_NOTES.md`: current release details.
+- `ROADMAP.md`: planned product direction.
+- `PLUGIN_SECURITY.md`: plugin trust and validation controls.
+- `WINDOWS_VALIDATION.md`: Windows-specific validation.
 
+## Contributing
 
+Contributions should include tests, documentation updates, and successful architecture, security, readiness, and packaging gates. See `CONTRIBUTING.md` for the complete process.
 
+## Security reporting
 
+Do not disclose suspected vulnerabilities publicly before maintainers can assess them. Follow the process in `SECURITY.md`.
 
+## License
 
+No license file is currently included in this release. Before public redistribution or external contributions, the project owner should add an explicit license such as MIT, Apache-2.0, or the organization-approved proprietary license.
 
-## New in v3.81
+## Release
 
-### Workspace Profiles
-- Save named repository workspaces containing repository path, preferred branch, and an optional note.
-- Reopen a workspace directly from the Local Git header and automatically switch to its preferred branch when available.
-- Import and export workspace profiles as portable JSON.
-- Profiles are stored locally under `~/.github_command_center/workspace_profiles.json` using atomic replacement.
-- Missing repositories and branch-switch failures are handled safely without deleting the saved profile.
-- Added service-level tests for creation, update, removal, import/export, malformed data, and ordering.
+Current version: **3.82.0**  
+Artifact: `github_command_center_python_v3.82.0.zip`
 
-## New in v3.80
+## Cumulative release lineage
 
-- Closed the remaining architecture-gate defect by routing all feature-domain process execution through `core/process_gateway.py`.
-- Removed direct `subprocess.run` and `subprocess.Popen` calls from all 18 bounded feature domains.
-- Kept process execution centralized while preserving existing command behavior, timeouts, environment handling, and background-job semantics.
-- Added v3.80 regression tests requiring zero direct feature-domain subprocess calls.
-- Preserved the full v3.71-v3.79 feature, security, packaging, and release-readiness baseline.
-
-## New in v3.79
-
-- Replaced the obsolete legacy architecture thresholds with strict post-refactor architecture gates.
-- Added a consolidated release-readiness gate covering version consistency, packaging, security, CI, coverage policy, and release workflows.
-- Centralized release version discovery for packaging so artifact names follow project metadata automatically.
-- Kept the v3.78 deterministic packaging and audit-evidence pipeline, including self-inclusion prevention and SHA-256 manifests.
-- Preserved all cumulative Git/GitHub functionality and the user-friendly interface.
-
-## New in v3.78
-
-- Fixed release ZIP self-inclusion by moving release construction to a deterministic Python packaging gate.
-- Added standard Python build metadata, package version, Python compatibility, and a `github-command-center` console entry point.
-- Added packaging gates for archive integrity, version consistency, file manifest generation, and generated-output exclusion.
-- Scoped the executable coverage gate to service/core/application code while UI-domain modules continue under dedicated architecture and UI-contract tests.
-- Added release audit evidence for tests, architecture, security, packaging, static analysis, coverage policy, and file inventory.
-
-## New in v3.77
-
-- Added GitHub Actions CI across Windows and Linux with Python 3.10-3.13.
-- Added Ruff, Bandit, pip-audit, coverage, compile, architecture, and full test gates.
-- Added GitHub CodeQL `security-extended` analysis on pushes, pull requests, and a weekly schedule.
-- Added pull-request dependency review that blocks high-severity vulnerable dependency changes.
-- Added Dependabot updates for Python packages and GitHub Actions.
-- Added release SBOM, SHA-256 checksum, security-gate evidence, and GitHub artifact attestation.
-- Preserved the v3.76 zero-bare and zero-broad-exception regression gates.
-
-## New in v3.76
-
-- Eliminated all bare `except:` handlers across the application package.
-- Eliminated direct `except Exception` handlers and replaced them with a documented typed recoverable-error boundary.
-- Added structured error logging through `core/error_boundary.py`.
-- Ensured `KeyboardInterrupt`, `SystemExit`, and other `BaseException` control-flow signals are not swallowed.
-- Added automated AST-based error-handling gates to prevent regression.
-- Preserved all cumulative Git, GitHub, recovery, release, developer, graph, stash, worktree, accessibility, and compatibility functionality.
-
-## New in v3.72
-- Interactive Commit Graph filters by refs, author, dates, message, path, merges and first-parent history.
-- Stash Diff & Conflict Preview uses read-only `git merge-tree` analysis before apply/pop.
-- Complete v3.71 stash, worktree, log, developer, GitHub, recovery and release functionality is retained.
-
+- **v3.71.0** added Ref Compare, Revision Explain, Git log visualization, stash workbench, and worktree workbench capabilities.
+- **v3.72.0** added interactive commit graph filters plus stash diff and conflict previews.
+- Later releases retained these features while improving architecture, error handling, CI/security, packaging, release evidence, process boundaries, and Workspace Profiles.

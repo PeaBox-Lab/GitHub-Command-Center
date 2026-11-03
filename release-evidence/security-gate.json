@@ -1,5 +1,5 @@
 {
-  "version": "3.81.0",
+  "version": "3.82.0",
   "metrics": {
     "bare_exception_handlers": 0,
     "broad_exception_handlers": 0,

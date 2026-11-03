@@ -2,7 +2,7 @@ import json,tomllib
 from pathlib import Path
 ROOT=Path(__file__).parents[1]
 def test_version_consistency():
- p=tomllib.loads((ROOT/'pyproject.toml').read_text());assert p['project']['version']=='3.81.0';assert '__version__ = "3.81.0"' in (ROOT/'github_command_center/__init__.py').read_text()
+ p=tomllib.loads((ROOT/'pyproject.toml').read_text());assert p['project']['version']=='3.82.0';assert '__version__ = "3.82.0"' in (ROOT/'github_command_center/__init__.py').read_text()
 def test_strict_architecture_gate():
  s=(ROOT/'scripts/architecture_gate.py').read_text();
  for x in ('shell_lines','domain_modules','largest_domain_lines','largest_domain_classes','direct_domain_subprocess_calls'):assert x in s

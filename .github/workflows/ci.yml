@@ -40,5 +40,5 @@ jobs:
       - run: python -m build
       - run: python -m pip install --force-reinstall dist/*.whl
       - run: python -m pip check
-      - run: python -c "import github_command_center; assert github_command_center.__version__ == '3.81.0'"
+      - run: python -c "import github_command_center; assert github_command_center.__version__ == '3.82.0'"
       - run: python scripts/packaging_gate.py

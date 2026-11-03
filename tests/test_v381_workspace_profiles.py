@@ -11,4 +11,4 @@ def test_workspace_import_export(tmp_path):
 def test_malformed_storage_is_safe(tmp_path):
  s=WorkspaceProfileService(tmp_path);tmp_path.mkdir(exist_ok=True);s.path.write_text('{broken',encoding='utf-8');assert s.load()==[]
 def test_version_v381():
- root=Path(__file__).parents[1];assert '__version__ = "3.81.0"' in (root/'github_command_center/__init__.py').read_text()
+ root=Path(__file__).parents[1];assert '__version__ = "3.82.0"' in (root/'github_command_center/__init__.py').read_text()
