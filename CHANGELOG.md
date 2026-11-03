@@ -1,5 +1,11 @@
 # Changelog
 
+## v3.81.0
+- Added Workspace Profiles for named repository/branch contexts with notes.
+- Added JSON import/export and local atomic profile persistence.
+- Added a Workspaces shortcut to the Local Git header.
+- Added workspace profile service tests and retained all existing release gates.
+
 ## v3.80.0
 - Routed all feature-domain process execution through the centralized process gateway.
 - Closed the strict architecture gate with zero direct domain subprocess calls.

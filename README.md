@@ -1,4 +1,4 @@
-# GitHub Command Center v3.80.0
+# GitHub Command Center v3.81.0
 
 > A unified Python desktop command center for Git, GitHub, repository engineering, recovery, releases and developer workflows.
 
@@ -139,6 +139,17 @@ v3.72.0 is built directly from the complete v3.71.0 release.
 
 
 
+
+
+## New in v3.81
+
+### Workspace Profiles
+- Save named repository workspaces containing repository path, preferred branch, and an optional note.
+- Reopen a workspace directly from the Local Git header and automatically switch to its preferred branch when available.
+- Import and export workspace profiles as portable JSON.
+- Profiles are stored locally under `~/.github_command_center/workspace_profiles.json` using atomic replacement.
+- Missing repositories and branch-switch failures are handled safely without deleting the saved profile.
+- Added service-level tests for creation, update, removal, import/export, malformed data, and ordering.
 
 ## New in v3.80
 

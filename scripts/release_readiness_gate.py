@@ -1,7 +1,7 @@
 from __future__ import annotations
 import json,re,tomllib,zipfile
 from pathlib import Path
-ROOT=Path(__file__).resolve().parents[1];VERSION='3.80.0'
+ROOT=Path(__file__).resolve().parents[1];VERSION='3.81.0'
 py=tomllib.loads((ROOT/'pyproject.toml').read_text());init=(ROOT/'github_command_center/__init__.py').read_text();fail=[]
 checks={
 'pyproject_version':py['project']['version']==VERSION,

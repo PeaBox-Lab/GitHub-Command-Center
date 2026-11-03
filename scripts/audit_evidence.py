@@ -2,7 +2,7 @@ from __future__ import annotations
 import ast, json, platform, sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]; PKG=ROOT/'github_command_center'; OUT=ROOT/'release-evidence';OUT.mkdir(exist_ok=True)
-files=list(PKG.rglob('*.py'));metrics={'version':'3.80.0','python':sys.version.split()[0],'platform':platform.platform(),'python_files':len(files),'python_lines':0,'bare_exception_handlers':0,'broad_exception_handlers':0,'shell_true':0}
+files=list(PKG.rglob('*.py'));metrics={'version':'3.81.0','python':sys.version.split()[0],'platform':platform.platform(),'python_files':len(files),'python_lines':0,'bare_exception_handlers':0,'broad_exception_handlers':0,'shell_true':0}
 for p in files:
  s=p.read_text(encoding='utf-8');metrics['python_lines']+=len(s.splitlines());metrics['shell_true']+=s.count('shell=True');t=ast.parse(s)
  for n in ast.walk(t):

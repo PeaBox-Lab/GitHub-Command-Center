@@ -3,6 +3,7 @@ import subprocess, tkinter as tk
 from pathlib import Path
 from .core.command_gateway import GitError, git
 from .core.error_boundary import HANDLED_EXCEPTIONS, report_error
+from .centers.workspace_profiles import WorkspaceProfileCenter
 import importlib
 from .centers.async_operations import AsyncOperationsCenter
 from .centers.visual_diff import VisualDiffCenter
@@ -42,6 +43,7 @@ class LocalGitWindow(tk.Toplevel):
         tk.Label(title,text="Local Git Workspace",bg="#111827",fg="white",font=("Segoe UI Semibold",17)).pack(anchor="w")
         tk.Label(title,textvariable=self.sel,bg="#111827",fg="#9ca3af",font=("Segoe UI",9)).pack(anchor="w")
         ttk.Button(header,text="Command Palette  Ctrl+K",style="Accent.TButton",command=lambda:CommandPalette(self,self.repo)).pack(side="right",padx=(5,14),pady=18)
+        ttk.Button(header,text="Workspaces",command=lambda:WorkspaceProfileCenter(self,self.repo)).pack(side="right",padx=5,pady=18)
         ttk.Button(header,text="Choose Repository",command=self.choose).pack(side="right",padx=5,pady=18)
         ttk.Button(header,text="Clone",command=self.clone).pack(side="right",padx=5,pady=18)
 

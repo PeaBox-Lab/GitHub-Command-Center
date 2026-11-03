@@ -39,7 +39,7 @@ def main():
     if metrics['shell_true']: failures.append(f'shell=True uses: {metrics["shell_true"]}')
     for key in required:
         if not metrics[key]: failures.append(f'missing {key}')
-    report={'version':'3.79.0','metrics':metrics,'passed':not failures,'failures':failures}
+    report={'version':'3.81.0','metrics':metrics,'passed':not failures,'failures':failures}
     output=ROOT/args.output
     output.parent.mkdir(parents=True,exist_ok=True)
     output.write_text(json.dumps(report,indent=2),encoding='utf-8')
