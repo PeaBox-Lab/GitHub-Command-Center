@@ -1,0 +1,36 @@
+name: Release Security
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements-dev.txt
+      - run: python -m pytest -q
+      - run: python scripts/security_gate.py --output security-gate.json
+      - run: python -m cyclonedx_py requirements requirements.txt --output-file sbom.cdx.json
+      - name: Build release archive
+        shell: bash
+        run: |
+          zip -qr github_command_center_python_v3.77.0.zip . -x '.git/*' -x '.venv/*'
+          sha256sum github_command_center_python_v3.77.0.zip > github_command_center_python_v3.77.0.sha256
+      - uses: actions/attest@v4
+        with:
+          subject-path: github_command_center_python_v3.77.0.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-security-evidence
+          path: |
+            github_command_center_python_v3.77.0.zip
+            github_command_center_python_v3.77.0.sha256
+            security-gate.json
+            sbom.cdx.json

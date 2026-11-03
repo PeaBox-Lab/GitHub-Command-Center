@@ -1,4 +1,4 @@
-# GitHub Command Center v3.76.0
+# GitHub Command Center v3.77.0
 
 > A unified Python desktop command center for Git, GitHub, repository engineering, recovery, releases and developer workflows.
 
@@ -135,6 +135,17 @@ Existing Git, GitHub, release, recovery, developer, accessibility, packaging, an
 
 v3.72.0 is built directly from the complete v3.71.0 release.
 
+
+
+## New in v3.77
+
+- Added GitHub Actions CI across Windows and Linux with Python 3.10-3.13.
+- Added Ruff, Bandit, pip-audit, coverage, compile, architecture, and full test gates.
+- Added GitHub CodeQL `security-extended` analysis on pushes, pull requests, and a weekly schedule.
+- Added pull-request dependency review that blocks high-severity vulnerable dependency changes.
+- Added Dependabot updates for Python packages and GitHub Actions.
+- Added release SBOM, SHA-256 checksum, security-gate evidence, and GitHub artifact attestation.
+- Preserved the v3.76 zero-bare and zero-broad-exception regression gates.
 
 ## New in v3.76
 

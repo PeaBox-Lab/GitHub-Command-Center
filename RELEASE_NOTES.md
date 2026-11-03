@@ -1,19 +1,20 @@
-# GitHub Command Center 3.76.0 Release Notes
+# GitHub Command Center 3.77.0 Release Notes
 
-Error-handling hardening release.
+CI and security-gate hardening release.
 
-## Improvements
-- Zero bare exception handlers.
-- Zero direct broad `except Exception` handlers.
-- Expected operational failures use a centralized typed exception boundary covering Git errors, OS and filesystem failures, invalid values, runtime failures, lookup failures, Unicode failures, and import failures.
-- Unexpected programming defects now propagate instead of being silently hidden.
-- Structured logging helper records operation context and stack traces.
-- Control-flow exceptions including `KeyboardInterrupt` and `SystemExit` are not swallowed.
+## CI
+- Test matrix: Ubuntu and Windows on Python 3.10, 3.11, 3.12, and 3.13.
+- Compile, full tests, architecture gate, Ruff, Bandit, pip-audit, and coverage gates.
+- Coverage gate starts at 70% and must not silently pass below that threshold.
 
-## Compatibility
-All cumulative features and prior compatibility routes remain available.
+## Security and supply chain
+- CodeQL security-extended analysis on pushes, pull requests, and weekly schedule.
+- Dependency review blocks newly introduced high-severity vulnerable dependencies.
+- Dependabot monitors pip and GitHub Actions dependencies weekly.
+- Release workflow generates SBOM, SHA-256 checksum, security-gate evidence, and artifact provenance attestation.
+- Minimal explicit GitHub Actions token permissions are used per workflow.
 
 ## Cumulative compatibility
-- v3.71 developer and productivity tooling retained.
-- v3.72 commit graph filters, stash diff previews, and conflict previews retained.
-- v3.73 through v3.75 architecture and compatibility work retained.
+- v3.71 and v3.72 developer, graph, stash, and conflict-preview functionality retained.
+- v3.73-v3.75 architecture improvements retained.
+- v3.76 zero-bare and zero-direct-broad exception gates retained.

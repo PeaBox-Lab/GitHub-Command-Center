@@ -1,5 +1,11 @@
 # Changelog
 
+## v3.77.0
+- Added cross-platform CI and security gates.
+- Added Ruff, Bandit, pip-audit, coverage, CodeQL, dependency review, and Dependabot automation.
+- Added release SBOM, checksums, security evidence, and artifact provenance attestation.
+- Added v3.77 CI/security regression tests while retaining all cumulative functionality.
+
 ## v3.76.0
 - Removed 51 bare exception handlers and 341 broad `Exception` handlers from the audited baseline.
 - Added a typed recoverable-error boundary and structured logging helper.
