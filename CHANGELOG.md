@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.74.0
+- Split workspace, repository, and expert feature collections into 18 bounded domain modules.
+- Kept each domain module below 600 lines and at or below 10 top-level feature classes.
+- Preserved all v3.73 compatibility facades, features, public names, and UI workflows.
+- Added v3.74 domain-boundary tests and stricter architecture gates.
+- Verified the cumulative automated test suite after decomposition.
+
 ## v3.73.0
 - Refactored the 5,100-line Local Git module into a focused application shell and three feature-domain modules.
 - Added a core Git command gateway used by both the shell and extracted feature windows.

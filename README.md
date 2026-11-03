@@ -1,8 +1,8 @@
-# GitHub Command Center v3.73.0
+# GitHub Command Center v3.74.0
 
 > A unified Python desktop command center for Git, GitHub, repository engineering, recovery, releases and developer workflows.
 
-Version **3.73.0 is an architecture-focused upgrade of v3.72.0**. It preserves the complete feature set while separating the application shell, command boundary, and 142 feature windows into maintainable modules. No feature reset or scratch rebuild was used.
+Version **3.74.0 continues the architecture-first upgrade of v3.73.0**. It preserves the complete feature set while decomposing three large feature collections into 18 bounded Git-domain modules. No feature reset or scratch rebuild was used.
 
 ## Highlights
 
@@ -135,6 +135,16 @@ Existing Git, GitHub, release, recovery, developer, accessibility, packaging, an
 
 v3.72.0 is built directly from the complete v3.71.0 release.
 
+
+## New in v3.74
+
+- Decomposed the three v3.73 feature collections into 18 bounded Git-domain modules.
+- Reduced the largest feature implementation module from 1,752 lines to below 500 lines.
+- Limited every bounded domain to 10 or fewer top-level feature classes.
+- Retained the v3.73 compatibility facades, extension-facing class names, and saved command-palette routes.
+- Preserved the complete v3.72 and v3.73 functionality and familiar user interface.
+- Added dependency-boundary and architecture-budget regression tests.
+- Updated deterministic architecture evidence for the domain-based layout.
 
 ## New in v3.73
 

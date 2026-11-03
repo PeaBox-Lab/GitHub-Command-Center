@@ -1,4 +1,5 @@
 
+import importlib
 import subprocess, tkinter as tk
 from pathlib import Path
 from .core.command_gateway import GitError, git
@@ -202,16 +203,17 @@ _feature_symbols = {
     name: value
     for module in _FEATURE_MODULES
     for name, value in vars(module).items()
-    if isinstance(value, type) and value.__module__ == module.__name__
+    if isinstance(value, type) and value.__module__.startswith("github_command_center.features.domains.")
 }
 _feature_symbols["LocalGitWindow"] = LocalGitWindow
 _shell_symbols = {name: value for name, value in globals().items() if not name.startswith("_")}
-for _module in _FEATURE_MODULES:
+_implementation_modules = {importlib.import_module(value.__module__) for value in _feature_symbols.values()}
+for _module in (*_FEATURE_MODULES, *_implementation_modules):
     vars(_module).update(_shell_symbols)
     vars(_module).update(_feature_symbols)
 globals().update({name: value for name, value in _feature_symbols.items() if name != "LocalGitWindow"})
 
-del _module, _feature_symbols, _shell_symbols
+del _module, _feature_symbols, _shell_symbols, _implementation_modules
 
 # Stable compatibility aliases retained for extensions and saved command-palette actions.
 ReleaseCenter = ReleasePublishCenterV2

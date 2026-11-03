@@ -1,0 +1,96 @@
+{
+  "version": "3.74.0",
+  "architecture": "focused shell + command gateway + compatibility facades + bounded feature domains",
+  "metrics": {
+    "shell_lines": 244,
+    "shell_classes": 1,
+    "domain_modules": 18,
+    "largest_domain_lines": 390,
+    "largest_domain_classes": 10,
+    "shell_true": 0
+  },
+  "modules": {
+    "expert_diagnostics.py": {
+      "lines": 347,
+      "classes": 10
+    },
+    "expert_history.py": {
+      "lines": 286,
+      "classes": 10
+    },
+    "expert_query.py": {
+      "lines": 313,
+      "classes": 10
+    },
+    "expert_refs.py": {
+      "lines": 315,
+      "classes": 10
+    },
+    "expert_revision.py": {
+      "lines": 267,
+      "classes": 9
+    },
+    "expert_storage.py": {
+      "lines": 334,
+      "classes": 10
+    },
+    "repository_governance.py": {
+      "lines": 246,
+      "classes": 8
+    },
+    "repository_history.py": {
+      "lines": 390,
+      "classes": 7
+    },
+    "repository_inspection.py": {
+      "lines": 220,
+      "classes": 7
+    },
+    "repository_productivity.py": {
+      "lines": 264,
+      "classes": 8
+    },
+    "repository_release.py": {
+      "lines": 271,
+      "classes": 7
+    },
+    "repository_safety.py": {
+      "lines": 303,
+      "classes": 8
+    },
+    "workspace_automation.py": {
+      "lines": 306,
+      "classes": 8
+    },
+    "workspace_graph.py": {
+      "lines": 331,
+      "classes": 4
+    },
+    "workspace_operations.py": {
+      "lines": 274,
+      "classes": 7
+    },
+    "workspace_productivity.py": {
+      "lines": 255,
+      "classes": 8
+    },
+    "workspace_repository.py": {
+      "lines": 258,
+      "classes": 6
+    },
+    "workspace_staging.py": {
+      "lines": 235,
+      "classes": 4
+    }
+  },
+  "limits": {
+    "shell_lines": 300,
+    "shell_classes": 1,
+    "domain_modules": 18,
+    "largest_domain_lines": 600,
+    "largest_domain_classes": 10,
+    "shell_true": 0
+  },
+  "passed": true,
+  "failures": []
+}

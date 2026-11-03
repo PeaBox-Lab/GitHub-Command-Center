@@ -1,0 +1,90 @@
+{
+  "version": "3.74.0",
+  "architecture": "shell + command gateway + bounded Git feature domains",
+  "modules": {
+    "github_command_center/local_git_gui.py": {
+      "lines": 244,
+      "classes": 1
+    },
+    "github_command_center/core/command_gateway.py": {
+      "lines": 19,
+      "classes": 1
+    },
+    "github_command_center/features/domains/expert_diagnostics.py": {
+      "lines": 347,
+      "classes": 10
+    },
+    "github_command_center/features/domains/expert_history.py": {
+      "lines": 286,
+      "classes": 10
+    },
+    "github_command_center/features/domains/expert_query.py": {
+      "lines": 313,
+      "classes": 10
+    },
+    "github_command_center/features/domains/expert_refs.py": {
+      "lines": 315,
+      "classes": 10
+    },
+    "github_command_center/features/domains/expert_revision.py": {
+      "lines": 267,
+      "classes": 9
+    },
+    "github_command_center/features/domains/expert_storage.py": {
+      "lines": 334,
+      "classes": 10
+    },
+    "github_command_center/features/domains/repository_governance.py": {
+      "lines": 246,
+      "classes": 8
+    },
+    "github_command_center/features/domains/repository_history.py": {
+      "lines": 390,
+      "classes": 7
+    },
+    "github_command_center/features/domains/repository_inspection.py": {
+      "lines": 220,
+      "classes": 7
+    },
+    "github_command_center/features/domains/repository_productivity.py": {
+      "lines": 264,
+      "classes": 8
+    },
+    "github_command_center/features/domains/repository_release.py": {
+      "lines": 271,
+      "classes": 7
+    },
+    "github_command_center/features/domains/repository_safety.py": {
+      "lines": 303,
+      "classes": 8
+    },
+    "github_command_center/features/domains/workspace_automation.py": {
+      "lines": 306,
+      "classes": 8
+    },
+    "github_command_center/features/domains/workspace_graph.py": {
+      "lines": 331,
+      "classes": 4
+    },
+    "github_command_center/features/domains/workspace_operations.py": {
+      "lines": 274,
+      "classes": 7
+    },
+    "github_command_center/features/domains/workspace_productivity.py": {
+      "lines": 255,
+      "classes": 8
+    },
+    "github_command_center/features/domains/workspace_repository.py": {
+      "lines": 258,
+      "classes": 6
+    },
+    "github_command_center/features/domains/workspace_staging.py": {
+      "lines": 235,
+      "classes": 4
+    }
+  },
+  "domain_modules": 18,
+  "total_feature_classes": 141,
+  "compatibility_facades": 3,
+  "compatibility_exports": true
+}
