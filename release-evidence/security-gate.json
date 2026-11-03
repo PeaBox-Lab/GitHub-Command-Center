@@ -1,0 +1,18 @@
+{
+  "version": "3.77.0",
+  "metrics": {
+    "bare_exception_handlers": 0,
+    "broad_exception_handlers": 0,
+    "shell_true": 0,
+    "ci_workflows": 4,
+    "codeql": true,
+    "dependency_review": true,
+    "artifact_attestation": true,
+    "pip_audit": true,
+    "bandit": true,
+    "ruff": true,
+    "no_branch_action_refs": true
+  },
+  "passed": true,
+  "failures": []
+}

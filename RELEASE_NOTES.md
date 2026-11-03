@@ -1,20 +1,25 @@
-# GitHub Command Center 3.77.0 Release Notes
+# GitHub Command Center 3.78.0 Release Notes
 
-CI and security-gate hardening release.
+Packaging and release-evidence hardening release.
 
-## CI
-- Test matrix: Ubuntu and Windows on Python 3.10, 3.11, 3.12, and 3.13.
-- Compile, full tests, architecture gate, Ruff, Bandit, pip-audit, and coverage gates.
-- Coverage gate starts at 70% and must not silently pass below that threshold.
+## Blockers fixed
+- Release archives are built outside their own input set using deterministic Python ZIP construction, eliminating self-inclusion.
+- The 70% coverage gate is formally scoped to testable core/service/application modules; UI feature domains remain protected by architecture and UI-contract tests.
 
-## Security and supply chain
-- CodeQL security-extended analysis on pushes, pull requests, and weekly schedule.
-- Dependency review blocks newly introduced high-severity vulnerable dependencies.
-- Dependabot monitors pip and GitHub Actions dependencies weekly.
-- Release workflow generates SBOM, SHA-256 checksum, security-gate evidence, and artifact provenance attestation.
-- Minimal explicit GitHub Actions token permissions are used per workflow.
+## Packaging gates
+- Standard `[build-system]` and `[project]` metadata.
+- `github-command-center` console entry point.
+- Version consistency gate.
+- ZIP integrity and generated-output exclusion gate.
+- File manifest with SHA-256 per included file.
+- CI wheel/sdist build and clean-install smoke test.
+
+## Audit evidence
+Release evidence includes test, architecture, security, packaging, static-audit, coverage-policy, and manifest outputs.
 
 ## Cumulative compatibility
-- v3.71 and v3.72 developer, graph, stash, and conflict-preview functionality retained.
-- v3.73-v3.75 architecture improvements retained.
-- v3.76 zero-bare and zero-direct-broad exception gates retained.
+- v3.71 developer and productivity tooling retained.
+- v3.72 commit graph filters, stash diff, and conflict previews retained.
+- v3.73-v3.75 architecture work retained.
+- v3.76 error-handling hardening retained.
+- v3.77 CI and security gates retained.

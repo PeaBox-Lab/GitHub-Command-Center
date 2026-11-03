@@ -40,6 +40,8 @@ def main():
     for key in required:
         if not metrics[key]: failures.append(f'missing {key}')
     report={'version':'3.77.0','metrics':metrics,'passed':not failures,'failures':failures}
-    (ROOT/args.output).write_text(json.dumps(report,indent=2),encoding='utf-8')
+    output=ROOT/args.output
+    output.parent.mkdir(parents=True,exist_ok=True)
+    output.write_text(json.dumps(report,indent=2),encoding='utf-8')
     print(json.dumps(report,indent=2));return 1 if failures else 0
 if __name__=='__main__': raise SystemExit(main())

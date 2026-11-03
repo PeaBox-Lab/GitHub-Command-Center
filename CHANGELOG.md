@@ -1,5 +1,11 @@
 # Changelog
 
+## v3.78.0
+- Fixed release ZIP self-inclusion and added deterministic packaging gates.
+- Added installable Python project metadata and console entry point.
+- Added scoped 70% coverage policy plus release audit evidence and manifest generation.
+- Added clean package-build/install gates to CI and release workflows.
+
 ## v3.77.0
 - Added cross-platform CI and security gates.
 - Added Ruff, Bandit, pip-audit, coverage, CodeQL, dependency review, and Dependabot automation.

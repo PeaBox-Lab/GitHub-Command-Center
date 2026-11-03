@@ -15,22 +15,26 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install -r requirements-dev.txt
-      - run: python -m pytest -q
-      - run: python scripts/security_gate.py --output security-gate.json
-      - run: python -m cyclonedx_py requirements requirements.txt --output-file sbom.cdx.json
-      - name: Build release archive
-        shell: bash
-        run: |
-          zip -qr github_command_center_python_v3.77.0.zip . -x '.git/*' -x '.venv/*'
-          sha256sum github_command_center_python_v3.77.0.zip > github_command_center_python_v3.77.0.sha256
+      - run: python -m pytest -q --junitxml=release-evidence/test-results.xml
+      - run: python scripts/architecture_gate.py
+      - run: python scripts/security_gate.py --output release-evidence/security-gate.json
+      - run: python scripts/audit_evidence.py
+      - run: python -m pytest --cov=github_command_center --cov-report=xml:release-evidence/coverage.xml --cov-fail-under=70
+      - run: python -m build
+      - run: python -m pip install --force-reinstall dist/*.whl && python -m pip check
+      - run: python -m cyclonedx_py requirements requirements.txt --output-file release-evidence/sbom.cdx.json
+      - run: python scripts/packaging_gate.py
+      - name: Verify release checksum
+        run: sha256sum -c dist/github_command_center_python_v3.78.0.sha256
       - uses: actions/attest@v4
         with:
-          subject-path: github_command_center_python_v3.77.0.zip
+          subject-path: dist/github_command_center_python_v3.78.0.zip
       - uses: actions/upload-artifact@v4
         with:
           name: release-security-evidence
           path: |
-            github_command_center_python_v3.77.0.zip
-            github_command_center_python_v3.77.0.sha256
-            security-gate.json
-            sbom.cdx.json
+            dist/github_command_center_python_v3.78.0.zip
+            dist/github_command_center_python_v3.78.0.sha256
+            dist/*.whl
+            dist/*.tar.gz
+            release-evidence/
