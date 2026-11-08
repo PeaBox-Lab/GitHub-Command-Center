@@ -6,18 +6,22 @@ import tkinter as tk
 from datetime import datetime, timezone
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
-import webbrowser
 
 from .config import load_config, save_config
 from .github_api import GitHubClient
 from .git_ops import clone_repo, git_available, pull_repo, status_repo
 from .local_git_gui import LocalGitWindow
+from .ui.styles import CorporateStyleManager, ThemePreferences
 
+# Color constants retained for backward compatibility
 BG = "#f5f7fb"
 NAV = "#0d1526"
 PURPLE = "#4f46e5"
 TEXT = "#172033"
 MUTED = "#64748b"
+
+# Corporate theme manager - initialized in __init__
+theme_manager: CorporateStyleManager | None = None
 
 
 class GitHubCommandCenter(tk.Tk):
@@ -26,7 +30,12 @@ class GitHubCommandCenter(tk.Tk):
         self.title("GitHub Command Center 3.2")
         self.geometry("1400x860")
         self.minsize(1120, 720)
-        self.configure(bg=BG)
+
+        # Initialize corporate theme manager
+        global theme_manager
+        theme_manager = CorporateStyleManager(self)
+        self.configure(bg=theme_manager._palette["bg"])
+
         self.config_data = load_config()
         self.client = None
         self.user = {}
@@ -43,15 +52,19 @@ class GitHubCommandCenter(tk.Tk):
         self.show_connect()
 
     def _style(self):
-        style = ttk.Style(self)
-        try: style.theme_use("clam")
-        except tk.TclError: pass
-        style.configure("Treeview", rowheight=34, font=("Segoe UI", 10), background="white", fieldbackground="white")
-        style.configure("Treeview.Heading", font=("Segoe UI Semibold", 10), padding=8)
-        style.map("Treeview", background=[("selected", "#e0e7ff")], foreground=[("selected", TEXT)])
-        style.configure("TButton", font=("Segoe UI", 10), padding=(10, 7))
-        style.configure("Accent.TButton", background=PURPLE, foreground="white")
-        style.map("Accent.TButton", background=[("active", "#4338ca")])
+        global theme_manager
+        if theme_manager:
+            theme_manager._apply_theme()
+        else:
+            style = ttk.Style(self)
+            try: style.theme_use("clam")
+            except tk.TclError: pass
+            style.configure("Treeview", rowheight=34, font=("Segoe UI", 10), background="white", fieldbackground="white")
+            style.configure("Treeview.Heading", font=("Segoe UI Semibold", 10), padding=8)
+            style.map("Treeview", background=[("selected", "#e0e7ff")], foreground=[("selected", TEXT)])
+            style.configure("TButton", font=("Segoe UI", 10), padding=(10, 7))
+            style.configure("Accent.TButton", background=PURPLE, foreground="white")
+            style.map("Accent.TButton", background=[("active", "#4338ca")])
 
     def _shell(self):
         self.nav = tk.Frame(self, bg=NAV, width=220)
@@ -130,7 +143,7 @@ class GitHubCommandCenter(tk.Tk):
                     except HANDLED_EXCEPTIONS as exc:
                         messagebox.showwarning("Keyring", f"Connected, but the token could not be saved: {exc}")
                 self.user, self.repos, self.events, self.rate = data
-                self.status_var.set(f"Connected: {self.user.get('login')}")
+                self.status_var.set(f"Connected: {self.user.get('login')}") if theme_manager else self.status_var.set(f"Connected: {self.user.get('login')}")
                 self.switch("Dashboard")
             self.run_async(lambda: self._load_all(), loaded)
         ttk.Button(box, text="Connect account", style="Accent.TButton", command=connect).pack(anchor="w", padx=24, pady=18)
@@ -171,14 +184,19 @@ class GitHubCommandCenter(tk.Tk):
     def switch(self, name):
         if not self.client and name != "Settings": return self.show_connect()
         self.current_view = name; self.title_label.config(text=name)
-        for n,b in self.nav_buttons.items(): b.config(bg=PURPLE if n == name else NAV, fg="white" if n == name else "#cbd5e1")
+        for n,b in self.nav_buttons.items(): 
+            if theme_manager:
+                b.config(bg=theme_manager._palette["accent"] if n == name else theme_manager._palette["nav_bg"], 
+                        fg="white" if n == name else theme_manager._palette["nav_fg"])
+            else:
+                b.config(bg=PURPLE if n == name else NAV, fg="white" if n == name else "#cbd5e1")
         self.view_local_git() if name == "Local Git" else getattr(self, f"view_{name.lower()}")()
 
     def view_dashboard(self):
         self.clear()
-        welcome = tk.Frame(self.content, bg="#312e81", height=122); welcome.pack(fill="x"); welcome.pack_propagate(False)
-        tk.Label(welcome, text=f"Welcome, {self.user.get('name') or self.user.get('login')}", bg="#312e81", fg="white", font=("Segoe UI Semibold", 22)).pack(anchor="w", padx=24, pady=(22, 4))
-        tk.Label(welcome, text="Your repositories, activity and maintenance signals in one workspace.", bg="#312e81", fg="#c7d2fe", font=("Segoe UI", 10)).pack(anchor="w", padx=24)
+        welcome = tk.Frame(self.content, bg="#1e2f40", height=122); welcome.pack(fill="x"); welcome.pack_propagate(False)
+        tk.Label(welcome, text=f"Welcome, {self.user.get('name') or self.user.get('login')}", bg="#1e2f40", fg="white", font=("Segoe UI Semibold", 22)).pack(anchor="w", padx=24, pady=(22, 4))
+        tk.Label(welcome, text="Your repositories, activity and maintenance signals in one workspace.", bg="#1e2f40", fg="#647687", font=("Segoe UI", 10)).pack(anchor="w", padx=24)
         stats = [("Repositories", len(self.repos)), ("Stars", sum(r.get("stargazers_count",0) for r in self.repos)), ("Forks", sum(r.get("forks_count",0) for r in self.repos)), ("Open issues", sum(r.get("open_issues_count",0) for r in self.repos))]
         row=tk.Frame(self.content,bg=BG); row.pack(fill="x", pady=16)
         for label,value in stats:
@@ -266,6 +284,24 @@ class GitHubCommandCenter(tk.Tk):
         ttk.Button(box,text="Disconnect and forget token",command=self.disconnect).pack(anchor="w",padx=16,pady=(0,16))
         tk.Label(box,text=f"Git command available: {'Yes' if git_available() else 'No'}",bg="white",fg=MUTED).pack(anchor="w",padx=16,pady=(0,16))
 
+        # Add theme toggle button
+        if theme_manager:
+            theme_btn = tk.Button(box, text=f"🌙 Mode: {theme_manager.get_mode().title()}", 
+                                  command=self._toggle_theme, bg="white", fg=TEXT,
+                                  font=("Segoe UI", 9), cursor="hand2")
+            theme_btn.pack(anchor="w", padx=16, pady=(4, 0))
+
+    def _toggle_theme(self):
+        """Toggle between light and dark corporate themes."""
+        if theme_manager:
+            new_mode = theme_manager.toggle_theme()
+            # Update the button text
+            for widget in self.winfo_children():
+                for child in widget.winfo_children():
+                    if isinstance(child, tk.Button) and "Mode:" in child.cget("text"):
+                        child.config(text=f"🌙 Mode: {new_mode.title()}")
+                        break
+
     def new_repository(self):
         if not self.client: return self.show_connect()
         name=simpledialog.askstring("New repository","Repository name:",parent=self)
@@ -307,4 +343,3 @@ class GitHubCommandCenter(tk.Tk):
 
 def main():
     GitHubCommandCenter().mainloop()
-

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from github_command_center.core.error_boundary import HANDLED_EXCEPTIONS, report_error
+
 import subprocess, threading
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -28,8 +28,12 @@ class JobService:
                 job.output.append(line);self.events.put((job.job_id,"output",line))
             job.process.wait();job.returncode=job.process.returncode
             if job.status!="Cancelled":job.status="Completed" if job.returncode==0 else "Failed"
-        except HANDLED_EXCEPTIONS as exc:
-            job.output.append(str(exc));job.returncode=-1
+        except Exception as exc:
+            from github_command_center.core.error_boundary import HANDLED_EXCEPTIONS, report_error
+            if type(exc) in HANDLED_EXCEPTIONS:
+                job.output.append(str(exc));job.returncode=-1
+            else:
+                raise
             if job.status!="Cancelled":job.status="Failed"
         finally:
             if stream is not None:stream.close()
